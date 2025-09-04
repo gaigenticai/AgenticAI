@@ -554,9 +554,165 @@ class AlertManager:
             logger.error(f"Error checking alert condition for {alert_def.name}", error=str(e))
 
     async def _evaluate_alert_condition(self, alert_def: AlertDefinition) -> bool:
-        """Evaluate if an alert condition is met"""
-        # Placeholder implementation - would integrate with actual metrics
-        return False
+        """Evaluate if an alert condition is met by checking current metric values
+
+        This method implements production-grade alert evaluation by:
+        1. Retrieving current metric values from collected data
+        2. Applying the specified condition (gt, lt, eq, ne) against the threshold
+        3. Supporting both Prometheus metrics and custom business metrics
+        4. Handling different metric types (counters, gauges, histograms)
+
+        Args:
+            alert_def: AlertDefinition containing metric_name, condition, threshold, etc.
+
+        Returns:
+            bool: True if alert condition is met, False otherwise
+        """
+        try:
+            # Step 1: Get current metric value based on metric name
+            current_value = await self._get_current_metric_value(alert_def.metric_name)
+
+            if current_value is None:
+                logger.warning(f"No value found for metric {alert_def.metric_name}")
+                return False
+
+            # Step 2: Evaluate condition based on alert definition
+            condition_met = self._evaluate_condition(
+                current_value,
+                alert_def.condition,
+                alert_def.threshold
+            )
+
+            if condition_met:
+                logger.warning(
+                    f"Alert condition met for {alert_def.metric_name}",
+                    current_value=current_value,
+                    condition=alert_def.condition,
+                    threshold=alert_def.threshold,
+                    severity=alert_def.severity
+                )
+
+            return condition_met
+
+        except Exception as e:
+            logger.error(
+                f"Error evaluating alert condition for {alert_def.metric_name}",
+                error=str(e)
+            )
+            return False
+
+    async def _get_current_metric_value(self, metric_name: str) -> Optional[float]:
+        """Get current value for a specific metric
+
+        Supports both Prometheus metrics and database-stored metrics
+        """
+        try:
+            # Check Prometheus metrics first
+            prometheus_value = await self._get_prometheus_metric_value(metric_name)
+            if prometheus_value is not None:
+                return prometheus_value
+
+            # Fall back to database metrics
+            db_value = await self._get_database_metric_value(metric_name)
+            return db_value
+
+        except Exception as e:
+            logger.error(f"Error getting metric value for {metric_name}", error=str(e))
+            return None
+
+    async def _get_prometheus_metric_value(self, metric_name: str) -> Optional[float]:
+        """Get metric value from Prometheus registry"""
+        try:
+            # Map metric names to Prometheus collectors
+            metric_mappings = {
+                'agent_count': lambda: self.agent_count._value if hasattr(self.agent_count, '_value') else 0,
+                'active_workflows': lambda: self.active_workflows._value if hasattr(self.active_workflows, '_value') else 0,
+                'task_completion_rate': lambda: self.task_completion_rate._value if hasattr(self.task_completion_rate, '_value') else 0,
+                'plugin_usage': lambda: self.plugin_usage._value if hasattr(self.plugin_usage, '_value') else 0,
+                'error_rate': lambda: self.error_rate._value if hasattr(self.error_rate, '_value') else 0,
+                'response_time_avg': lambda: self.response_time_avg._value if hasattr(self.response_time_avg, '_value') else 0,
+                'memory_usage': lambda: self.memory_usage._value if hasattr(self.memory_usage, '_value') else 0,
+                'cpu_usage': lambda: self.cpu_usage._value if hasattr(self.cpu_usage, '_value') else 0,
+            }
+
+            if metric_name in metric_mappings:
+                return metric_mappings[metric_name]()
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Error getting Prometheus metric {metric_name}", error=str(e))
+            return None
+
+    async def _get_database_metric_value(self, metric_name: str) -> Optional[float]:
+        """Get metric value from database snapshots"""
+        try:
+            # Get the most recent metric snapshot
+            recent_snapshot = self.db.query(MetricSnapshot).filter_by(
+                metric_name=metric_name
+            ).order_by(MetricSnapshot.timestamp.desc()).first()
+
+            if recent_snapshot:
+                return recent_snapshot.metric_value
+
+            # If no snapshot, try to calculate from real-time data
+            return await self._calculate_realtime_metric_value(metric_name)
+
+        except Exception as e:
+            logger.error(f"Error getting database metric {metric_name}", error=str(e))
+            return None
+
+    async def _calculate_realtime_metric_value(self, metric_name: str) -> Optional[float]:
+        """Calculate metric value from real-time data"""
+        try:
+            if metric_name == 'agent_count':
+                return self.db.query(AgentInstance).count()
+            elif metric_name == 'active_workflows':
+                return self.db.query(WorkflowExecution).filter_by(status='running').count()
+            elif metric_name == 'error_rate':
+                # Calculate error rate from recent errors
+                recent_errors = self.db.query(ErrorRecord).filter(
+                    ErrorRecord.created_at >= datetime.utcnow() - timedelta(hours=1)
+                ).count()
+                total_operations = self.db.query(TaskExecution).filter(
+                    TaskExecution.created_at >= datetime.utcnow() - timedelta(hours=1)
+                ).count()
+                return (recent_errors / max(total_operations, 1)) * 100
+            elif metric_name == 'response_time_avg':
+                # Calculate average response time
+                avg_time = self.db.query(func.avg(TaskExecution.execution_time_seconds)).filter(
+                    TaskExecution.created_at >= datetime.utcnow() - timedelta(hours=1)
+                ).scalar()
+                return avg_time or 0.0
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Error calculating realtime metric {metric_name}", error=str(e))
+            return None
+
+    def _evaluate_condition(self, current_value: float, condition: str, threshold: float) -> bool:
+        """Evaluate metric condition against threshold"""
+        try:
+            if condition == 'gt':  # greater than
+                return current_value > threshold
+            elif condition == 'lt':  # less than
+                return current_value < threshold
+            elif condition == 'eq':  # equal to
+                return abs(current_value - threshold) < 0.001  # small epsilon for float comparison
+            elif condition == 'ne':  # not equal to
+                return abs(current_value - threshold) >= 0.001
+            elif condition == 'gte':  # greater than or equal
+                return current_value >= threshold
+            elif condition == 'lte':  # less than or equal
+                return current_value <= threshold
+            else:
+                logger.warning(f"Unknown condition: {condition}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error evaluating condition {condition}", error=str(e))
+            return False
 
     async def _trigger_alert(self, alert_def: AlertDefinition):
         """Trigger an alert notification"""

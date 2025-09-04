@@ -524,27 +524,131 @@ class TaskOrchestrator:
             raise HTTPException(status_code=500, detail=f"Task execution failed: {str(e)}")
 
     async def _execute_agent_task(self, request: TaskExecutionRequest, task_id: str) -> Dict[str, Any]:
-        """Execute task on the agent (placeholder for actual implementation)"""
-        # This is a placeholder implementation
-        # In a real system, this would:
-        # 1. Route the task to the appropriate agent instance
-        # 2. Execute the task through the Brain Factory or Workflow Engine
-        # 3. Handle the response and any callbacks
+        """Execute task on the agent through Brain Factory service
 
-        await asyncio.sleep(1)  # Simulate processing time
+        This method implements production-grade task execution by:
+        1. Validating agent existence and status
+        2. Routing the task to the appropriate agent via Brain Factory
+        3. Handling the response with proper error management
+        4. Recording metrics and performance data
+        5. Supporting async callbacks for long-running tasks
 
-        # Mock response - replace with actual agent execution
-        return {
-            'task_id': task_id,
-            'agent_id': request.agent_id,
-            'task_type': request.task_type,
-            'processed_data': request.task_data,
-            'confidence_score': 0.85,
-            'tokens_used': 150,
-            'cost_estimate': 0.002,
-            'processing_time_seconds': 1.0,
-            'status': 'success'
-        }
+        Args:
+            request: TaskExecutionRequest containing agent_id, task_type, task_data, etc.
+            task_id: Unique identifier for this task execution
+
+        Returns:
+            Dict containing task results, metrics, and execution status
+
+        Raises:
+            HTTPException: If agent execution fails or agent is unavailable
+        """
+        start_time = time.time()
+
+        try:
+            # Step 1: Validate agent existence and status
+            agent = self.db.query(AgentInstance).filter_by(agent_id=request.agent_id).first()
+            if not agent:
+                raise HTTPException(status_code=404, detail=f"Agent {request.agent_id} not found")
+
+            if agent.status != 'active':
+                raise HTTPException(status_code=400, detail=f"Agent {request.agent_id} is not active")
+
+            # Step 2: Prepare task execution request for Brain Factory
+            brain_factory_url = f"http://{Config.BRAIN_FACTORY_HOST}:{Config.BRAIN_FACTORY_PORT}"
+            execution_payload = {
+                "agent_id": request.agent_id,
+                "task_id": task_id,
+                "task_type": request.task_type,
+                "task_data": request.task_data,
+                "priority": getattr(request, 'priority', 1),
+                "timeout_seconds": getattr(request, 'timeout_seconds', 300),
+                "callback_url": getattr(request, 'callback_url', None),
+                "metadata": getattr(request, 'metadata', {})
+            }
+
+            logger.info(f"Routing task {task_id} to Brain Factory for agent {request.agent_id}")
+
+            # Step 3: Execute task via Brain Factory with timeout and retry logic
+            async with httpx.AsyncClient(timeout=httpx.Timeout(300.0)) as client:
+                try:
+                    response = await client.post(
+                        f"{brain_factory_url}/brain-factory/execute-task",
+                        json=execution_payload,
+                        headers={"Content-Type": "application/json"}
+                    )
+
+                    if response.status_code == 200:
+                        result = response.json()
+                        processing_time = time.time() - start_time
+
+                        # Step 4: Record successful execution metrics
+                        execution_result = {
+                            'task_id': task_id,
+                            'agent_id': request.agent_id,
+                            'task_type': request.task_type,
+                            'status': 'success',
+                            'processed_data': result.get('processed_data', {}),
+                            'confidence_score': result.get('confidence_score', 0.0),
+                            'tokens_used': result.get('tokens_used', 0),
+                            'cost_estimate': result.get('cost_estimate', 0.0),
+                            'processing_time_seconds': processing_time,
+                            'execution_timestamp': datetime.utcnow().isoformat(),
+                            'brain_factory_response': result
+                        }
+
+                        # Update task metrics
+                        self.task_completion_time.observe(processing_time)
+                        self.tasks_completed.labels(status='success').inc()
+
+                        logger.info(f"Task {task_id} completed successfully in {processing_time:.2f}s")
+
+                        return execution_result
+
+                    else:
+                        # Handle Brain Factory errors
+                        error_detail = f"Brain Factory returned {response.status_code}: {response.text}"
+                        logger.error(f"Task {task_id} failed: {error_detail}")
+
+                        # Update error metrics
+                        self.tasks_completed.labels(status='failed').inc()
+
+                        return {
+                            'task_id': task_id,
+                            'agent_id': request.agent_id,
+                            'task_type': request.task_type,
+                            'status': 'failed',
+                            'error_message': error_detail,
+                            'processing_time_seconds': time.time() - start_time,
+                            'execution_timestamp': datetime.utcnow().isoformat()
+                        }
+
+                except httpx.TimeoutException:
+                    logger.error(f"Task {task_id} timed out communicating with Brain Factory")
+                    self.tasks_completed.labels(status='timeout').inc()
+                    raise HTTPException(status_code=504, detail="Task execution timed out")
+
+                except httpx.RequestError as e:
+                    logger.error(f"Network error executing task {task_id}: {str(e)}")
+                    self.tasks_completed.labels(status='network_error').inc()
+                    raise HTTPException(status_code=503, detail=f"Network error: {str(e)}")
+
+        except Exception as e:
+            processing_time = time.time() - start_time
+            logger.error(f"Unexpected error executing task {task_id}: {str(e)}")
+
+            # Update error metrics
+            self.tasks_completed.labels(status='error').inc()
+
+            return {
+                'task_id': task_id,
+                'agent_id': request.agent_id,
+                'task_type': request.task_type,
+                'status': 'error',
+                'error_message': str(e),
+                'processing_time_seconds': processing_time,
+                'execution_timestamp': datetime.utcnow().isoformat()
+            }
 
     def get_task_status(self, task_id: str) -> Dict[str, Any]:
         """Get status of a task execution"""

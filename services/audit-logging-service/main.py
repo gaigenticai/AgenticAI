@@ -26,6 +26,7 @@ import os
 import sys
 import time
 import uuid
+import hashlib
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union, Callable
 from concurrent.futures import ThreadPoolExecutor
@@ -760,7 +761,10 @@ class ComplianceManager:
             with gzip.open(archive_path, 'wt', encoding='utf-8') as f:
                 json.dump(archive_data, f)
 
-            # Create archive record
+            # Calculate SHA-256 checksum of the archive file
+            archive_checksum = self._calculate_file_checksum(archive_path)
+
+            # Create archive record with proper checksum
             archive_record = AuditArchive(
                 id=str(uuid.uuid4()),
                 archive_id=archive_id,
@@ -768,7 +772,7 @@ class ComplianceManager:
                 end_date=max(event.created_at for event in events_to_archive),
                 record_count=len(events_to_archive),
                 file_path=archive_path,
-                checksum='placeholder',  # In production, calculate actual checksum
+                checksum=archive_checksum,
                 retention_period_days=2555  # 7 years
             )
 
@@ -797,6 +801,54 @@ class ComplianceManager:
             logger.error("Failed to archive events", error=str(e))
             self.db.rollback()
             raise HTTPException(status_code=500, detail="Failed to archive events")
+
+    def _calculate_file_checksum(self, file_path: str) -> str:
+        """Calculate SHA-256 checksum of a file
+
+        This method implements production-grade file integrity verification by:
+        1. Reading the file in chunks to handle large files efficiently
+        2. Using SHA-256 for cryptographic security
+        3. Providing tamper detection capabilities
+        4. Supporting audit trail integrity verification
+
+        Args:
+            file_path: Path to the file to calculate checksum for
+
+        Returns:
+            str: Hexadecimal SHA-256 checksum string
+
+        Raises:
+            FileNotFoundError: If the file doesn't exist
+            IOError: If there's an error reading the file
+        """
+        try:
+            # Use SHA-256 for cryptographic security
+            sha256_hash = hashlib.sha256()
+
+            # Read file in chunks to handle large files efficiently
+            with open(file_path, 'rb') as f:
+                chunk_size = 8192  # 8KB chunks for optimal performance
+                while chunk := f.read(chunk_size):
+                    sha256_hash.update(chunk)
+
+            # Return hexadecimal representation
+            checksum = sha256_hash.hexdigest()
+
+            logger.info(f"Calculated checksum for archive file",
+                       file_path=file_path,
+                       checksum=checksum)
+
+            return checksum
+
+        except FileNotFoundError:
+            logger.error(f"Archive file not found for checksum calculation: {file_path}")
+            raise
+        except IOError as e:
+            logger.error(f"IO error calculating checksum for {file_path}", error=str(e))
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error calculating checksum for {file_path}", error=str(e))
+            raise
 
 # =============================================================================
 # API MODELS
