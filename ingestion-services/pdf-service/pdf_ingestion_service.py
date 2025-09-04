@@ -25,7 +25,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -61,6 +61,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for PDF service to avoid metric name conflicts
+PDF_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="PDF Ingestion Service",
@@ -68,12 +71,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-PDF_FILES_PROCESSED = Counter('pdf_files_processed_total', 'Total PDF files processed', ['status'])
-PDF_PAGES_PROCESSED = Counter('pdf_pages_processed_total', 'Total PDF pages processed')
-PDF_PROCESSING_TIME = Histogram('pdf_processing_duration_seconds', 'PDF processing duration', ['operation'])
-PDF_OCR_ERRORS = Counter('pdf_ocr_errors_total', 'Total OCR processing errors')
-ACTIVE_PDF_JOBS = Gauge('active_pdf_jobs', 'Number of active PDF processing jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+PDF_FILES_PROCESSED = Counter('pdf_files_processed_total', 'Total PDF files processed', ['status'], registry=PDF_REGISTRY)
+PDF_PAGES_PROCESSED = Counter('pdf_pages_processed_total', 'Total PDF pages processed', registry=PDF_REGISTRY)
+PDF_PROCESSING_TIME = Histogram('pdf_processing_duration_seconds', 'PDF processing duration', ['operation'], registry=PDF_REGISTRY)
+PDF_OCR_ERRORS = Counter('pdf_ocr_errors_total', 'Total OCR processing errors', registry=PDF_REGISTRY)
+ACTIVE_PDF_JOBS = Gauge('active_pdf_jobs', 'Number of active PDF processing jobs', registry=PDF_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -558,7 +561,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(PDF_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

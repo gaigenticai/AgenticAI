@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI Scraper Service Guide - AgenticAI Platform</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .endpoint {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .method {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🕷️ UI Scraper Service Guide</h1>
+            <p>Complete guide for web scraping with Selenium and data extraction</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🚀 Overview</h2>
+            <p>The UI Scraper Service extracts data from web interfaces using Selenium WebDriver with Chromium browser, supporting dynamic content, JavaScript rendering, and complex scraping scenarios.</p>
+            <div class="success">
+                <strong>Key Features:</strong>
+                <ul>
+                    <li>✅ Dynamic content scraping</li>
+                    <li>✅ JavaScript execution</li>
+                    <li>✅ Form interaction</li>
+                    <li>✅ Screenshot capture</li>
+                    <li>✅ Wait conditions</li>
+                    <li>✅ Anti-detection measures</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Configuration</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Service Name</td>
+                    <td>ui-scraper-service</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>8087</td>
+                </tr>
+                <tr>
+                    <td>Browser</td>
+                    <td>Chromium (headless)</td>
+                </tr>
+                <tr>
+                    <td>WebDriver</td>
+                    <td>ChromeDriver</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/health</strong>
+                <div class="code-block">
+curl http://localhost:8087/health
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/metrics</strong>
+                <div class="code-block">
+curl http://localhost:8087/metrics
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🕷️ Scraping Capabilities</h2>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Support</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>JavaScript Rendering</td>
+                    <td>✅ Full</td>
+                    <td>Execute JavaScript and wait for content</td>
+                </tr>
+                <tr>
+                    <td>Form Interaction</td>
+                    <td>✅ Full</td>
+                    <td>Fill forms, click buttons, handle dropdowns</td>
+                </tr>
+                <tr>
+                    <td>Dynamic Content</td>
+                    <td>✅ Full</td>
+                    <td>AJAX, React, Angular, Vue.js support</td>
+                </tr>
+                <tr>
+                    <td>Cookies & Sessions</td>
+                    <td>✅ Full</td>
+                    <td>Session management and cookie handling</td>
+                </tr>
+                <tr>
+                    <td>Screenshots</td>
+                    <td>✅ Full</td>
+                    <td>Capture page screenshots</td>
+                </tr>
+                <tr>
+                    <td>Wait Conditions</td>
+                    <td>✅ Full</td>
+                    <td>Explicit and implicit waits</td>
+                </tr>
+                <tr>
+                    <td>Anti-bot Detection</td>
+                    <td>✅ Basic</td>
+                    <td>User agent rotation, delays</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🛡️ Anti-Detection Features</h2>
+            <div class="warning">
+                <strong>Built-in Protections:</strong>
+                <ul>
+                    <li>Random user agent strings</li>
+                    <li>Realistic browser fingerprints</li>
+                    <li>Random delays between actions</li>
+                    <li>Headless mode for stealth</li>
+                    <li>Cookie and session management</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Testing Examples</h2>
+
+            <h3>Health Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8087/health | jq
+            </div>
+
+            <h3>Metrics Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8087/metrics | grep scraper
+            </div>
+
+            <h3>Web Scraping</h3>
+            <div class="code-block">
+import requests
+
+# Scrape a website
+response = requests.post(
+    "http://localhost:8080/ingest/ui-scraper",
+    json={
+        "source_config": {
+            "url": "https://example.com/data-page",
+            "selectors": {
+                "title": "h1.page-title",
+                "content": ".main-content",
+                "items": ".item-list .item"
+            },
+            "wait_conditions": {
+                "element": ".main-content",
+                "timeout": 10
+            },
+            "actions": [
+                {
+                    "type": "click",
+                    "selector": ".load-more-btn",
+                    "wait": 2
+                }
+            ]
+        },
+        "target_config": {
+            "database": "postgresql",
+            "table": "scraped_data"
+        }
+    }
+)
+
+result = response.json()
+print(f"Pages scraped: {result['pages_processed']}")
+print(f"Data extracted: {result['records_extracted']}")
+            </div>
+
+            <h3>Advanced Scraping</h3>
+            <div class="code-block">
+# Scrape with form interaction
+scraping_config = {
+    "url": "https://example.com/search",
+    "actions": [
+        {
+            "type": "input",
+            "selector": "#search-input",
+            "value": "search term"
+        },
+        {
+            "type": "click",
+            "selector": "#search-btn",
+            "wait": 3
+        },
+        {
+            "type": "wait_for_element",
+            "selector": ".results",
+            "timeout": 10
+        }
+    ],
+    "extract": {
+        "results": ".result-item",
+        "title": ".result-title",
+        "link": ".result-link"
+    }
+}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            <p><strong>Environment Variables:</strong></p>
+            <ul>
+                <li><code>DATABASE_URL</code> - PostgreSQL connection</li>
+                <li><code>RABBITMQ_HOST</code> - Message queue host</li>
+                <li><code>PORT=8087</code> - Service port</li>
+                <li><code>CHROMIUM_PATH=/usr/bin/chromium</code> - Browser path</li>
+                <li><code>HEADLESS=true</code> - Run in headless mode</li>
+                <li><code>USER_AGENT_ROTATION=true</code> - Rotate user agents</li>
+                <li><code>REQUEST_DELAY=2</code> - Delay between requests</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Browser Configuration</h2>
+            <div class="info">
+                <strong>Chrome Options:</strong>
+                <ul>
+                    <li><code>--headless</code> - Run without UI</li>
+                    <li><code>--no-sandbox</code> - Disable sandbox</li>
+                    <li><code>--disable-dev-shm-usage</code> - Memory optimization</li>
+                    <li><code>--disable-gpu</code> - Disable GPU acceleration</li>
+                    <li><code>--window-size=1920,1080</code> - Set window size</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

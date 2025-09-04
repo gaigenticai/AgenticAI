@@ -24,7 +24,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -59,6 +59,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for Excel service to avoid metric name conflicts
+EXCEL_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="Excel Ingestion Service",
@@ -66,12 +69,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-EXCEL_FILES_PROCESSED = Counter('excel_files_processed_total', 'Total Excel files processed', ['status'])
-EXCEL_RECORDS_PROCESSED = Counter('excel_records_processed_total', 'Total records processed')
-EXCEL_PROCESSING_TIME = Histogram('excel_processing_duration_seconds', 'Excel processing duration', ['operation'])
-EXCEL_VALIDATION_ERRORS = Counter('excel_validation_errors_total', 'Total validation errors', ['error_type'])
-ACTIVE_EXCEL_JOBS = Gauge('active_excel_jobs', 'Number of active Excel processing jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+EXCEL_FILES_PROCESSED = Counter('excel_files_processed_total', 'Total Excel files processed', ['status'], registry=EXCEL_REGISTRY)
+EXCEL_RECORDS_PROCESSED = Counter('excel_records_processed_total', 'Total records processed', registry=EXCEL_REGISTRY)
+EXCEL_PROCESSING_TIME = Histogram('excel_processing_duration_seconds', 'Excel processing duration', ['operation'], registry=EXCEL_REGISTRY)
+EXCEL_VALIDATION_ERRORS = Counter('excel_validation_errors_total', 'Total validation errors', ['error_type'], registry=EXCEL_REGISTRY)
+ACTIVE_EXCEL_JOBS = Gauge('active_excel_jobs', 'Number of active Excel processing jobs', registry=EXCEL_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -455,7 +458,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(EXCEL_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

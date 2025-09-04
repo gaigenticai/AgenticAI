@@ -33,6 +33,53 @@ volumes:
   # Caching volumes
   redis_cluster_data:
 
+  # Agent Brain volumes
+  agent_brain_data:
+  agent_configs:
+  agent_plugins:
+  agent_workflows:
+  agent_templates:
+  agent_rules:
+  agent_memory:
+  agent_builder_static:
+  agent_deployments:
+
+  # UI Testing volumes
+  ui_testing_screenshots:
+  ui_testing_videos:
+  ui_testing_reports:
+
+  # Integration Tests volumes
+  integration_test_reports:
+  integration_test_logs:
+  integration_test_artifacts:
+
+  # Authentication Service volumes
+  auth_service_logs:
+  auth_service_data:
+
+  # Audit Logging Service volumes
+  audit_service_logs:
+  audit_service_archives:
+
+  # Monitoring Metrics Service volumes
+  monitoring_service_logs:
+  monitoring_service_data:
+
+  # Grafana Dashboards Service volumes
+  grafana_dashboards_logs:
+  grafana_dashboards_data:
+  grafana_dashboards_templates:
+
+  # Error Handling Service volumes
+  error_handling_logs:
+  error_handling_data:
+
+  # End-to-End Testing Service volumes
+  e2e_testing_logs:
+  e2e_testing_data:
+  e2e_testing_screenshots:
+
 services:
   # === INPUT LAYER SERVICES ===
 
@@ -148,6 +195,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${CSV_INGESTION_PORT:-8080}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -169,6 +218,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${PDF_INGESTION_PORT:-8083}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -189,6 +240,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${EXCEL_INGESTION_PORT:-8084}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -209,6 +262,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${JSON_INGESTION_PORT:-8085}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -229,6 +284,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${API_INGESTION_PORT:-8086}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -249,6 +306,8 @@ services:
       - CACHE_HOST=redis_ingestion
     volumes:
       - ingestion_data:/app/data
+    ports:
+      - "${UI_SCRAPER_PORT:-8087}:8080"
     networks:
       - agentic-network
     restart: unless-stopped
@@ -899,6 +958,611 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # === AGENTIC BRAIN PLATFORM ===
+
+  # Agent Orchestrator - Core agent management and task routing
+  agent-orchestrator:
+    build: ./services/agent-orchestrator
+    container_name: agentic-agent-orchestrator
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis_ingestion:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=agentic_user
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - REDIS_HOST=redis_ingestion
+      - REDIS_PORT=6379
+      - BRAIN_FACTORY_HOST=brain-factory
+      - BRAIN_FACTORY_PORT=8301
+      - DEPLOYMENT_PIPELINE_HOST=deployment-pipeline
+      - DEPLOYMENT_PIPELINE_PORT=8303
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - AGENT_ORCHESTRATOR_PORT=${AGENT_ORCHESTRATOR_PORT:-8200}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+    ports:
+      - "${AGENT_ORCHESTRATOR_PORT:-8200}:8200"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Plugin Registry - Domain and generic plugin management
+  plugin-registry:
+    build: ./services/plugin-registry
+    container_name: agentic-plugin-registry
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      redis_ingestion:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - REDIS_HOST=redis_ingestion
+      - REDIS_PORT=6379
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - PLUGIN_REGISTRY_PORT=${PLUGIN_REGISTRY_PORT:-8201}
+    volumes:
+      - agent_plugins:/app/plugins
+      - agent_brain_data:/app/data
+    ports:
+      - "${PLUGIN_REGISTRY_PORT:-8201}:8201"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8201/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Workflow Engine - Agent workflow processing and orchestration
+  workflow-engine:
+    build: ./services/workflow-engine
+    container_name: agentic-workflow-engine
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      plugin-registry:
+        condition: service_healthy
+      rule-engine:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=agentic_user
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - PLUGIN_REGISTRY_HOST=plugin-registry
+      - PLUGIN_REGISTRY_PORT=8201
+      - RULE_ENGINE_HOST=rule-engine
+      - RULE_ENGINE_PORT=8204
+      - MEMORY_MANAGER_HOST=memory-manager
+      - MEMORY_MANAGER_PORT=8205
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - WORKFLOW_ENGINE_PORT=${WORKFLOW_ENGINE_PORT:-8202}
+    volumes:
+      - agent_workflows:/app/workflows
+      - agent_brain_data:/app/data
+    ports:
+      - "${WORKFLOW_ENGINE_PORT:-8202}:8202"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8202/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Template Store - Prebuilt agent templates management
+  template-store:
+    build: ./services/template-store
+    container_name: agentic-template-store
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      redis_ingestion:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - REDIS_HOST=redis_ingestion
+      - REDIS_PORT=6379
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - TEMPLATE_STORE_PORT=${TEMPLATE_STORE_PORT:-8203}
+    volumes:
+      - agent_templates:/app/templates
+      - agent_brain_data:/app/data
+    ports:
+      - "${TEMPLATE_STORE_PORT:-8203}:8203"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8203/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Rule Engine - Business rule processing and decision logic
+  rule-engine:
+    build: ./services/rule-engine
+    container_name: agentic-rule-engine
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      redis_ingestion:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - REDIS_HOST=redis_ingestion
+      - REDIS_PORT=6379
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - RULE_ENGINE_PORT=${RULE_ENGINE_PORT:-8204}
+    volumes:
+      - agent_rules:/app/rules
+      - agent_brain_data:/app/data
+    ports:
+      - "${RULE_ENGINE_PORT:-8204}:8204"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8204/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Memory Manager - Agent memory management (working, episodic, long-term)
+  memory-manager:
+    build: ./services/memory-manager
+    container_name: agentic-memory-manager
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      redis_ingestion:
+        condition: service_healthy
+      qdrant_vector:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - REDIS_HOST=redis_ingestion
+      - REDIS_PORT=6379
+      - VECTOR_DB_HOST=qdrant_vector
+      - VECTOR_DB_PORT=6333
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - MEMORY_MANAGER_PORT=${MEMORY_MANAGER_PORT:-8205}
+    volumes:
+      - agent_memory:/app/memory
+      - agent_brain_data:/app/data
+    ports:
+      - "${MEMORY_MANAGER_PORT:-8205}:8205"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8205/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Agent Builder UI - No-code visual agent creation interface
+  agent-builder-ui:
+    build: ./services/agent-builder-ui
+    container_name: agentic-agent-builder-ui
+    depends_on:
+      template-store:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+      ui-to-brain-mapper:
+        condition: service_healthy
+    environment:
+      - TEMPLATE_STORE_HOST=template-store
+      - TEMPLATE_STORE_PORT=8203
+      - BRAIN_FACTORY_HOST=brain-factory
+      - BRAIN_FACTORY_PORT=8301
+      - UI_TO_BRAIN_MAPPER_HOST=ui-to-brain-mapper
+      - UI_TO_BRAIN_MAPPER_PORT=8302
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - AGENT_BUILDER_UI_PORT=${AGENT_BUILDER_UI_PORT:-8300}
+    volumes:
+      - agent_builder_static:/app/static
+      - agent_brain_data:/app/data
+    ports:
+      - "${AGENT_BUILDER_UI_PORT:-8300}:8300"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8300/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # UI-to-Brain Mapper - Converts visual workflows to agent configurations
+  ui-to-brain-mapper:
+    build: ./services/ui-to-brain-mapper
+    container_name: agentic-ui-to-brain-mapper
+    depends_on:
+      plugin-registry:
+        condition: service_healthy
+      workflow-engine:
+        condition: service_healthy
+      rule-engine:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+      template-store:
+        condition: service_healthy
+    environment:
+      - PLUGIN_REGISTRY_HOST=plugin-registry
+      - PLUGIN_REGISTRY_PORT=8201
+      - WORKFLOW_ENGINE_HOST=workflow-engine
+      - WORKFLOW_ENGINE_PORT=8202
+      - RULE_ENGINE_HOST=rule-engine
+      - RULE_ENGINE_PORT=8204
+      - MEMORY_MANAGER_HOST=memory-manager
+      - MEMORY_MANAGER_PORT=8205
+      - TEMPLATE_STORE_HOST=template-store
+      - TEMPLATE_STORE_PORT=8203
+      - BRAIN_FACTORY_HOST=brain-factory
+      - BRAIN_FACTORY_PORT=8301
+      - AGENT_ORCHESTRATOR_HOST=agent-orchestrator
+      - AGENT_ORCHESTRATOR_PORT=8200
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - UI_TO_BRAIN_MAPPER_PORT=${UI_TO_BRAIN_MAPPER_PORT:-8302}
+      # LLM Configuration
+      - DEFAULT_LLM_MODEL=${DEFAULT_LLM_MODEL:-gpt-4}
+      - DEFAULT_LLM_TEMPERATURE=${DEFAULT_LLM_TEMPERATURE:-0.7}
+      - DEFAULT_MEMORY_TTL=${DEFAULT_MEMORY_TTL:-3600}
+      - DEFAULT_MEMORY_DIMENSIONS=${DEFAULT_MEMORY_DIMENSIONS:-384}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+      - agent_workflows:/app/workflows
+    ports:
+      - "${UI_TO_BRAIN_MAPPER_PORT:-8302}:8302"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8302/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Reasoning Module Factory - AI reasoning pattern implementations
+  reasoning-module-factory:
+    build: ./services/reasoning-module-factory
+    container_name: agentic-reasoning-module-factory
+    depends_on:
+      llm-processor:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+      plugin-registry:
+        condition: service_healthy
+      rule-engine:
+        condition: service_healthy
+    environment:
+      - LLM_PROCESSOR_PORT=8005
+      - MEMORY_MANAGER_PORT=8205
+      - PLUGIN_REGISTRY_PORT=8201
+      - RULE_ENGINE_PORT=8204
+      - SERVICE_HOST=localhost
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - REASONING_MODULE_FACTORY_PORT=${REASONING_MODULE_FACTORY_PORT:-8304}
+      # LLM Configuration
+      - DEFAULT_LLM_MODEL=${DEFAULT_LLM_MODEL:-gpt-4}
+      - DEFAULT_LLM_TEMPERATURE=${DEFAULT_LLM_TEMPERATURE:-0.7}
+      - MAX_TOKENS=${MAX_TOKENS:-4096}
+      # Pattern-specific Configuration
+      - REACT_MAX_STEPS=${REACT_MAX_STEPS:-10}
+      - REFLECTION_MAX_ITERATIONS=${REFLECTION_MAX_ITERATIONS:-5}
+      - PLANNING_MAX_DEPTH=${PLANNING_MAX_DEPTH:-5}
+      - MULTI_AGENT_MAX_AGENTS=${MULTI_AGENT_MAX_AGENTS:-5}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+    ports:
+      - "${REASONING_MODULE_FACTORY_PORT:-8304}:8304"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8304/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Agent Brain Base Class - Core agent execution framework
+  agent-brain-base:
+    build: ./services/agent-brain-base
+    container_name: agentic-agent-brain-base
+    depends_on:
+      reasoning-module-factory:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+      plugin-registry:
+        condition: service_healthy
+      rule-engine:
+        condition: service_healthy
+    environment:
+      - REASONING_MODULE_FACTORY_PORT=8304
+      - MEMORY_MANAGER_PORT=8205
+      - PLUGIN_REGISTRY_PORT=8201
+      - RULE_ENGINE_PORT=8204
+      - SERVICE_HOST=localhost
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - AGENT_BRAIN_BASE_PORT=${AGENT_BRAIN_BASE_PORT:-8305}
+      # Execution Configuration
+      - DEFAULT_EXECUTION_TIMEOUT=${DEFAULT_EXECUTION_TIMEOUT:-300}
+      - MAX_CONCURRENT_TASKS=${MAX_CONCURRENT_TASKS:-10}
+      - MEMORY_TTL_SECONDS=${MEMORY_TTL_SECONDS:-3600}
+      # Performance Monitoring
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_RETENTION_HOURS=${METRICS_RETENTION_HOURS:-24}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+      - agent_workflows:/app/workflows
+    ports:
+      - "${AGENT_BRAIN_BASE_PORT:-8305}:8305"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8305/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Service Connector Factory - Data service connection management
+  service-connector-factory:
+    build: ./services/service-connector-factory
+    container_name: agentic-service-connector-factory
+    depends_on:
+      csv-ingestion-service:
+        condition: service_healthy
+      api-ingestion-service:
+        condition: service_healthy
+      pdf-ingestion-service:
+        condition: service_healthy
+      postgresql-output:
+        condition: service_healthy
+      qdrant-vector:
+        condition: service_healthy
+      elasticsearch-output:
+        condition: service_healthy
+    environment:
+      - CSV_INGESTION_PORT=8001
+      - API_INGESTION_PORT=8002
+      - PDF_INGESTION_PORT=8003
+      - POSTGRES_OUTPUT_PORT=8004
+      - QDRANT_VECTOR_PORT=6333
+      - ELASTICSEARCH_PORT=9200
+      - MINIO_PORT=9000
+      - RABBITMQ_PORT=5672
+      - SERVICE_HOST=localhost
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - SERVICE_CONNECTOR_FACTORY_PORT=${SERVICE_CONNECTOR_FACTORY_PORT:-8306}
+      # Connection Pool Settings
+      - MAX_CONNECTIONS_PER_SERVICE=${MAX_CONNECTIONS_PER_SERVICE:-10}
+      - CONNECTION_TIMEOUT=${CONNECTION_TIMEOUT:-30}
+      - CONNECTION_RETRY_ATTEMPTS=${CONNECTION_RETRY_ATTEMPTS:-3}
+      - CONNECTION_RETRY_DELAY=${CONNECTION_RETRY_DELAY:-1.0}
+      # Health Monitoring
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-30}
+      - SERVICE_TIMEOUT_THRESHOLD=${SERVICE_TIMEOUT_THRESHOLD:-60}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+    ports:
+      - "${SERVICE_CONNECTOR_FACTORY_PORT:-8306}:8306"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8306/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Deployment Pipeline Service - Deployment orchestration and monitoring
+  deployment-pipeline:
+    build: ./services/deployment-pipeline
+    container_name: agentic-deployment-pipeline
+    depends_on:
+      brain-factory:
+        condition: service_healthy
+      agent-orchestrator:
+        condition: service_healthy
+      agent-brain-base:
+        condition: service_healthy
+      service-connector-factory:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+      plugin-registry:
+        condition: service_healthy
+    environment:
+      - BRAIN_FACTORY_PORT=8301
+      - AGENT_ORCHESTRATOR_PORT=8200
+      - AGENT_BRAIN_BASE_PORT=8305
+      - SERVICE_CONNECTOR_FACTORY_PORT=8306
+      - MEMORY_MANAGER_PORT=8205
+      - PLUGIN_REGISTRY_PORT=8201
+      - SERVICE_HOST=localhost
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - DEPLOYMENT_PIPELINE_PORT=${DEPLOYMENT_PIPELINE_PORT:-8303}
+      # Deployment Settings
+      - MAX_CONCURRENT_DEPLOYMENTS=${MAX_CONCURRENT_DEPLOYMENTS:-3}
+      - DEPLOYMENT_TIMEOUT=${DEPLOYMENT_TIMEOUT:-600}
+      - ROLLBACK_TIMEOUT=${ROLLBACK_TIMEOUT:-300}
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-30}
+      # Testing Configuration
+      - TEST_EXECUTION_TIMEOUT=${TEST_EXECUTION_TIMEOUT:-120}
+      - PERFORMANCE_TEST_DURATION=${PERFORMANCE_TEST_DURATION:-60}
+      - LOAD_TEST_CONCURRENT_USERS=${LOAD_TEST_CONCURRENT_USERS:-10}
+      # Performance Monitoring
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_RETENTION_HOURS=${METRICS_RETENTION_HOURS:-24}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+      - agent_deployments:/app/deployments
+    ports:
+      - "${DEPLOYMENT_PIPELINE_PORT:-8303}:8303"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8303/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Brain Factory - Agent instantiation from configurations
+  brain-factory:
+    build: ./services/brain-factory
+    container_name: agentic-brain-factory
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      plugin-registry:
+        condition: service_healthy
+      workflow-engine:
+        condition: service_healthy
+      memory-manager:
+        condition: service_healthy
+      ui-to-brain-mapper:
+        condition: service_healthy
+      reasoning-module-factory:
+        condition: service_healthy
+      agent-brain-base:
+        condition: service_healthy
+      service-connector-factory:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - PLUGIN_REGISTRY_HOST=plugin-registry
+      - PLUGIN_REGISTRY_PORT=8201
+      - WORKFLOW_ENGINE_HOST=workflow-engine
+      - WORKFLOW_ENGINE_PORT=8202
+      - MEMORY_MANAGER_HOST=memory-manager
+      - MEMORY_MANAGER_PORT=8205
+      - AGENT_ORCHESTRATOR_HOST=agent-orchestrator
+      - AGENT_ORCHESTRATOR_PORT=8200
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - BRAIN_FACTORY_PORT=${BRAIN_FACTORY_PORT:-8301}
+      # LLM Configuration
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEFAULT_LLM_MODEL=${DEFAULT_LLM_MODEL:-gpt-4}
+      - DEFAULT_LLM_TEMPERATURE=${DEFAULT_LLM_TEMPERATURE:-0.7}
+    volumes:
+      - agent_brain_data:/app/data
+      - agent_configs:/app/configs
+    ports:
+      - "${BRAIN_FACTORY_PORT:-8301}:8301"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8301/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Deployment Pipeline - Agent validation, testing, and deployment
+  deployment-pipeline:
+    build: ./services/deployment-pipeline
+    container_name: agentic-deployment-pipeline
+    depends_on:
+      postgresql_ingestion:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+      agent-orchestrator:
+        condition: service_healthy
+      workflow-engine:
+        condition: service_healthy
+    environment:
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - BRAIN_FACTORY_HOST=brain-factory
+      - BRAIN_FACTORY_PORT=8301
+      - AGENT_ORCHESTRATOR_HOST=agent-orchestrator
+      - AGENT_ORCHESTRATOR_PORT=8200
+      - WORKFLOW_ENGINE_HOST=workflow-engine
+      - WORKFLOW_ENGINE_PORT=8202
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - DEPLOYMENT_PIPELINE_PORT=${DEPLOYMENT_PIPELINE_PORT:-8303}
+    volumes:
+      - agent_deployments:/app/deployments
+      - agent_brain_data:/app/data
+    ports:
+      - "${DEPLOYMENT_PIPELINE_PORT:-8303}:8303"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8303/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
   # === MONITORING & OBSERVABILITY ===
 
   # Prometheus Monitoring
@@ -1049,6 +1713,452 @@ services:
     profiles:
       - dev
     restart: "no"
+
+  # UI Testing Service - Comprehensive automated UI testing
+  ui-testing-service:
+    build: ./services/ui-testing-service
+    container_name: agentic-ui-testing-service
+    depends_on:
+      agent-builder-ui:
+        condition: service_healthy
+      agent-orchestrator:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+    environment:
+      - UI_TESTING_PORT=${UI_TESTING_PORT:-8310}
+      - AGENT_BUILDER_UI_HOST=agent-builder-ui
+      - AGENT_BUILDER_UI_PORT=${AGENT_BUILDER_UI_PORT:-8300}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - DEFAULT_BROWSER=${DEFAULT_BROWSER:-chrome}
+      - HEADLESS_MODE=${HEADLESS_MODE:-true}
+      - TEST_TIMEOUT=${TEST_TIMEOUT:-30}
+      - SCREENSHOT_ON_FAILURE=${SCREENSHOT_ON_FAILURE:-true}
+      - PAGE_LOAD_THRESHOLD_MS=${PAGE_LOAD_THRESHOLD_MS:-3000}
+      - INTERACTION_RESPONSE_THRESHOLD_MS=${INTERACTION_RESPONSE_THRESHOLD_MS:-1000}
+      - MEMORY_USAGE_THRESHOLD_MB=${MEMORY_USAGE_THRESHOLD_MB:-500}
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_PORT=${METRICS_PORT:-8001}
+    volumes:
+      - ui_testing_screenshots:/app/screenshots
+      - ui_testing_videos:/app/test_videos
+      - ui_testing_reports:/app/test_reports
+    ports:
+      - "${UI_TESTING_PORT:-8310}:8310"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8310/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    profiles:
+      - testing
+
+  # Integration Tests Service - Comprehensive end-to-end testing
+  integration-tests:
+    build: ./services/integration-tests
+    container_name: agentic-integration-tests
+    depends_on:
+      agent-orchestrator:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+      template-store:
+        condition: service_healthy
+      deployment-pipeline:
+        condition: service_healthy
+      ui-testing-service:
+        condition: service_healthy
+    environment:
+      - INTEGRATION_TESTS_PORT=${INTEGRATION_TESTS_PORT:-8320}
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - PLUGIN_REGISTRY_URL=http://plugin-registry:8201
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8202
+      - TEMPLATE_STORE_URL=http://template-store:8203
+      - RULE_ENGINE_URL=http://rule-engine:8204
+      - MEMORY_MANAGER_URL=http://memory-manager:8205
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - UI_TO_BRAIN_MAPPER_URL=http://ui-to-brain-mapper:8302
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - REASONING_MODULE_FACTORY_URL=http://reasoning-module-factory:8304
+      - AGENT_BRAIN_BASE_URL=http://agent-brain-base:8305
+      - SERVICE_CONNECTOR_FACTORY_URL=http://service-connector-factory:8306
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - DEFAULT_TEST_TIMEOUT=${DEFAULT_TEST_TIMEOUT:-300}
+      - MAX_CONCURRENT_TESTS=${MAX_CONCURRENT_TESTS:-5}
+      - RETRY_FAILED_TESTS=${RETRY_FAILED_TESTS:-true}
+      - MAX_RETRIES=${MAX_RETRIES:-3}
+      - MAX_RESPONSE_TIME_MS=${MAX_RESPONSE_TIME_MS:-5000}
+      - MIN_SUCCESS_RATE=${MIN_SUCCESS_RATE:-0.95}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_PORT=${METRICS_PORT:-8002}
+    volumes:
+      - integration_test_reports:/app/test_reports
+      - integration_test_logs:/app/test_logs
+      - integration_test_artifacts:/app/test_artifacts
+    ports:
+      - "${INTEGRATION_TESTS_PORT:-8320}:8320"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8320/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    profiles:
+      - testing
+
+  # Authentication Service - Comprehensive user authentication and authorization
+  authentication-service:
+    build: ./services/authentication-service
+    container_name: agentic-authentication-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT:-8330}
+      - AUTH_SERVICE_HOST=0.0.0.0
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-in-production}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      - PASSWORD_MIN_LENGTH=${PASSWORD_MIN_LENGTH:-8}
+      - PASSWORD_REQUIRE_UPPERCASE=${PASSWORD_REQUIRE_UPPERCASE:-true}
+      - PASSWORD_REQUIRE_LOWERCASE=${PASSWORD_REQUIRE_LOWERCASE:-true}
+      - PASSWORD_REQUIRE_DIGITS=${PASSWORD_REQUIRE_DIGITS:-true}
+      - PASSWORD_REQUIRE_SPECIAL=${PASSWORD_REQUIRE_SPECIAL:-false}
+      - SESSION_TIMEOUT_MINUTES=${SESSION_TIMEOUT_MINUTES:-60}
+      - MAX_LOGIN_ATTEMPTS=${MAX_LOGIN_ATTEMPTS:-5}
+      - ACCOUNT_LOCK_DURATION_MINUTES=${ACCOUNT_LOCK_DURATION_MINUTES:-30}
+      - MFA_ISSUER_NAME=${MFA_ISSUER_NAME:-Agentic Brain}
+      - OAUTH2_ENABLED=${OAUTH2_ENABLED:-false}
+      - OAUTH2_GOOGLE_CLIENT_ID=${OAUTH2_GOOGLE_CLIENT_ID:-}
+      - OAUTH2_GOOGLE_CLIENT_SECRET=${OAUTH2_GOOGLE_CLIENT_SECRET:-}
+      - OAUTH2_GITHUB_CLIENT_ID=${OAUTH2_GITHUB_CLIENT_ID:-}
+      - OAUTH2_GITHUB_CLIENT_SECRET=${OAUTH2_GITHUB_CLIENT_SECRET:-}
+      - SMTP_SERVER=${SMTP_SERVER:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAIL_FROM=${EMAIL_FROM:-noreply@agenticbrain.com}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-your-32-byte-encryption-key}
+      - SECURITY_HEADERS_ENABLED=${SECURITY_HEADERS_ENABLED:-true}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8300,http://localhost:3000}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_PORT=${METRICS_PORT:-8003}
+    volumes:
+      - auth_service_logs:/app/logs
+      - auth_service_data:/app/data
+    ports:
+      - "${AUTH_SERVICE_PORT:-8330}:8330"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8330/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Audit Logging Service - Comprehensive audit logging and compliance monitoring
+  audit-logging-service:
+    build: ./services/audit-logging-service
+    container_name: agentic-audit-logging-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - AUDIT_SERVICE_PORT=${AUDIT_SERVICE_PORT:-8340}
+      - AUDIT_SERVICE_HOST=0.0.0.0
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - ELASTICSEARCH_ENABLED=${ELASTICSEARCH_ENABLED:-false}
+      - ELASTICSEARCH_HOST=${ELASTICSEARCH_HOST:-elasticsearch}
+      - ELASTICSEARCH_PORT=${ELASTICSEARCH_PORT:-9200}
+      - ELASTICSEARCH_INDEX=${ELASTICSEARCH_INDEX:-audit_events}
+      - MAX_EVENTS_PER_REQUEST=${MAX_EVENTS_PER_REQUEST:-100}
+      - AUDIT_QUEUE_SIZE=${AUDIT_QUEUE_SIZE:-10000}
+      - BATCH_SIZE=${BATCH_SIZE:-50}
+      - DEFAULT_RETENTION_DAYS=${DEFAULT_RETENTION_DAYS:-365}
+      - ARCHIVE_AFTER_DAYS=${ARCHIVE_AFTER_DAYS:-90}
+      - DELETE_AFTER_DAYS=${DELETE_AFTER_DAYS:-2555}
+      - GDPR_ENABLED=${GDPR_ENABLED:-true}
+      - SOX_ENABLED=${SOX_ENABLED:-true}
+      - HIPAA_ENABLED=${HIPAA_ENABLED:-false}
+      - PCI_ENABLED=${PCI_ENABLED:-false}
+      - ALERT_ENABLED=${ALERT_ENABLED:-true}
+      - ALERT_EMAIL_ENABLED=${ALERT_EMAIL_ENABLED:-false}
+      - ALERT_WEBHOOK_ENABLED=${ALERT_WEBHOOK_ENABLED:-false}
+      - SMTP_SERVER=${SMTP_SERVER:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAIL_FROM=${EMAIL_FROM:-audit@agenticbrain.com}
+      - API_KEY_REQUIRED=${API_KEY_REQUIRED:-true}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - MAX_REQUESTS_PER_MINUTE=${MAX_REQUESTS_PER_MINUTE:-1000}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_PORT=${METRICS_PORT:-8004}
+    volumes:
+      - audit_service_logs:/app/logs
+      - audit_service_archives:/app/archives
+    ports:
+      - "${AUDIT_SERVICE_PORT:-8340}:8340"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8340/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Monitoring Metrics Service - Comprehensive monitoring and metrics collection
+  monitoring-metrics-service:
+    build: ./services/monitoring-metrics-service
+    container_name: agentic-monitoring-metrics-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - METRICS_SERVICE_PORT=${METRICS_SERVICE_PORT:-8350}
+      - METRICS_SERVICE_HOST=0.0.0.0
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - PLUGIN_REGISTRY_URL=http://plugin-registry:8201
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8202
+      - TEMPLATE_STORE_URL=http://template-store:8203
+      - RULE_ENGINE_URL=http://rule-engine:8204
+      - MEMORY_MANAGER_URL=http://memory-manager:8205
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - UI_TO_BRAIN_MAPPER_URL=http://ui-to-brain-mapper:8302
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - REASONING_MODULE_FACTORY_URL=http://reasoning-module-factory:8304
+      - AGENT_BRAIN_BASE_URL=http://agent-brain-base:8305
+      - SERVICE_CONNECTOR_FACTORY_URL=http://service-connector-factory:8306
+      - AUTHENTICATION_SERVICE_URL=http://authentication-service:8330
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - INTEGRATION_TESTS_URL=http://integration-tests:8320
+      - COLLECTION_INTERVAL_SECONDS=${COLLECTION_INTERVAL_SECONDS:-30}
+      - METRICS_RETENTION_DAYS=${METRICS_RETENTION_DAYS:-90}
+      - ENABLE_HISTORICAL_STORAGE=${ENABLE_HISTORICAL_STORAGE:-true}
+      - ALERT_ENABLED=${ALERT_ENABLED:-true}
+      - ALERT_EMAIL_ENABLED=${ALERT_EMAIL_ENABLED:-false}
+      - ALERT_WEBHOOK_ENABLED=${ALERT_WEBHOOK_ENABLED:-false}
+      - SMTP_SERVER=${SMTP_SERVER:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - EMAIL_FROM=${EMAIL_FROM:-audit@agenticbrain.com}
+      - ENABLE_PERFORMANCE_BASELINES=${ENABLE_PERFORMANCE_BASELINES:-true}
+      - BASELINE_CALCULATION_DAYS=${BASELINE_CALCULATION_DAYS:-30}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_PORT=${METRICS_PORT:-8005}
+    volumes:
+      - monitoring_service_logs:/app/logs
+      - monitoring_service_data:/app/data
+    ports:
+      - "${METRICS_SERVICE_PORT:-8350}:8350"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8350/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Grafana Dashboards Service - Visual monitoring and analytics dashboards
+  grafana-dashboards-service:
+    build: ./services/grafana-dashboards-service
+    container_name: agentic-grafana-dashboards-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - GRAFANA_DASHBOARDS_PORT=${GRAFANA_DASHBOARDS_PORT:-8360}
+      - GRAFANA_DASHBOARDS_HOST=0.0.0.0
+      - GRAFANA_URL=${GRAFANA_URL:-http://grafana:3000}
+      - GRAFANA_API_KEY=${GRAFANA_API_KEY:-}
+      - GRAFANA_USERNAME=${GRAFANA_USERNAME:-admin}
+      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - METRICS_SERVICE_URL=http://monitoring-metrics-service:8350
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - PLUGIN_REGISTRY_URL=http://plugin-registry:8201
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8202
+      - TEMPLATE_STORE_URL=http://template-store:8203
+      - RULE_ENGINE_URL=http://rule-engine:8204
+      - MEMORY_MANAGER_URL=http://memory-manager:8205
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303}
+      - AUTHENTICATION_SERVICE_URL=http://authentication-service:8330
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - INTEGRATION_TESTS_URL=http://integration-tests:8320
+      - DASHBOARD_REFRESH_INTERVAL=${DASHBOARD_REFRESH_INTERVAL:-30}
+      - ENABLE_AUTO_PROVISIONING=${ENABLE_AUTO_PROVISIONING:-true}
+      - DASHBOARD_RETENTION_DAYS=${DASHBOARD_RETENTION_DAYS:-90}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - grafana_dashboards_logs:/app/logs
+      - grafana_dashboards_data:/app/data
+      - grafana_dashboards_templates:/app/templates
+    ports:
+      - "${GRAFANA_DASHBOARDS_PORT:-8360}:8360"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8360/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Error Handling Service - Comprehensive error management and recovery
+  error-handling-service:
+    build: ./services/error-handling-service
+    container_name: agentic-error-handling-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - ERROR_HANDLING_PORT=${ERROR_HANDLING_PORT:-8370}
+      - ERROR_HANDLING_HOST=0.0.0.0
+      - ENABLE_AUTO_RECOVERY=${ENABLE_AUTO_RECOVERY:-true}
+      - ERROR_RETENTION_DAYS=${ERROR_RETENTION_DAYS:-90}
+      - MAX_RECOVERY_ATTEMPTS=${MAX_RECOVERY_ATTEMPTS:-3}
+      - RECOVERY_TIMEOUT_SECONDS=${RECOVERY_TIMEOUT_SECONDS:-300}
+      - ENABLE_ERROR_ALERTS=${ENABLE_ERROR_ALERTS:-true}
+      - CRITICAL_ERROR_THRESHOLD=${CRITICAL_ERROR_THRESHOLD:-10}
+      - ERROR_RATE_ALERT_THRESHOLD=${ERROR_RATE_ALERT_THRESHOLD:-0.1}
+      - MONITORING_SERVICE_URL=http://monitoring-metrics-service:8350
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - PLUGIN_REGISTRY_URL=http://plugin-registry:8201
+      - WORKFLOW_ENGINE_URL=http://workflow-engine:8202
+      - TEMPLATE_STORE_URL=http://template-store:8203
+      - RULE_ENGINE_URL=http://rule-engine:8204
+      - MEMORY_MANAGER_URL=http://memory-manager:8205
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - UI_TO_BRAIN_MAPPER_URL=http://ui-to-brain-mapper:8302
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - REASONING_MODULE_FACTORY_URL=http://reasoning-module-factory:8304
+      - AGENT_BRAIN_BASE_URL=http://agent-brain-base:8305
+      - SERVICE_CONNECTOR_FACTORY_URL=http://service-connector-factory:8306
+      - AUTHENTICATION_SERVICE_URL=http://authentication-service:8330
+      - INTEGRATION_TESTS_URL=http://integration-tests:8320
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - error_handling_logs:/app/logs
+      - error_handling_data:/app/data
+    ports:
+      - "${ERROR_HANDLING_PORT:-8370}:8370"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8370/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # End-to-End Testing Service - Comprehensive E2E testing and validation
+  end-to-end-testing-service:
+    build: ./services/end-to-end-testing-service
+    container_name: agentic-e2e-testing-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - E2E_TESTING_PORT=${E2E_TESTING_PORT:-8380}
+      - E2E_TESTING_HOST=0.0.0.0
+      - MAX_CONCURRENT_TESTS=${MAX_CONCURRENT_TESTS:-5}
+      - TEST_TIMEOUT_SECONDS=${TEST_TIMEOUT_SECONDS:-300}
+      - CLEANUP_AFTER_TEST=${CLEANUP_AFTER_TEST:-true}
+      - SELENIUM_HUB_URL=${SELENIUM_HUB_URL:-http://localhost:4444/wd/hub}
+      - UI_TEST_TIMEOUT=${UI_TEST_TIMEOUT:-60}
+      - BROWSER_HEADLESS=${BROWSER_HEADLESS:-true}
+      - LOAD_TEST_USERS=${LOAD_TEST_USERS:-10}
+      - LOAD_TEST_DURATION=${LOAD_TEST_DURATION:-60}
+      - LOAD_TEST_RAMP_UP=${LOAD_TEST_RAMP_UP:-10}
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - UI_TO_BRAIN_MAPPER_URL=http://ui-to-brain-mapper:8302
+      - MONITORING_SERVICE_URL=http://monitoring-metrics-service:8350
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - TEST_RESULTS_RETENTION_DAYS=${TEST_RESULTS_RETENTION_DAYS:-30}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - e2e_testing_logs:/app/logs
+      - e2e_testing_data:/app/test-data
+      - e2e_testing_screenshots:/app/screenshots
+    ports:
+      - "${E2E_TESTING_PORT:-8380}:8380"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8380/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
 
 configs:
   qdrant_config:

@@ -10,19 +10,17 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome for Selenium
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y \
-    google-chrome-stable \
+# Install Chrome for Selenium (using Chromium for ARM64 compatibility)
+RUN apt-get update && apt-get install -y \
+    chromium \
+    chromium-driver \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome WebDriver
-RUN wget -q https://chromedriver.storage.googleapis.com/114.0.5735.90/chromedriver_linux64.zip && \
-    unzip chromedriver_linux64.zip && \
-    mv chromedriver /usr/local/bin/ && \
-    chmod +x /usr/local/bin/chromedriver && \
-    rm chromedriver_linux64.zip
+# Chrome WebDriver is already installed with chromium-driver package
+# Set up symbolic link for chromedriver
+RUN ln -sf /usr/lib/bin/chromedriver /usr/local/bin/chromedriver || \
+    ln -sf /usr/bin/chromedriver /usr/local/bin/chromedriver || \
+    echo "ChromeDriver already available"
 
 # Set working directory
 WORKDIR /app
@@ -50,6 +48,8 @@ EXPOSE 8087
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV SELENIUM_USER_AGENT="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+ENV CHROMIUM_PATH=/usr/bin/chromium
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
 # Run the application
 CMD ["python", "ui_scraper_service.py"]

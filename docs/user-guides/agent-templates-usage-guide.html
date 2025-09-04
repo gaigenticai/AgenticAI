@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Templates Usage Guide - Agentic Brain Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .template-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .template-card:hover {
+            border-color: #e74c3c;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .template-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .template-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .template-title {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+
+        .template-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
+        .template-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .template-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .template-features li {
+            padding: 5px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .template-features li:before {
+            content: "✓";
+            color: #27ae60;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .step-number {
+            background: #e74c3c;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #ffeaa7;
+            border: 1px solid #d63031;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success-box {
+            background: #55efc4;
+            border: 1px solid #00b894;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background: #ffeaa7;
+            border: 1px solid #d63031;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #74b9ff;
+            border: 1px solid #0984e3;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: white;
+        }
+
+        .workflow-diagram {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #6c757d;
+            font-family: monospace;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .comparison-table .highlight {
+            background: #fff3cd;
+            font-weight: bold;
+        }
+
+        .template-params {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .param-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .param-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .param-type {
+            background: #6c757d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+
+        .param-description {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .customization-section {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 Agent Templates Usage Guide</h1>
+        <p>Accelerate development with pre-built, production-ready agent templates</p>
+    </div>
+
+    <div class="content-section">
+        <h2>🎯 What Are Agent Templates?</h2>
+        <p>Agent Templates are professionally designed, pre-configured agent workflows that solve common business problems. Each template includes:</p>
+        <ul>
+            <li><strong>✅ Pre-built Components:</strong> Ready-to-use workflow components</li>
+            <li><strong>✅ Optimized Configurations:</strong> Best-practice settings and parameters</li>
+            <li><strong>✅ Domain Expertise:</strong> Industry-specific logic and rules</li>
+            <li><strong>✅ Documentation:</strong> Complete usage guides and customization instructions</li>
+            <li><strong>✅ Test Data:</strong> Sample datasets for validation</li>
+            <li><strong>✅ Deployment Ready:</strong> Production-grade configurations</li>
+        </ul>
+
+        <div class="info-box">
+            <strong>🚀 Benefits of Using Templates:</strong>
+            <ul>
+                <li>Reduce development time by 80%</li>
+                <li>Ensure best practices implementation</li>
+                <li>Accelerate time-to-production</li>
+                <li>Learn from proven architectures</li>
+                <li>Standardize common business processes</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🗂️ Available Agent Templates</h2>
+        <p>Explore our comprehensive library of production-ready agent templates, organized by business domain and use case.</p>
+
+        <div class="template-grid">
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">🏦</div>
+                    <h3 class="template-title">Underwriting Agent</h3>
+                    <span class="template-badge">Insurance</span>
+                </div>
+                <p class="template-description">Comprehensive underwriting agent with risk assessment, compliance checking, and automated decision making.</p>
+                <ul class="template-features">
+                    <li>Risk score calculation</li>
+                    <li>Regulatory compliance verification</li>
+                    <li>Automated policy approval workflow</li>
+                    <li>Fraud detection integration</li>
+                    <li>Real-time market data analysis</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">📋</div>
+                    <h3 class="template-title">Claims Processor</h3>
+                    <span class="template-badge">Insurance</span>
+                </div>
+                <p class="template-description">Intelligent claims processing with fraud detection, document analysis, and automated adjudication.</p>
+                <ul class="template-features">
+                    <li>Automated claim validation</li>
+                    <li>Fraud pattern detection</li>
+                    <li>Document verification</li>
+                    <li>Payment calculation</li>
+                    <li>Regulatory reporting</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">🎯</div>
+                    <h3 class="template-title">Fraud Detection Agent</h3>
+                    <span class="template-badge">Security</span>
+                </div>
+                <p class="template-description">Advanced fraud detection using machine learning, pattern recognition, and real-time monitoring.</p>
+                <ul class="template-features">
+                    <li>Behavioral pattern analysis</li>
+                    <li>Real-time transaction monitoring</li>
+                    <li>Risk scoring algorithms</li>
+                    <li>Automated alerts and notifications</li>
+                    <li>Regulatory compliance reporting</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">👥</div>
+                    <h3 class="template-title">Customer Service Agent</h3>
+                    <span class="template-badge">Customer Care</span>
+                </div>
+                <p class="template-description">Intelligent customer service automation with sentiment analysis, query routing, and personalized responses.</p>
+                <ul class="template-features">
+                    <li>Multi-channel support</li>
+                    <li>Sentiment analysis</li>
+                    <li>Automated query routing</li>
+                    <li>Personalized responses</li>
+                    <li>Performance analytics</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">📊</div>
+                    <h3 class="template-title">Data Analytics Agent</h3>
+                    <span class="template-badge">Analytics</span>
+                </div>
+                <p class="template-description">Automated data analysis and reporting with visualization, trend detection, and predictive insights.</p>
+                <ul class="template-features">
+                    <li>Automated report generation</li>
+                    <li>Data visualization</li>
+                    <li>Trend analysis and forecasting</li>
+                    <li>Custom dashboard creation</li>
+                    <li>Real-time data processing</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">📄</div>
+                    <h3 class="template-title">Document Processor</h3>
+                    <span class="template-badge">Document Mgmt</span>
+                </div>
+                <p class="template-description">AI-powered document processing with OCR, content extraction, classification, and automated workflows.</p>
+                <ul class="template-features">
+                    <li>OCR and text extraction</li>
+                    <li>Document classification</li>
+                    <li>Content analysis and tagging</li>
+                    <li>Automated data entry</li>
+                    <li>Compliance verification</li>
+                </ul>
+            </div>
+
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-icon">⚙️</div>
+                    <h3 class="template-title">Workflow Automation</h3>
+                    <span class="template-badge">Operations</span>
+                </div>
+                <p class="template-description">End-to-end business process automation with approval workflows, notifications, and integration capabilities.</p>
+                <ul class="template-features">
+                    <li>Approval workflow management</li>
+                    <li>Automated notifications</li>
+                    <li>Multi-system integration</li>
+                    <li>Progress tracking and reporting</li>
+                    <li>Exception handling</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🚀 How to Use Agent Templates</h2>
+        <p>Get started with templates in just a few simple steps.</p>
+
+        <div class="step-container">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Access Template Library</h4>
+                <p>Open the Agent Builder interface and click on the "Templates" tab in the component palette. Browse through available templates by category or search by keyword.</p>
+                <div class="info-box">
+                    <strong>🔍 Template Discovery:</strong> Use filters to find templates by business domain, complexity level, or required integrations.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Select and Instantiate Template</h4>
+                <p>Click on any template to view its detailed description, components, and configuration options. Click "Use Template" to add it to your canvas.</p>
+                <div class="success-box">
+                    <strong>⚡ Instant Deployment:</strong> Templates are immediately ready to run with sensible defaults. No additional configuration required for basic use cases.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Customize Template Parameters</h4>
+                <p>Review and adjust the template's configuration parameters to match your specific requirements and data sources.</p>
+                <div class="warning-box">
+                    <strong>⚠️ Configuration Priority:</strong> Always review data source connections, API endpoints, and business rules before deploying to production.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h4>Test and Validate</h4>
+                <p>Run the template with sample data to ensure it works correctly with your specific data formats and business rules.</p>
+                <div class="highlight-box">
+                    <strong>🧪 Validation Checklist:</strong>
+                    <ul>
+                        <li>Data connections are working</li>
+                        <li>Business rules are applied correctly</li>
+                        <li>Output formats match expectations</li>
+                        <li>Error handling works as expected</li>
+                        <li>Performance meets requirements</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h4>Deploy to Production</h4>
+                <p>Once validated, deploy your customized template to the production environment using the deployment pipeline.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔧 Template Customization Guide</h2>
+        <p>Learn how to customize templates to fit your specific business requirements.</p>
+
+        <h3>Underwriting Agent Template Parameters</h3>
+        <div class="template-params">
+            <div class="param-item">
+                <div>
+                    <span class="param-name">Risk Threshold</span>
+                    <span class="param-type">Number</span>
+                    <div class="param-description">Minimum risk score for automatic approval (0.0 - 1.0)</div>
+                </div>
+                <strong>Default: 0.7</strong>
+            </div>
+            <div class="param-item">
+                <div>
+                    <span class="param-name">Data Source</span>
+                    <span class="param-type">String</span>
+                    <div class="param-description">Path to CSV file containing policy applications</div>
+                </div>
+                <strong>Default: /data/policies.csv</strong>
+            </div>
+            <div class="param-item">
+                <div>
+                    <span class="param-name">LLM Model</span>
+                    <span class="param-type">Dropdown</span>
+                    <div class="param-description">Language model for risk assessment analysis</div>
+                </div>
+                <strong>Default: GPT-4</strong>
+            </div>
+            <div class="param-item">
+                <div>
+                    <span class="param-name">Compliance Framework</span>
+                    <span class="param-type">Dropdown</span>
+                    <div class="param-description">Regulatory framework to apply (HMDA, Dodd-Frank, etc.)</div>
+                </div>
+                <strong>Default: Dodd-Frank</strong>
+            </div>
+        </div>
+
+        <h3>Common Customization Patterns</h3>
+        <div class="customization-section">
+            <h4>🔄 Data Source Integration</h4>
+            <p>Replace default data sources with your organization's data systems:</p>
+            <div class="code-block">
+# Before (Template Default)
+data_input:
+  source_type: "csv"
+  file_path: "/data/policies.csv"
+
+# After (Your System)
+data_input:
+  source_type: "api"
+  url: "https://api.yourcompany.com/policies"
+  authentication:
+    type: "bearer"
+    token: "${API_TOKEN}"
+            </div>
+        </div>
+
+        <div class="customization-section">
+            <h4>🎯 Business Rule Modification</h4>
+            <p>Adjust decision thresholds and business logic:</p>
+            <div class="code-block">
+# Before (Template Default)
+decision_node:
+  condition_field: "risk_score"
+  operator: "less_than"
+  threshold: 0.7
+  true_branch: "approve_policy"
+  false_branch: "review_manually"
+
+# After (Your Business Rules)
+decision_node:
+  condition_field: "risk_score"
+  operator: "less_than"
+  threshold: 0.6  # More conservative threshold
+  true_branch: "approve_policy"
+  false_branch: "senior_review"  # Different escalation path
+            </div>
+        </div>
+
+        <div class="customization-section">
+            <h4>📧 Notification Customization</h4>
+            <p>Configure notification recipients and templates:</p>
+            <div class="code-block">
+# Before (Template Default)
+email_output:
+  recipients: ["underwriter@company.com"]
+  subject: "Policy Approval Notification"
+  template: "default_approval"
+
+# After (Your Requirements)
+email_output:
+  recipients: ["underwriter@company.com", "manager@company.com"]
+  subject: "Policy Decision: {{policy_number}}"
+  template: "custom_approval_with_details"
+  attachments: ["policy_document.pdf", "risk_assessment.pdf"]
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>⚖️ Template vs. Custom Agent Comparison</h2>
+        <p>Choose the right approach for your business needs.</p>
+
+        <table class="comparison-table">
+            <tr>
+                <th>Aspect</th>
+                <th>Agent Templates</th>
+                <th>Custom Agents</th>
+                <th>Recommendation</th>
+            </tr>
+            <tr>
+                <td>Development Time</td>
+                <td class="highlight">2-4 hours</td>
+                <td>2-4 weeks</td>
+                <td>Use templates for standard processes</td>
+            </tr>
+            <tr>
+                <td>Customization Level</td>
+                <td>High (parameter-based)</td>
+                <td class="highlight">Unlimited</td>
+                <td>Use custom agents for unique requirements</td>
+            </tr>
+            <tr>
+                <td>Maintenance Effort</td>
+                <td class="highlight">Low (updates applied automatically)</td>
+                <td>High (manual maintenance required)</td>
+                <td>Use templates for ongoing maintenance</td>
+            </tr>
+            <tr>
+                <td>Best Practices</td>
+                <td class="highlight">Built-in industry standards</td>
+                <td>Depends on developer expertise</td>
+                <td>Use templates for compliance requirements</td>
+            </tr>
+            <tr>
+                <td>Scalability</td>
+                <td class="highlight">Optimized for production</td>
+                <td>Varies based on implementation</td>
+                <td>Use templates for enterprise deployments</td>
+            </tr>
+            <tr>
+                <td>Cost</td>
+                <td class="highlight">Low (one-time customization)</td>
+                <td>High (full development cycle)</td>
+                <td>Use templates for cost-effective solutions</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="content-section">
+        <h2>🚀 Advanced Template Features</h2>
+        <p>Unlock the full potential of agent templates with advanced capabilities.</p>
+
+        <h3>Template Versioning & Updates</h3>
+        <div class="info-box">
+            <strong>📈 Template Evolution:</strong>
+            <ul>
+                <li>Automatic updates for security patches and improvements</li>
+                <li>Version compatibility checking</li>
+                <li>Migration tools for configuration updates</li>
+                <li>Rollback capabilities for failed updates</li>
+                <li>Change tracking and audit trails</li>
+            </ul>
+        </div>
+
+        <h3>Template Composition</h3>
+        <div class="highlight-box">
+            <h4>🧩 Building Complex Agents</h4>
+            <p>Combine multiple templates to create sophisticated solutions:</p>
+            <ul>
+                <li><strong>Template Stitching:</strong> Connect outputs from one template to inputs of another</li>
+                <li><strong>Data Flow Orchestration:</strong> Manage complex data pipelines across templates</li>
+                <li><strong>Event-Driven Architecture:</strong> Trigger templates based on events or conditions</li>
+                <li><strong>Service Mesh Integration:</strong> Connect templates with external services and APIs</li>
+            </ul>
+        </div>
+
+        <h3>Performance Optimization</h3>
+        <div class="success-box">
+            <h4>⚡ Template Performance Features:</h4>
+            <ul>
+                <li><strong>Caching Strategies:</strong> Intelligent caching for frequently accessed data</li>
+                <li><strong>Parallel Processing:</strong> Concurrent execution of independent workflow branches</li>
+                <li><strong>Resource Pooling:</strong> Efficient resource allocation and management</li>
+                <li><strong>Load Balancing:</strong> Automatic distribution of workload across instances</li>
+                <li><strong>Auto-scaling:</strong> Dynamic resource adjustment based on demand</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔧 Template Troubleshooting</h2>
+        <p>Common issues and solutions when working with agent templates.</p>
+
+        <h3>Data Connection Issues</h3>
+        <div class="warning-box">
+            <h4>❌ "Data source not accessible" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Verify file paths and permissions</li>
+                <li>Check API endpoints and authentication</li>
+                <li>Validate data format compatibility</li>
+                <li>Test network connectivity</li>
+                <li>Review firewall and security settings</li>
+            </ul>
+        </div>
+
+        <h3>Configuration Problems</h3>
+        <div class="warning-box">
+            <h4>❌ "Invalid parameter value" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Check parameter data types and ranges</li>
+                <li>Review template documentation for valid values</li>
+                <li>Use template validation tools</li>
+                <li>Compare with working template instances</li>
+                <li>Reset to default values if needed</li>
+            </ul>
+        </div>
+
+        <h3>Performance Issues</h3>
+        <div class="warning-box">
+            <h4>❌ Template running slowly</h4>
+            <p><strong>Optimization Strategies:</strong></p>
+            <ul>
+                <li>Enable caching for repeated data access</li>
+                <li>Optimize LLM model selection</li>
+                <li>Implement parallel processing where possible</li>
+                <li>Review and optimize data transformation steps</li>
+                <li>Consider resource allocation adjustments</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Agentic Brain Platform. Accelerate your AI development with our comprehensive template library.</p>
+        <p>Need custom templates? Contact our <a href="mailto:support@agenticbrain.com">professional services team</a>.</p>
+    </div>
+</body>
+</html>

@@ -24,7 +24,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -65,6 +65,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for UI scraper service to avoid metric name conflicts
+SCRAPER_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="UI Scraper Service",
@@ -72,12 +75,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-SCRAPER_REQUESTS_PROCESSED = Counter('scraper_requests_processed_total', 'Total scraping requests processed', ['status'])
-SCRAPER_PAGES_SCRAPED = Counter('scraper_pages_scraped_total', 'Total pages scraped')
-SCRAPER_PROCESSING_TIME = Histogram('scraper_processing_duration_seconds', 'Scraping processing duration', ['operation'])
-SCRAPER_ERRORS = Counter('scraper_errors_total', 'Total scraping errors', ['error_type'])
-ACTIVE_SCRAPER_JOBS = Gauge('active_scraper_jobs', 'Number of active scraping jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+SCRAPER_REQUESTS_PROCESSED = Counter('scraper_requests_processed_total', 'Total scraping requests processed', ['status'], registry=SCRAPER_REGISTRY)
+SCRAPER_PAGES_SCRAPED = Counter('scraper_pages_scraped_total', 'Total pages scraped', registry=SCRAPER_REGISTRY)
+SCRAPER_PROCESSING_TIME = Histogram('scraper_processing_duration_seconds', 'Scraping processing duration', ['operation'], registry=SCRAPER_REGISTRY)
+SCRAPER_ERRORS = Counter('scraper_errors_total', 'Total scraping errors', ['error_type'], registry=SCRAPER_REGISTRY)
+ACTIVE_SCRAPER_JOBS = Gauge('active_scraper_jobs', 'Number of active scraping jobs', registry=SCRAPER_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -635,7 +638,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(SCRAPER_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

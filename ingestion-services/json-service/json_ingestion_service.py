@@ -23,7 +23,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -50,6 +50,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for JSON service to avoid metric name conflicts
+JSON_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="JSON Ingestion Service",
@@ -57,12 +60,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-JSON_FILES_PROCESSED = Counter('json_files_processed_total', 'Total JSON files processed', ['status'])
-JSON_RECORDS_PROCESSED = Counter('json_records_processed_total', 'Total records processed')
-JSON_PROCESSING_TIME = Histogram('json_processing_duration_seconds', 'JSON processing duration', ['operation'])
-JSON_VALIDATION_ERRORS = Counter('json_validation_errors_total', 'Total validation errors', ['error_type'])
-ACTIVE_JSON_JOBS = Gauge('active_json_jobs', 'Number of active JSON processing jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+JSON_FILES_PROCESSED = Counter('json_files_processed_total', 'Total JSON files processed', ['status'], registry=JSON_REGISTRY)
+JSON_RECORDS_PROCESSED = Counter('json_records_processed_total', 'Total records processed', registry=JSON_REGISTRY)
+JSON_PROCESSING_TIME = Histogram('json_processing_duration_seconds', 'JSON processing duration', ['operation'], registry=JSON_REGISTRY)
+JSON_VALIDATION_ERRORS = Counter('json_validation_errors_total', 'Total validation errors', ['error_type'], registry=JSON_REGISTRY)
+ACTIVE_JSON_JOBS = Gauge('active_json_jobs', 'Number of active JSON processing jobs', registry=JSON_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -510,7 +513,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(JSON_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

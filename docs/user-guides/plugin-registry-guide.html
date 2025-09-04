@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plugin Registry Guide - Agentic Brain Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #9b59b6;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        .plugin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .plugin-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .plugin-card:hover {
+            border-color: #9b59b6;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .plugin-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .plugin-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .plugin-title {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.3em;
+        }
+
+        .plugin-badge {
+            background: #9b59b6;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: auto;
+        }
+
+        .plugin-description {
+            color: #6c757d;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .plugin-capabilities {
+            list-style: none;
+            padding: 0;
+        }
+
+        .plugin-capabilities li {
+            padding: 5px 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .plugin-capabilities li:before {
+            content: "⚡";
+            color: #9b59b6;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .step-number {
+            background: #9b59b6;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #f8e6ff;
+            border: 1px solid #9b59b6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #0c5460;
+        }
+
+        .plugin-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .parameter-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .example-section {
+            background: #f8e6ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .api-endpoint {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #9b59b6;
+        }
+
+        .endpoint-method {
+            background: #9b59b6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .endpoint-url {
+            font-family: monospace;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .plugin-compatibility {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e9ecef;
+        }
+
+        .compatibility-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .compatibility-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .compatibility-item.compatible {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔌 Plugin Registry Guide</h1>
+        <p>Unlock advanced AI capabilities with specialized plugins</p>
+    </div>
+
+    <div class="content-section">
+        <h2>🎯 What Are Plugins?</h2>
+        <p>Plugins are specialized AI components that extend your agents with domain-specific capabilities. They provide pre-built intelligence for common business scenarios, allowing you to focus on your unique business logic rather than reinventing the wheel.</p>
+
+        <div class="info-box">
+            <strong>🚀 Plugin Benefits:</strong>
+            <ul>
+                <li>Accelerate development with pre-built AI capabilities</li>
+                <li>Ensure industry best practices and compliance</li>
+                <li>Reduce complexity through modular architecture</li>
+                <li>Enable seamless integration with existing systems</li>
+                <li>Provide enterprise-grade reliability and performance</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🗂️ Available Plugins</h2>
+        <p>Explore our comprehensive plugin ecosystem, organized by business domain and capability.</p>
+
+        <div class="plugin-grid">
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">🏦</div>
+                    <h3 class="plugin-title">Risk Calculator</h3>
+                    <span class="plugin-badge">Underwriting</span>
+                </div>
+                <p class="plugin-description">Advanced risk assessment engine for loan and insurance underwriting with regulatory compliance.</p>
+                <ul class="plugin-capabilities">
+                    <li>Credit score analysis and risk categorization</li>
+                    <li>Debt-to-income ratio calculations</li>
+                    <li>Loan-to-value ratio assessments</li>
+                    <li>Fraud pattern detection</li>
+                    <li>Regulatory compliance checking</li>
+                </ul>
+            </div>
+
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">🕵️</div>
+                    <h3 class="plugin-title">Fraud Detector</h3>
+                    <span class="plugin-badge">Claims</span>
+                </div>
+                <p class="plugin-description">Machine learning-powered fraud detection for claims processing and financial transactions.</p>
+                <ul class="plugin-capabilities">
+                    <li>Behavioral pattern analysis</li>
+                    <li>Real-time transaction monitoring</li>
+                    <li>Anomaly detection algorithms</li>
+                    <li>Risk scoring and prioritization</li>
+                    <li>Automated investigation triggers</li>
+                </ul>
+            </div>
+
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">⚖️</div>
+                    <h3 class="plugin-title">Regulatory Checker</h3>
+                    <span class="plugin-badge">Compliance</span>
+                </div>
+                <p class="plugin-description">Automated regulatory compliance checking for financial services and insurance.</p>
+                <ul class="plugin-capabilities">
+                    <li>HMDA compliance monitoring</li>
+                    <li>Dodd-Frank rule validation</li>
+                    <li>Fair lending analysis</li>
+                    <li>RESPA settlement verification</li>
+                    <li>State-specific regulation checks</li>
+                </ul>
+            </div>
+
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">📄</div>
+                    <h3 class="plugin-title">Document Analyzer</h3>
+                    <span class="plugin-badge">Document Mgmt</span>
+                </div>
+                <p class="plugin-description">AI-powered document analysis with OCR, content extraction, and intelligent classification.</p>
+                <ul class="plugin-capabilities">
+                    <li>OCR and text extraction</li>
+                    <li>Document type classification</li>
+                    <li>Content analysis and tagging</li>
+                    <li>Authenticity verification</li>
+                    <li>Metadata extraction</li>
+                </ul>
+            </div>
+
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">😊</div>
+                    <h3 class="plugin-title">Sentiment Analyzer</h3>
+                    <span class="plugin-badge">Customer Service</span>
+                </div>
+                <p class="plugin-description">Natural language processing for customer sentiment analysis and emotional intelligence.</p>
+                <ul class="plugin-capabilities">
+                    <li>Positive/negative sentiment detection</li>
+                    <li>Emotional intelligence analysis</li>
+                    <li>Customer satisfaction scoring</li>
+                    <li>Feedback categorization</li>
+                    <li>Trend analysis and insights</li>
+                </ul>
+            </div>
+
+            <div class="plugin-card">
+                <div class="plugin-header">
+                    <div class="plugin-icon">🔍</div>
+                    <h3 class="plugin-title">Compliance Monitor</h3>
+                    <span class="plugin-badge">Compliance</span>
+                </div>
+                <p class="plugin-description">Continuous compliance monitoring with automated reporting and regulatory oversight.</p>
+                <ul class="plugin-capabilities">
+                    <li>GDPR compliance monitoring</li>
+                    <li>CCPA privacy regulation checks</li>
+                    <li>Anti-money laundering detection</li>
+                    <li>Regulatory reporting automation</li>
+                    <li>Risk assessment and alerts</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🚀 How to Use Plugins</h2>
+        <p>Integrate plugins into your agents with just a few simple steps.</p>
+
+        <div class="step-container">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Discover Available Plugins</h4>
+                <p>Browse the plugin registry to find plugins that match your business requirements.</p>
+                <div class="code-block">
+# Get all available plugins
+GET /api/plugins
+
+# Filter by domain
+GET /api/plugins?domain=underwriting&type=domain
+
+# Search by capability
+GET /api/plugins?search=fraud+detection
+
+# Get plugin details
+GET /api/plugins/riskCalculator
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Add Plugin to Agent</h4>
+                <p>Integrate the plugin into your agent workflow using the Agent Builder interface or API.</p>
+                <div class="code-block">
+# Add plugin to agent configuration
+POST /api/agents/{agent_id}/plugins
+{
+  "plugin_id": "riskCalculator",
+  "configuration": {
+    "risk_threshold": 0.7,
+    "enable_fraud_detection": true,
+    "compliance_framework": "dodd-frank"
+  },
+  "execution_order": 2
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Configure Plugin Parameters</h4>
+                <p>Customize plugin behavior with your specific business rules and thresholds.</p>
+                <div class="highlight-box">
+                    <strong>⚙️ Configuration Best Practices:</strong>
+                    <ul>
+                        <li>Set appropriate risk thresholds based on your risk tolerance</li>
+                        <li>Configure compliance frameworks relevant to your jurisdiction</li>
+                        <li>Adjust performance parameters for your workload requirements</li>
+                        <li>Enable relevant monitoring and alerting features</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h4>Test Plugin Integration</h4>
+                <p>Validate plugin functionality with sample data before deploying to production.</p>
+                <div class="code-block">
+# Test plugin execution
+POST /api/plugins/test
+{
+  "plugin_id": "riskCalculator",
+  "test_data": {
+    "loan_amount": 250000,
+    "credit_score": 720,
+    "income": 85000,
+    "debt_ratio": 0.32
+  },
+  "expected_output": {
+    "risk_category": "LOW",
+    "approval_probability": 0.9
+  }
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">5</div>
+            <div class="step-content">
+                <h4>Monitor Plugin Performance</h4>
+                <p>Track plugin performance and optimize configuration based on production metrics.</p>
+                <div class="code-block">
+# Get plugin metrics
+GET /api/plugins/{plugin_id}/metrics
+
+# Get execution history
+GET /api/plugins/{plugin_id}/executions?limit=100
+
+# Optimize plugin configuration
+POST /api/plugins/{plugin_id}/optimize
+{
+  "optimization_goal": "latency",
+  "target_performance": 0.95
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>📋 Plugin Details & Configuration</h2>
+        <p>Detailed information about each plugin's capabilities and configuration options.</p>
+
+        <div class="plugin-details">
+            <h3>🏦 Risk Calculator Plugin</h3>
+            <table class="parameter-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>risk_threshold</td>
+                    <td>number (0-1)</td>
+                    <td>0.7</td>
+                    <td>Minimum risk score for automatic approval</td>
+                </tr>
+                <tr>
+                    <td>enable_fraud_detection</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                    <td>Enable integrated fraud detection</td>
+                </tr>
+                <tr>
+                    <td>compliance_framework</td>
+                    <td>string</td>
+                    <td>dodd-frank</td>
+                    <td>Regulatory framework to apply</td>
+                </tr>
+                <tr>
+                    <td>model_version</td>
+                    <td>string</td>
+                    <td>latest</td>
+                    <td>Risk model version to use</td>
+                </tr>
+            </table>
+
+            <div class="example-section">
+                <h4>Example Usage:</h4>
+                <div class="code-block">
+{
+  "plugin_id": "riskCalculator",
+  "input_data": {
+    "loan_amount": 250000,
+    "credit_score": 720,
+    "income": 85000,
+    "debt_ratio": 0.32,
+    "employment_years": 5,
+    "property_value": 300000
+  },
+  "configuration": {
+    "risk_threshold": 0.6,
+    "enable_fraud_detection": true,
+    "compliance_framework": "hmda"
+  }
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="plugin-details">
+            <h3>🕵️ Fraud Detector Plugin</h3>
+            <table class="parameter-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>sensitivity_level</td>
+                    <td>string</td>
+                    <td>medium</td>
+                    <td>Detection sensitivity (low/medium/high)</td>
+                </tr>
+                <tr>
+                    <td>real_time_monitoring</td>
+                    <td>boolean</td>
+                    <td>true</td>
+                    <td>Enable real-time transaction monitoring</td>
+                </tr>
+                <tr>
+                    <td>alert_threshold</td>
+                    <td>number (0-1)</td>
+                    <td>0.8</td>
+                    <td>Fraud score threshold for alerts</td>
+                </tr>
+                <tr>
+                    <td>historical_analysis_days</td>
+                    <td>number</td>
+                    <td>90</td>
+                    <td>Days of historical data to analyze</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="plugin-details">
+            <h3>⚖️ Regulatory Checker Plugin</h3>
+            <table class="parameter-table">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>jurisdiction</td>
+                    <td>string</td>
+                    <td>US</td>
+                    <td>Regulatory jurisdiction</td>
+                </tr>
+                <tr>
+                    <td>frameworks</td>
+                    <td>array</td>
+                    <td>["dodd-frank"]</td>
+                    <td>Compliance frameworks to check</td>
+                </tr>
+                <tr>
+                    <td>strict_mode</td>
+                    <td>boolean</td>
+                    <td>false</td>
+                    <td>Enable strict compliance checking</td>
+                </tr>
+                <tr>
+                    <td>reporting_frequency</td>
+                    <td>string</td>
+                    <td>monthly</td>
+                    <td>Compliance reporting frequency</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>📊 Plugin Performance & Monitoring</h2>
+        <p>Monitor plugin performance and optimize your agent workflows.</p>
+
+        <div class="performance-metrics">
+            <div class="metric-card">
+                <div class="metric-value">98.7%</div>
+                <div class="metric-label">Success Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">245ms</div>
+                <div class="metric-label">Avg Response Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">1,247</div>
+                <div class="metric-label">Executions/Hour</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">0.2%</div>
+                <div class="metric-label">Error Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">95%</div>
+                <div class="metric-label">Accuracy</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">4.2/5</div>
+                <div class="metric-label">User Rating</div>
+            </div>
+        </div>
+
+        <h3>Plugin Health Dashboard</h3>
+        <div class="plugin-compatibility">
+            <h4>🔍 Plugin Compatibility Matrix</h4>
+            <div class="compatibility-grid">
+                <div class="compatibility-item compatible">Risk Calculator ✓</div>
+                <div class="compatibility-item compatible">Fraud Detector ✓</div>
+                <div class="compatibility-item compatible">Regulatory Checker ✓</div>
+                <div class="compatibility-item compatible">Document Analyzer ✓</div>
+                <div class="compatibility-item compatible">Sentiment Analyzer ✓</div>
+                <div class="compatibility-item compatible">Compliance Monitor ✓</div>
+                <div class="compatibility-item compatible">Data Retriever ✓</div>
+                <div class="compatibility-item compatible">Validator ✓</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔧 Plugin Management API</h2>
+        <p>Complete API reference for plugin operations.</p>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/plugins</div>
+            <p>List all available plugins with filtering and search capabilities</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}</div>
+            <p>Get detailed information about a specific plugin</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}/execute</div>
+            <p>Execute a plugin with specified input data and configuration</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}/test</div>
+            <p>Test plugin functionality with sample data</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}/metrics</div>
+            <p>Get performance metrics and usage statistics</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}/configure</div>
+            <p>Update plugin configuration and parameters</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/plugins/{plugin_id}/compatibility</div>
+            <p>Check plugin compatibility with other components</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔧 Advanced Plugin Features</h2>
+        <p>Unlock the full potential of plugins with advanced capabilities.</p>
+
+        <h3>Plugin Chaining</h3>
+        <div class="highlight-box">
+            <h4>🔗 Chain Multiple Plugins</h4>
+            <p>Create complex workflows by chaining plugin outputs to inputs:</p>
+            <div class="code-block">
+# Example: Risk Assessment → Compliance Check → Decision
+{
+  "workflow": [
+    {
+      "plugin_id": "riskCalculator",
+      "output_mapping": {
+        "risk_score": "compliance_input.risk_level"
+      }
+    },
+    {
+      "plugin_id": "regulatoryChecker",
+      "input_mapping": {
+        "loan_amount": "original.loan_amount",
+        "risk_level": "previous_output.risk_score"
+      }
+    },
+    {
+      "plugin_id": "decisionNode",
+      "conditions": [
+        {
+          "field": "compliance_status",
+          "operator": "equals",
+          "value": "COMPLIANT",
+          "action": "approve"
+        }
+      ]
+    }
+  ]
+}
+            </div>
+        </div>
+
+        <h3>Conditional Plugin Execution</h3>
+        <div class="success-box">
+            <h4>🎯 Smart Plugin Execution</h4>
+            <p>Execute plugins conditionally based on previous results:</p>
+            <div class="code-block">
+{
+  "conditional_execution": {
+    "condition": "risk_score > 0.8",
+    "true_plugins": ["fraudDetector", "regulatoryChecker"],
+    "false_plugins": ["basicValidator"],
+    "fallback_plugins": ["errorHandler"]
+  }
+}
+            </div>
+        </div>
+
+        <h3>Plugin Version Management</h3>
+        <div class="info-box">
+            <h4>📈 Plugin Version Control</h4>
+            <ul>
+                <li><strong>Version Pinning:</strong> Lock plugins to specific versions for stability</li>
+                <li><strong>Automatic Updates:</strong> Enable automatic updates for bug fixes and improvements</li>
+                <li><strong>Rollback Support:</strong> Instantly rollback to previous plugin versions</li>
+                <li><strong>Compatibility Testing:</strong> Automated testing for version compatibility</li>
+                <li><strong>Change Tracking:</strong> Detailed changelog for each plugin update</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🚨 Troubleshooting Plugin Issues</h2>
+        <p>Common plugin problems and solutions.</p>
+
+        <h3>Plugin Loading Issues</h3>
+        <div class="warning-box">
+            <h4>❌ "Plugin not found" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Verify plugin ID is spelled correctly</li>
+                <li>Check if plugin is installed and available</li>
+                <li>Ensure plugin registry service is running</li>
+                <li>Review plugin compatibility requirements</li>
+                <li>Check network connectivity to plugin registry</li>
+            </ul>
+        </div>
+
+        <h3>Configuration Problems</h3>
+        <div class="warning-box">
+            <h4>❌ "Invalid configuration" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Validate parameter data types and ranges</li>
+                <li>Check required vs optional parameters</li>
+                <li>Review plugin documentation for valid values</li>
+                <li>Use configuration validation tools</li>
+                <li>Test configuration with sample data first</li>
+            </ul>
+        </div>
+
+        <h3>Performance Issues</h3>
+        <div class="warning-box">
+            <h4>❌ Plugin running slowly</h4>
+            <p><strong>Optimization Strategies:</strong></p>
+            <ul>
+                <li>Enable plugin caching for repeated operations</li>
+                <li>Optimize input data size and format</li>
+                <li>Review and adjust performance parameters</li>
+                <li>Consider parallel execution for multiple inputs</li>
+                <li>Monitor resource usage and adjust limits</li>
+            </ul>
+        </div>
+
+        <h3>Integration Problems</h3>
+        <div class="warning-box">
+            <h4>❌ Plugin output format mismatch</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Review plugin output schema documentation</li>
+                <li>Use data transformation components if needed</li>
+                <li>Implement output format validation</li>
+                <li>Check plugin version compatibility</li>
+                <li>Contact support for custom integration requirements</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔐 Plugin Security & Compliance</h2>
+        <p>Enterprise-grade security and compliance features for plugins.</p>
+
+        <h3>Security Features</h3>
+        <div class="success-box">
+            <h4>🛡️ Plugin Security Framework</h4>
+            <ul>
+                <li><strong>Input Validation:</strong> Comprehensive input sanitization and validation</li>
+                <li><strong>Access Control:</strong> Role-based access control for plugin execution</li>
+                <li><strong>Data Encryption:</strong> End-to-end encryption for sensitive data</li>
+                <li><strong>Audit Logging:</strong> Complete audit trail for all plugin operations</li>
+                <li><strong>Sandbox Execution:</strong> Isolated execution environment for plugins</li>
+            </ul>
+        </div>
+
+        <h3>Compliance Monitoring</h3>
+        <div class="highlight-box">
+            <h4>⚖️ Regulatory Compliance</h4>
+            <ul>
+                <li><strong>GDPR Compliance:</strong> Data protection and privacy compliance</li>
+                <li><strong>SOX Compliance:</strong> Financial reporting and audit requirements</li>
+                <li><strong>HIPAA Compliance:</strong> Healthcare data protection (when applicable)</li>
+                <li><strong>Industry Standards:</strong> Compliance with relevant industry standards</li>
+                <li><strong>Regular Audits:</strong> Automated compliance auditing and reporting</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Agentic Brain Platform. Extend your agents with our comprehensive plugin ecosystem.</p>
+        <p>Need custom plugins? Contact our <a href="mailto:support@agenticbrain.com">professional services team</a>.</p>
+    </div>
+</body>
+</html>

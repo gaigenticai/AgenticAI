@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingestion Services Test Dashboard - AgenticAI</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -1px rgba(0, 0, 0, 0.15);
+        }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .service-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .service-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .service-port {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .status-healthy {
+            background-color: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .status-unhealthy {
+            background-color: #fef2f2;
+            color: var(--error-color);
+        }
+
+        .status-unknown {
+            background-color: #fef3c7;
+            color: var(--warning-color);
+        }
+
+        .test-section {
+            margin: 1.5rem 0;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .test-result {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .test-result.success {
+            border-color: var(--success-color);
+            background: #f0fdf4;
+        }
+
+        .test-result.error {
+            border-color: var(--error-color);
+            background: #fef2f2;
+        }
+
+        .metrics-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metric-card {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+
+        .global-controls {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-top: 0.5rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+            }
+
+            .test-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🧪 Ingestion Services Test Dashboard</h1>
+            <p>Real-time testing and monitoring of all ingestion services</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Global Controls -->
+        <div class="global-controls">
+            <h2>🎛️ Global Controls</h2>
+            <div class="control-buttons">
+                <button class="btn btn-success" onclick="runAllTests()">Run All Tests</button>
+                <button class="btn btn-primary" onclick="checkAllHealth()">Check All Health</button>
+                <button class="btn btn-secondary" onclick="refreshAllMetrics()">Refresh All Metrics</button>
+                <button class="btn btn-primary" onclick="clearAllResults()">Clear Results</button>
+            </div>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div class="summary-stats">
+            <div class="stat-card">
+                <span class="stat-value" id="total-services">6</span>
+                <div class="stat-label">Total Services</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="healthy-services">0</span>
+                <div class="stat-label">Healthy Services</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="total-tests">0</span>
+                <div class="stat-label">Tests Run</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-value" id="success-rate">0%</span>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+
+        <!-- Service Cards -->
+        <div class="dashboard-grid">
+            <!-- CSV Service -->
+            <div class="service-card" id="csv-service">
+                <div class="service-header">
+                    <div class="service-icon">📊</div>
+                    <div>
+                        <div class="service-title">CSV Ingestion</div>
+                        <div class="service-port">Port: 8080</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="csv-status">
+                        <span id="csv-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('csv', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('csv', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('csv')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="csv-result"></div>
+                </div>
+
+                <div class="metrics-display" id="csv-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JSON Service -->
+            <div class="service-card" id="json-service">
+                <div class="service-header">
+                    <div class="service-icon">🔄</div>
+                    <div>
+                        <div class="service-title">JSON Ingestion</div>
+                        <div class="service-port">Port: 8085</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="json-status">
+                        <span id="json-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('json', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('json', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('json')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="json-result"></div>
+                </div>
+
+                <div class="metrics-display" id="json-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PDF Service -->
+            <div class="service-card" id="pdf-service">
+                <div class="service-header">
+                    <div class="service-icon">📄</div>
+                    <div>
+                        <div class="service-title">PDF Ingestion</div>
+                        <div class="service-port">Port: 8083</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="pdf-status">
+                        <span id="pdf-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('pdf', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('pdf', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('pdf')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="pdf-result"></div>
+                </div>
+
+                <div class="metrics-display" id="pdf-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel Service -->
+            <div class="service-card" id="excel-service">
+                <div class="service-header">
+                    <div class="service-icon">📈</div>
+                    <div>
+                        <div class="service-title">Excel Ingestion</div>
+                        <div class="service-port">Port: 8084</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="excel-status">
+                        <span id="excel-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('excel', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('excel', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('excel')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="excel-result"></div>
+                </div>
+
+                <div class="metrics-display" id="excel-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Service -->
+            <div class="service-card" id="api-service">
+                <div class="service-header">
+                    <div class="service-icon">🌐</div>
+                    <div>
+                        <div class="service-title">API Ingestion</div>
+                        <div class="service-port">Port: 8086</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="api-status">
+                        <span id="api-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('api', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('api', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('api')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="api-result"></div>
+                </div>
+
+                <div class="metrics-display" id="api-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UI Scraper Service -->
+            <div class="service-card" id="ui-scraper-service">
+                <div class="service-header">
+                    <div class="service-icon">🕷️</div>
+                    <div>
+                        <div class="service-title">UI Scraper</div>
+                        <div class="service-port">Port: 8087</div>
+                    </div>
+                    <div class="status-indicator status-unknown" id="ui-scraper-status">
+                        <span id="ui-scraper-status-text">Unknown</span>
+                    </div>
+                </div>
+
+                <div class="test-section">
+                    <div class="test-buttons">
+                        <button class="btn btn-primary" onclick="testService('ui-scraper', 'health')">Health Check</button>
+                        <button class="btn btn-secondary" onclick="testService('ui-scraper', 'metrics')">Get Metrics</button>
+                        <button class="btn btn-success" onclick="runConnectivityTest('ui-scraper')">Connectivity</button>
+                    </div>
+                    <div class="test-result hidden" id="ui-scraper-result"></div>
+                </div>
+
+                <div class="metrics-display" id="ui-scraper-metrics">
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Active Jobs</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-value">-</span>
+                        <div class="metric-label">Response Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const services = {
+            csv: { port: 8080, name: 'CSV Ingestion' },
+            json: { port: 8085, name: 'JSON Ingestion' },
+            pdf: { port: 8083, name: 'PDF Ingestion' },
+            excel: { port: 8084, name: 'Excel Ingestion' },
+            api: { port: 8086, name: 'API Ingestion' },
+            'ui-scraper': { port: 8087, name: 'UI Scraper' }
+        };
+
+        let testResults = {};
+        let serviceStatuses = {};
+
+        async function makeRequest(service, endpoint) {
+            const port = services[service].port;
+            const url = `http://localhost:${port}/${endpoint}`;
+
+            const startTime = Date.now();
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const endTime = Date.now();
+                const responseTime = ((endTime - startTime) / 1000).toFixed(3);
+
+                let data;
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    data = await response.text();
+                }
+
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    responseTime: responseTime,
+                    url: url
+                };
+            } catch (error) {
+                const endTime = Date.now();
+                const responseTime = ((endTime - startTime) / 1000).toFixed(3);
+
+                return {
+                    success: false,
+                    error: error.message,
+                    responseTime: responseTime,
+                    url: url
+                };
+            }
+        }
+
+        function updateServiceStatus(service, status, statusText = null) {
+            const statusElement = document.getElementById(`${service}-status`);
+            const statusTextElement = document.getElementById(`${service}-status-text`);
+
+            statusElement.className = `status-indicator status-${status}`;
+            statusTextElement.textContent = statusText || (status === 'healthy' ? 'Healthy' :
+                                                         status === 'unhealthy' ? 'Unhealthy' : 'Unknown');
+
+            serviceStatuses[service] = status;
+            updateSummaryStats();
+        }
+
+        function updateSummaryStats() {
+            const totalServices = Object.keys(services).length;
+            const healthyServices = Object.values(serviceStatuses).filter(status => status === 'healthy').length;
+            const totalTests = Object.keys(testResults).length;
+            const successRate = totalTests > 0 ? ((healthyServices / totalServices) * 100).toFixed(1) : '0.0';
+
+            document.getElementById('total-services').textContent = totalServices;
+            document.getElementById('healthy-services').textContent = healthyServices;
+            document.getElementById('total-tests').textContent = totalTests;
+            document.getElementById('success-rate').textContent = `${successRate}%`;
+        }
+
+        function updateMetricsDisplay(service, data) {
+            const metricsDiv = document.getElementById(`${service}-metrics`);
+            if (!metricsDiv) return;
+
+            const metricCards = metricsDiv.querySelectorAll('.metric-card');
+            if (metricCards.length >= 2) {
+                if (data && data.active_jobs !== undefined) {
+                    metricCards[0].querySelector('.metric-value').textContent = data.active_jobs;
+                }
+                // Response time would be set when displaying test results
+            }
+        }
+
+        async function testService(service, endpoint) {
+            const resultDiv = document.getElementById(`${service}-result`);
+            const button = event.target;
+
+            // Show loading state
+            button.innerHTML = '<span class="loading"></span>Testing...';
+            button.disabled = true;
+
+            try {
+                const result = await makeRequest(service, endpoint);
+
+                // Update test results
+                if (!testResults[service]) testResults[service] = {};
+                testResults[service][endpoint] = result;
+
+                // Update service status based on result
+                if (endpoint === 'health') {
+                    const status = result.success && result.data && result.data.status === 'healthy' ? 'healthy' : 'unhealthy';
+                    updateServiceStatus(service, status);
+
+                    if (result.data) {
+                        updateMetricsDisplay(service, result.data);
+                    }
+                }
+
+                // Display result
+                displayTestResult(service, endpoint, result);
+
+            } catch (error) {
+                console.error(`Error testing ${service} ${endpoint}:`, error);
+                displayTestResult(service, endpoint, {
+                    success: false,
+                    error: error.message
+                });
+            } finally {
+                // Reset button
+                button.innerHTML = endpoint === 'health' ? 'Health Check' :
+                                 endpoint === 'metrics' ? 'Get Metrics' : 'Test';
+                button.disabled = false;
+            }
+        }
+
+        async function runConnectivityTest(service) {
+            const resultDiv = document.getElementById(`${service}-result`);
+            const button = event.target;
+
+            button.innerHTML = '<span class="loading"></span>Testing...';
+            button.disabled = true;
+
+            try {
+                const result = await makeRequest(service, '');
+
+                displayTestResult(service, 'connectivity', {
+                    success: !result.error,
+                    status: result.status,
+                    responseTime: result.responseTime,
+                    message: result.error || `Connected successfully (${result.responseTime}s)`
+                });
+
+            } catch (error) {
+                displayTestResult(service, 'connectivity', {
+                    success: false,
+                    error: error.message
+                });
+            } finally {
+                button.innerHTML = 'Connectivity';
+                button.disabled = false;
+            }
+        }
+
+        function displayTestResult(service, endpoint, result) {
+            const resultDiv = document.getElementById(`${service}-result`);
+            resultDiv.className = `test-result ${result.success ? 'success' : 'error'} fade-in`;
+            resultDiv.classList.remove('hidden');
+
+            let content = `🔍 ${endpoint.toUpperCase()} TEST RESULT\n`;
+            content += `═`.repeat(50) + '\n\n';
+
+            if (result.success) {
+                content += `✅ SUCCESS\n`;
+                if (result.status) content += `Status: ${result.status}\n`;
+                if (result.responseTime) content += `Response Time: ${result.responseTime}s\n`;
+
+                if (result.data) {
+                    content += `\n📊 Response Data:\n`;
+                    if (typeof result.data === 'object') {
+                        content += JSON.stringify(result.data, null, 2);
+                    } else {
+                        content += result.data;
+                    }
+                }
+            } else {
+                content += `❌ FAILED\n`;
+                if (result.error) content += `Error: ${result.error}\n`;
+                if (result.status) content += `Status: ${result.status}\n`;
+            }
+
+            content += `\n⏰ Timestamp: ${new Date().toLocaleString()}`;
+
+            resultDiv.textContent = content;
+        }
+
+        async function runAllTests() {
+            const button = event.target;
+            const originalText = button.textContent;
+
+            button.innerHTML = '<span class="loading"></span>Running All Tests...';
+            button.disabled = true;
+
+            const testPromises = [];
+
+            for (const service of Object.keys(services)) {
+                testPromises.push(testService(service, 'health'));
+                testPromises.push(testService(service, 'metrics'));
+            }
+
+            try {
+                await Promise.allSettled(testPromises);
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function checkAllHealth() {
+            const button = event.target;
+            const originalText = button.textContent;
+
+            button.innerHTML = '<span class="loading"></span>Checking Health...';
+            button.disabled = true;
+
+            const healthPromises = Object.keys(services).map(service =>
+                testService(service, 'health')
+            );
+
+            try {
+                await Promise.allSettled(healthPromises);
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        async function refreshAllMetrics() {
+            const button = event.target;
+            const originalText = button.textContent;
+
+            button.innerHTML = '<span class="loading"></span>Refreshing Metrics...';
+            button.disabled = true;
+
+            const metricsPromises = Object.keys(services).map(service =>
+                testService(service, 'metrics')
+            );
+
+            try {
+                await Promise.allSettled(metricsPromises);
+            } finally {
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        function clearAllResults() {
+            // Clear all test result divs
+            Object.keys(services).forEach(service => {
+                const resultDiv = document.getElementById(`${service}-result`);
+                if (resultDiv) {
+                    resultDiv.className = 'test-result hidden';
+                    resultDiv.textContent = '';
+                }
+            });
+
+            // Reset service statuses
+            Object.keys(services).forEach(service => {
+                updateServiceStatus(service, 'unknown', 'Unknown');
+            });
+
+            // Clear test results
+            testResults = {};
+
+            // Update summary stats
+            updateSummaryStats();
+        }
+
+        // Initialize summary stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSummaryStats();
+        });
+
+        // Auto-refresh health checks every 30 seconds
+        setInterval(async () => {
+            if (document.visibilityState === 'visible') {
+                const healthPromises = Object.keys(services).map(service =>
+                    makeRequest(service, 'health')
+                );
+
+                const results = await Promise.allSettled(healthPromises);
+
+                results.forEach((result, index) => {
+                    const service = Object.keys(services)[index];
+                    if (result.status === 'fulfilled') {
+                        const response = result.value;
+                        const status = response.success && response.data && response.data.status === 'healthy' ? 'healthy' : 'unhealthy';
+                        updateServiceStatus(service, status);
+                    }
+                });
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

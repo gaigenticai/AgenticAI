@@ -23,7 +23,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -50,6 +50,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for CSV service to avoid metric name conflicts
+CSV_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="CSV Ingestion Service",
@@ -57,12 +60,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-CSV_FILES_PROCESSED = Counter('csv_files_processed_total', 'Total CSV files processed', ['status'])
-CSV_RECORDS_PROCESSED = Counter('csv_records_processed_total', 'Total records processed')
-CSV_PROCESSING_TIME = Histogram('csv_processing_duration_seconds', 'CSV processing duration', ['operation'])
-CSV_VALIDATION_ERRORS = Counter('csv_validation_errors_total', 'Total validation errors', ['error_type'])
-ACTIVE_CSV_JOBS = Gauge('active_csv_jobs', 'Number of active CSV processing jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+CSV_FILES_PROCESSED = Counter('csv_files_processed_total', 'Total CSV files processed', ['status'], registry=CSV_REGISTRY)
+CSV_RECORDS_PROCESSED = Counter('csv_records_processed_total', 'Total records processed', registry=CSV_REGISTRY)
+CSV_PROCESSING_TIME = Histogram('csv_processing_duration_seconds', 'CSV processing duration', ['operation'], registry=CSV_REGISTRY)
+CSV_VALIDATION_ERRORS = Counter('csv_validation_errors_total', 'Total validation errors', ['error_type'], registry=CSV_REGISTRY)
+ACTIVE_CSV_JOBS = Gauge('active_csv_jobs', 'Number of active CSV processing jobs', registry=CSV_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -412,7 +415,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(CSV_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

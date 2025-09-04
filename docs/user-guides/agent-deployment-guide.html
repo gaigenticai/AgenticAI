@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Deployment Guide - Agentic Brain Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        .deployment-pipeline {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+        }
+
+        .pipeline-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .step-icon.validation { background: #f39c12; color: white; }
+        .step-icon.testing { background: #e74c3c; color: white; }
+        .step-icon.build { background: #9b59b6; color: white; }
+        .step-icon.deploy { background: #27ae60; color: white; }
+        .step-icon.monitor { background: #3498db; color: white; }
+
+        .step-content h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .step-content p {
+            margin: 0;
+            color: #6c757d;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #e8f4f8;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #155724;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #721c24;
+        }
+
+        .config-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .config-table th,
+        .config-table td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .config-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .status-info { background: #17a2b8; }
+
+        .deployment-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+        }
+
+        .deployment-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .deployment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .deployment-title {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .deployment-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-running { background: #d4edda; color: #155724; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+        .status-success { background: #d1ecf1; color: #0c5460; }
+        .status-pending { background: #fff3cd; color: #856404; }
+
+        .monitoring-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .rollback-section {
+            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .api-endpoint {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .endpoint-method {
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .endpoint-url {
+            font-family: monospace;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Agent Deployment Guide</h1>
+        <p>Deploy intelligent agents to production with confidence and control</p>
+    </div>
+
+    <div class="content-section">
+        <h2>🎯 Deployment Overview</h2>
+        <p>The Agentic Brain platform provides a comprehensive deployment pipeline that ensures your agents are thoroughly tested, validated, and safely deployed to production environments.</p>
+
+        <div class="deployment-pipeline">
+            <h3>🔄 Deployment Pipeline Stages</h3>
+
+            <div class="pipeline-step">
+                <div class="step-icon validation">🔍</div>
+                <div class="step-content">
+                    <h4>Validation Phase</h4>
+                    <p>Comprehensive validation of agent configuration, dependencies, and compatibility</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-icon testing">🧪</div>
+                <div class="step-content">
+                    <h4>Testing Phase</h4>
+                    <p>Automated functional, performance, and security testing</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-icon build">⚙️</div>
+                <div class="step-content">
+                    <h4>Build Phase</h4>
+                    <p>Containerization, optimization, and artifact preparation</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-icon deploy">🚀</div>
+                <div class="step-content">
+                    <h4>Deployment Phase</h4>
+                    <p>Staged rollout with health checks and monitoring</p>
+                </div>
+            </div>
+
+            <div class="pipeline-step">
+                <div class="step-icon monitor">📊</div>
+                <div class="step-content">
+                    <h4>Monitoring Phase</h4>
+                    <p>Continuous monitoring, alerting, and performance optimization</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>📋 Pre-Deployment Checklist</h2>
+        <p>Ensure your agent is ready for production deployment.</p>
+
+        <div class="highlight-box">
+            <h3>✅ Configuration Validation</h3>
+            <ul>
+                <li><strong>Data Sources:</strong> All input sources are accessible and properly configured</li>
+                <li><strong>API Endpoints:</strong> External services are reachable with valid credentials</li>
+                <li><strong>Environment Variables:</strong> All required environment variables are set</li>
+                <li><strong>Resource Limits:</strong> Memory and CPU limits are appropriate for your workload</li>
+                <li><strong>Security Settings:</strong> Authentication and authorization are properly configured</li>
+            </ul>
+        </div>
+
+        <div class="highlight-box">
+            <h3>✅ Business Logic Verification</h3>
+            <ul>
+                <li><strong>Decision Rules:</strong> Business rules are correctly implemented</li>
+                <li><strong>Data Processing:</strong> Data transformation logic is validated</li>
+                <li><strong>Error Handling:</strong> Exception scenarios are properly handled</li>
+                <li><strong>Performance Requirements:</strong> Response times meet business SLAs</li>
+                <li><strong>Compliance:</strong> Regulatory requirements are satisfied</li>
+            </ul>
+        </div>
+
+        <div class="highlight-box">
+            <h3>✅ Infrastructure Readiness</h3>
+            <ul>
+                <li><strong>Service Dependencies:</strong> All required services are running and healthy</li>
+                <li><strong>Network Connectivity:</strong> Proper firewall rules and network policies</li>
+                <li><strong>Storage:</strong> Sufficient disk space for data and logs</li>
+                <li><strong>Monitoring:</strong> Logging and metrics collection are configured</li>
+                <li><strong>Backup:</strong> Data backup and recovery procedures are in place</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🚀 Step-by-Step Deployment Process</h2>
+        <p>Follow these steps to deploy your agent successfully.</p>
+
+        <div class="pipeline-step">
+            <div class="step-icon validation">1</div>
+            <div class="step-content">
+                <h4>Prepare Agent Configuration</h4>
+                <p>Export your agent configuration from the Agent Builder and validate all parameters.</p>
+                <div class="code-block">
+# Export agent from Agent Builder
+POST /api/agents/export/{agent_id}
+
+# Validate configuration
+POST /api/validation/check-config
+{
+  "agent_config": {...},
+  "environment": "production"
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="pipeline-step">
+            <div class="step-icon testing">2</div>
+            <div class="step-content">
+                <h4>Run Pre-Deployment Tests</h4>
+                <p>Execute comprehensive tests to ensure agent functionality and performance.</p>
+                <div class="code-block">
+# Functional testing
+POST /api/testing/functional
+{
+  "agent_id": "agent_123",
+  "test_data": [...],
+  "test_scenarios": ["happy_path", "error_cases", "edge_cases"]
+}
+
+# Performance testing
+POST /api/testing/performance
+{
+  "agent_id": "agent_123",
+  "duration_minutes": 30,
+  "concurrent_users": 100,
+  "target_response_time_ms": 500
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="pipeline-step">
+            <div class="step-icon build">3</div>
+            <div class="step-content">
+                <h4>Build and Package Agent</h4>
+                <p>Create deployment artifacts and container images for your agent.</p>
+                <div class="code-block">
+# Build deployment package
+POST /api/deployment/build
+{
+  "agent_id": "agent_123",
+  "target_environment": "production",
+  "optimization_level": "high",
+  "include_dependencies": true
+}
+
+# Response includes:
+# - Container image URI
+# - Configuration artifacts
+# - Deployment manifests
+                </div>
+            </div>
+        </div>
+
+        <div class="pipeline-step">
+            <div class="step-icon deploy">4</div>
+            <div class="step-content">
+                <h4>Initiate Deployment</h4>
+                <p>Deploy your agent using the deployment pipeline with proper staging and rollback capabilities.</p>
+                <div class="code-block">
+# Start deployment
+POST /api/deployment/deploy
+{
+  "agent_id": "agent_123",
+  "deployment_strategy": "canary",
+  "traffic_percentage": 10,
+  "rollback_timeout_minutes": 30,
+  "health_check_endpoint": "/health",
+  "monitoring_enabled": true
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="pipeline-step">
+            <div class="step-icon monitor">5</div>
+            <div class="step-content">
+                <h4>Monitor and Optimize</h4>
+                <p>Monitor agent performance and optimize based on production metrics.</p>
+                <div class="code-block">
+# Monitor deployment status
+GET /api/deployment/status/{deployment_id}
+
+# View performance metrics
+GET /api/monitoring/metrics/{agent_id}
+
+# Optimize configuration
+POST /api/optimization/auto-tune
+{
+  "agent_id": "agent_123",
+  "optimization_goals": ["latency", "throughput", "cost"]
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🎛️ Deployment Strategies</h2>
+        <p>Choose the right deployment strategy for your use case.</p>
+
+        <div class="config-table">
+            <tr>
+                <th>Strategy</th>
+                <th>Use Case</th>
+                <th>Risk Level</th>
+                <th>Rollback Speed</th>
+                <th>Resource Usage</th>
+            </tr>
+            <tr>
+                <td><strong>Blue-Green</strong></td>
+                <td>Zero-downtime deployments, critical systems</td>
+                <td>Low</td>
+                <td>Instant</td>
+                <td>High (2x resources)</td>
+            </tr>
+            <tr>
+                <td><strong>Canary</strong></td>
+                <td>Gradual rollout, A/B testing, feature flags</td>
+                <td>Medium</td>
+                <td>Fast</td>
+                <td>Medium</td>
+            </tr>
+            <tr>
+                <td><strong>Rolling Update</strong></td>
+                <td>Standard deployments, resource-constrained environments</td>
+                <td>Medium</td>
+                <td>Medium</td>
+                <td>Low</td>
+            </tr>
+            <tr>
+                <td><strong>Recreate</strong></td>
+                <td>Simple applications, acceptable downtime</td>
+                <td>High</td>
+                <td>Slow</td>
+                <td>Low</td>
+            </tr>
+        </div>
+
+        <h3>Advanced Deployment Features</h3>
+        <div class="success-box">
+            <h4>🔧 Deployment Automation</h4>
+            <ul>
+                <li><strong>Automated Rollbacks:</strong> Instant rollback on failure detection</li>
+                <li><strong>Traffic Management:</strong> Intelligent traffic routing and load balancing</li>
+                <li><strong>A/B Testing:</strong> Compare agent versions with real traffic</li>
+                <li><strong>Feature Flags:</strong> Enable/disable features without redeployment</li>
+                <li><strong>Blue-Green Validation:</strong> Automated validation before traffic switch</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>📊 Deployment Monitoring & Management</h2>
+        <p>Monitor your deployments and manage agent lifecycle effectively.</p>
+
+        <div class="monitoring-grid">
+            <div class="metric-card">
+                <div class="metric-value">99.9%</div>
+                <div class="metric-label">Uptime</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">245ms</div>
+                <div class="metric-label">Avg Response Time</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">1,247</div>
+                <div class="metric-label">Requests/Hour</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">0.1%</div>
+                <div class="metric-label">Error Rate</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">89%</div>
+                <div class="metric-label">CPU Usage</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">2.3GB</div>
+                <div class="metric-label">Memory Usage</div>
+            </div>
+        </div>
+
+        <h3>Deployment Status Dashboard</h3>
+        <div class="deployment-card">
+            <div class="deployment-header">
+                <h4 class="deployment-title">Underwriting Agent v2.1.0</h4>
+                <span class="deployment-status status-running">Running</span>
+            </div>
+            <p><span class="status-indicator status-success"></span> All health checks passing</p>
+            <p><span class="status-indicator status-success"></span> 98% of traffic routed</p>
+            <p><span class="status-indicator status-info"></span> Performance within SLA limits</p>
+            <p><span class="status-indicator status-success"></span> No critical alerts</p>
+        </div>
+
+        <div class="deployment-card">
+            <div class="deployment-header">
+                <h4 class="deployment-title">Claims Processor v1.8.2</h4>
+                <span class="deployment-status status-pending">Canary Deployment</span>
+            </div>
+            <p><span class="status-indicator status-success"></span> Health checks passing</p>
+            <p><span class="status-indicator status-info"></span> 15% of traffic routed</p>
+            <p><span class="status-indicator status-warning"></span> Higher latency observed</p>
+            <p><span class="status-indicator status-success"></span> No error rate increase</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔄 Rollback & Recovery</h2>
+        <p>Ensure business continuity with automated rollback capabilities.</p>
+
+        <div class="rollback-section">
+            <h3>🚨 Automated Rollback Triggers</h3>
+            <div class="error-box">
+                <h4>Critical Failure Conditions:</h4>
+                <ul>
+                    <li><strong>Health Check Failures:</strong> Agent becomes unresponsive</li>
+                    <li><strong>Error Rate Spikes:</strong> Error rate exceeds 5% threshold</li>
+                    <li><strong>Performance Degradation:</strong> Response time exceeds 2x baseline</li>
+                    <li><strong>Resource Exhaustion:</strong> Memory/CPU usage exceeds 95%</li>
+                    <li><strong>Data Integrity Issues:</strong> Data corruption or loss detected</li>
+                </ul>
+            </div>
+
+            <h4>Rollback Strategies</h4>
+            <div class="code-block">
+# Immediate rollback on critical failure
+POST /api/deployment/rollback
+{
+  "deployment_id": "deploy_123",
+  "reason": "health_check_failed",
+  "rollback_strategy": "immediate",
+  "preserve_data": true
+}
+
+# Gradual rollback for performance issues
+POST /api/deployment/rollback
+{
+  "deployment_id": "deploy_123",
+  "reason": "performance_degradation",
+  "rollback_strategy": "gradual",
+  "traffic_reduction_percentage": 20,
+  "monitoring_period_minutes": 30
+}
+            </div>
+        </div>
+
+        <h3>Recovery Procedures</h3>
+        <div class="highlight-box">
+            <h4>🛠️ Post-Rollback Actions</h4>
+            <ul>
+                <li><strong>Root Cause Analysis:</strong> Investigate failure causes</li>
+                <li><strong>Log Analysis:</strong> Review error logs and metrics</li>
+                <li><strong>Configuration Review:</strong> Validate deployment configuration</li>
+                <li><strong>Testing Enhancement:</strong> Add tests for failure scenarios</li>
+                <li><strong>Documentation Update:</strong> Update incident response procedures</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🔧 Deployment API Reference</h2>
+        <p>Complete API reference for deployment operations.</p>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/deployment/deploy</div>
+            <p>Initiate agent deployment with specified parameters</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/deployment/status/{deployment_id}</div>
+            <p>Get real-time deployment status and progress</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/deployment/rollback</div>
+            <p>Initiate rollback to previous version</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">GET</div>
+            <div class="endpoint-url">/api/deployment/history</div>
+            <p>Get deployment history and audit trail</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/deployment/pause</div>
+            <p>Pause ongoing deployment for investigation</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">POST</div>
+            <div class="endpoint-url">/api/deployment/resume</div>
+            <p>Resume paused deployment</p>
+        </div>
+
+        <div class="api-endpoint">
+            <div class="endpoint-method">DELETE</div>
+            <div class="endpoint-url">/api/deployment/{deployment_id}</div>
+            <p>Cancel and cleanup failed deployment</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>🚨 Troubleshooting Deployment Issues</h2>
+        <p>Common deployment problems and solutions.</p>
+
+        <h3>Deployment Failures</h3>
+        <div class="error-box">
+            <h4>❌ "Container build failed" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Check Docker image dependencies and versions</li>
+                <li>Verify build environment has required tools</li>
+                <li>Review build logs for specific error messages</li>
+                <li>Ensure sufficient disk space for build artifacts</li>
+                <li>Validate base image availability and access</li>
+            </ul>
+        </div>
+
+        <h3>Service Connectivity Issues</h3>
+        <div class="warning-box">
+            <h4>❌ "Service dependencies unavailable" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Verify all dependent services are running</li>
+                <li>Check network connectivity and DNS resolution</li>
+                <li>Validate service discovery configuration</li>
+                <li>Review service health check endpoints</li>
+                <li>Check firewall rules and security groups</li>
+            </ul>
+        </div>
+
+        <h3>Performance Problems</h3>
+        <div class="warning-box">
+            <h4>❌ "Agent performance degraded after deployment"</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Compare resource allocation with previous version</li>
+                <li>Review application logs for performance bottlenecks</li>
+                <li>Check database query performance and optimization</li>
+                <li>Validate caching configuration and effectiveness</li>
+                <li>Monitor external service response times</li>
+            </ul>
+        </div>
+
+        <h3>Configuration Issues</h3>
+        <div class="error-box">
+            <h4>❌ "Environment variables not set" Error</h4>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Verify environment variable configuration</li>
+                <li>Check variable precedence and override rules</li>
+                <li>Validate variable format and data types</li>
+                <li>Review configuration file syntax</li>
+                <li>Test configuration loading in staging environment</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Agentic Brain Platform. Deploy with confidence using our enterprise-grade deployment pipeline.</p>
+        <p>Need deployment assistance? Contact our <a href="mailto:support@agenticbrain.com">DevOps support team</a>.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Ingestion Service Guide - AgenticAI Platform</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .endpoint {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .method {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🌐 API Ingestion Service Guide</h1>
+            <p>Complete guide for ingesting data from REST APIs with authentication</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🚀 Overview</h2>
+            <p>The API Ingestion Service fetches data from REST APIs with support for authentication, pagination, rate limiting, and comprehensive error handling.</p>
+            <div class="success">
+                <strong>Key Features:</strong>
+                <ul>
+                    <li>✅ REST API integration</li>
+                    <li>✅ Authentication support (API keys, OAuth)</li>
+                    <li>✅ Pagination handling</li>
+                    <li>✅ Rate limiting</li>
+                    <li>✅ Error recovery</li>
+                    <li>✅ Response validation</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Configuration</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Service Name</td>
+                    <td>api-ingestion-service</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>8086</td>
+                </tr>
+                <tr>
+                    <td>HTTP Client</td>
+                    <td>httpx (async)</td>
+                </tr>
+                <tr>
+                    <td>Rate Limiting</td>
+                    <td>Configurable</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/health</strong>
+                <div class="code-block">
+curl http://localhost:8086/health
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/metrics</strong>
+                <div class="code-block">
+curl http://localhost:8086/metrics
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔐 Authentication Methods</h2>
+            <table>
+                <tr>
+                    <th>Method</th>
+                    <th>Support</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>API Key</td>
+                    <td>✅ Full</td>
+                    <td>Header or query parameter</td>
+                </tr>
+                <tr>
+                    <td>OAuth 2.0</td>
+                    <td>✅ Full</td>
+                    <td>Client credentials flow</td>
+                </tr>
+                <tr>
+                    <td>Basic Auth</td>
+                    <td>✅ Full</td>
+                    <td>Username/password</td>
+                </tr>
+                <tr>
+                    <td>Bearer Token</td>
+                    <td>✅ Full</td>
+                    <td>JWT or custom tokens</td>
+                </tr>
+                <tr>
+                    <td>Custom Headers</td>
+                    <td>✅ Full</td>
+                    <td>Any custom authentication</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📄 Pagination Support</h2>
+            <div class="info">
+                <strong>Supported Pagination Types:</strong>
+                <ul>
+                    <li><strong>Offset-based:</strong> page/size parameters</li>
+                    <li><strong>Cursor-based:</strong> next/previous tokens</li>
+                    <li><strong>Link headers:</strong> RFC 8288 link relations</li>
+                    <li><strong>Custom:</strong> API-specific pagination</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Testing Examples</h2>
+
+            <h3>Health Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8086/health | jq
+            </div>
+
+            <h3>Metrics Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8086/metrics | grep api
+            </div>
+
+            <h3>API Data Ingestion</h3>
+            <div class="code-block">
+import requests
+
+# Ingest data from REST API
+response = requests.post(
+    "http://localhost:8080/ingest/api",
+    json={
+        "source_config": {
+            "url": "https://api.example.com/users",
+            "method": "GET",
+            "headers": {
+                "Authorization": "Bearer your-token",
+                "Accept": "application/json"
+            },
+            "pagination": {
+                "type": "offset",
+                "page_param": "page",
+                "size_param": "limit",
+                "max_pages": 10
+            }
+        },
+        "target_config": {
+            "database": "postgresql",
+            "table": "api_users"
+        }
+    }
+)
+
+result = response.json()
+print(f"Records ingested: {result['records_processed']}")
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            <p><strong>Environment Variables:</strong></p>
+            <ul>
+                <li><code>DATABASE_URL</code> - PostgreSQL connection</li>
+                <li><code>RABBITMQ_HOST</code> - Message queue host</li>
+                <li><code>PORT=8086</code> - Service port</li>
+                <li><code>REQUEST_TIMEOUT=30</code> - HTTP timeout</li>
+                <li><code>MAX_RETRIES=3</code> - Retry attempts</li>
+                <li><code>RATE_LIMIT=100</code> - Requests per minute</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

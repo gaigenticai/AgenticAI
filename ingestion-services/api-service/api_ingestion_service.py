@@ -24,7 +24,7 @@ import pandas as pd
 import psycopg2
 import structlog
 from fastapi import FastAPI
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 import uvicorn
@@ -54,6 +54,9 @@ structlog.configure(
 
 logger = structlog.get_logger()
 
+# Create custom registry for API service to avoid metric name conflicts
+API_REGISTRY = CollectorRegistry()
+
 # FastAPI app
 app = FastAPI(
     title="API Ingestion Service",
@@ -61,12 +64,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Prometheus metrics
-API_REQUESTS_PROCESSED = Counter('api_requests_processed_total', 'Total API requests processed', ['status'])
-API_ENDPOINTS_SCRAPED = Counter('api_endpoints_scraped_total', 'Total API endpoints scraped')
-API_PROCESSING_TIME = Histogram('api_processing_duration_seconds', 'API processing duration', ['operation'])
-API_REQUEST_ERRORS = Counter('api_request_errors_total', 'Total API request errors', ['error_type'])
-ACTIVE_API_JOBS = Gauge('active_api_jobs', 'Number of active API processing jobs')
+# Prometheus metrics - using custom registry to avoid conflicts
+API_REQUESTS_PROCESSED = Counter('api_requests_processed_total', 'Total API requests processed', ['status'], registry=API_REGISTRY)
+API_ENDPOINTS_SCRAPED = Counter('api_endpoints_scraped_total', 'Total API endpoints scraped', registry=API_REGISTRY)
+API_PROCESSING_TIME = Histogram('api_processing_duration_seconds', 'API processing duration', ['operation'], registry=API_REGISTRY)
+API_REQUEST_ERRORS = Counter('api_request_errors_total', 'Total API request errors', ['error_type'], registry=API_REGISTRY)
+ACTIVE_API_JOBS = Gauge('active_api_jobs', 'Number of active API processing jobs', registry=API_REGISTRY)
 
 # Database connection
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
@@ -689,7 +692,7 @@ async def health_check():
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
-    return generate_latest()
+    return generate_latest(API_REGISTRY)
 
 # Startup and shutdown
 @app.on_event("startup")

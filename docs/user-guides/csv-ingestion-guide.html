@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Ingestion Service Guide - AgenticAI Platform</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .endpoint {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-healthy {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .method {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin: 2rem 0;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            border-bottom-color: var(--secondary-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>📊 CSV Ingestion Service Guide</h1>
+            <p>Complete guide for processing CSV files with data validation and quality checks</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🚀 Overview</h2>
+            <p>The CSV Ingestion Service is a robust microservice designed to process CSV files with comprehensive data validation, quality checks, and performance monitoring. It supports:</p>
+            <ul>
+                <li>✅ Automatic data type detection</li>
+                <li>✅ Schema validation</li>
+                <li>✅ Data quality checks</li>
+                <li>✅ Duplicate detection</li>
+                <li>✅ Error handling and recovery</li>
+                <li>✅ Performance monitoring</li>
+                <li>✅ Batch processing capabilities</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Configuration</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Service Name</td>
+                    <td>csv-ingestion-service</td>
+                    <td>Docker container name</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>8080</td>
+                    <td>Internal service port</td>
+                </tr>
+                <tr>
+                    <td>Health Endpoint</td>
+                    <td>/health</td>
+                    <td>Service health check</td>
+                </tr>
+                <tr>
+                    <td>Metrics Endpoint</td>
+                    <td>/metrics</td>
+                    <td>Prometheus metrics</td>
+                </tr>
+                <tr>
+                    <td>Database</td>
+                    <td>PostgreSQL</td>
+                    <td>Data persistence</td>
+                </tr>
+                <tr>
+                    <td>Message Queue</td>
+                    <td>RabbitMQ</td>
+                    <td>Job processing</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/health</strong>
+                <p>Check service health and active jobs</p>
+                <div class="code-block">
+curl http://localhost:8080/health
+                </div>
+                <p><strong>Response:</strong></p>
+                <div class="code-block">
+{
+  "status": "healthy",
+  "service": "csv-ingestion-service",
+  "timestamp": "2025-01-01T12:00:00Z",
+  "active_jobs": 0
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/metrics</strong>
+                <p>Get Prometheus metrics for monitoring</p>
+                <div class="code-block">
+curl http://localhost:8080/metrics
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📁 Supported CSV Formats</h2>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Support</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Custom Delimiters</td>
+                    <td>✅ Yes</td>
+                    <td>Comma, semicolon, tab, pipe</td>
+                </tr>
+                <tr>
+                    <td>Header Detection</td>
+                    <td>✅ Yes</td>
+                    <td>Automatic header row detection</td>
+                </tr>
+                <tr>
+                    <td>Encoding Detection</td>
+                    <td>✅ Yes</td>
+                    <td>UTF-8, ISO-8859-1, etc.</td>
+                </tr>
+                <tr>
+                    <td>Compression</td>
+                    <td>✅ Yes</td>
+                    <td>GZIP, ZIP support</td>
+                </tr>
+                <tr>
+                    <td>Large Files</td>
+                    <td>✅ Yes</td>
+                    <td>Batch processing for big files</td>
+                </tr>
+                <tr>
+                    <td>Schema Validation</td>
+                    <td>✅ Yes</td>
+                    <td>JSON schema validation</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🔍 Data Quality Checks</h2>
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('structure')">Structure</div>
+                <div class="tab" onclick="showTab('content')">Content</div>
+                <div class="tab" onclick="showTab('performance')">Performance</div>
+            </div>
+
+            <div id="structure" class="tab-content active">
+                <h3>Structure Validation</h3>
+                <ul>
+                    <li>✅ Empty file detection</li>
+                    <li>✅ Column count consistency</li>
+                    <li>✅ Header row validation</li>
+                    <li>✅ Data type inference</li>
+                    <li>✅ Null value analysis</li>
+                </ul>
+            </div>
+
+            <div id="content" class="tab-content">
+                <h3>Content Validation</h3>
+                <ul>
+                    <li>✅ Duplicate row detection</li>
+                    <li>✅ Data range validation</li>
+                    <li>✅ Format validation (email, phone, etc.)</li>
+                    <li>✅ Referential integrity checks</li>
+                    <li>✅ Business rule validation</li>
+                </ul>
+            </div>
+
+            <div id="performance" class="tab-content">
+                <h3>Performance Monitoring</h3>
+                <ul>
+                    <li>✅ Processing time tracking</li>
+                    <li>✅ Memory usage monitoring</li>
+                    <li>✅ Error rate tracking</li>
+                    <li>✅ Throughput measurement</li>
+                    <li>✅ Batch processing efficiency</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration Options</h2>
+            <h3>Environment Variables</h3>
+            <table>
+                <tr>
+                    <th>Variable</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>DATABASE_URL</td>
+                    <td>postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion</td>
+                    <td>PostgreSQL connection string</td>
+                </tr>
+                <tr>
+                    <td>RABBITMQ_HOST</td>
+                    <td>rabbitmq</td>
+                    <td>RabbitMQ hostname</td>
+                </tr>
+                <tr>
+                    <td>RABBITMQ_PORT</td>
+                    <td>5672</td>
+                    <td>RabbitMQ port</td>
+                </tr>
+                <tr>
+                    <td>PORT</td>
+                    <td>8080</td>
+                    <td>Service port</td>
+                </tr>
+                <tr>
+                    <td>LOG_LEVEL</td>
+                    <td>INFO</td>
+                    <td>Logging level</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🚨 Error Handling</h2>
+            <div class="warning">
+                <h3>Common Issues & Solutions</h3>
+                <ul>
+                    <li><strong>Encoding Issues:</strong> Ensure CSV files are UTF-8 encoded</li>
+                    <li><strong>Large Files:</strong> Use batch processing for files > 100MB</li>
+                    <li><strong>Memory Issues:</strong> Monitor memory usage for large datasets</li>
+                    <li><strong>Network Timeouts:</strong> Check RabbitMQ connection stability</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Monitoring & Metrics</h2>
+            <p>The service exposes comprehensive metrics for monitoring:</p>
+            <ul>
+                <li><code>csv_files_processed_total</code> - Total CSV files processed</li>
+                <li><code>csv_records_processed_total</code> - Total records processed</li>
+                <li><code>csv_processing_duration_seconds</code> - Processing time histogram</li>
+                <li><code>csv_validation_errors_total</code> - Validation error counter</li>
+                <li><code>active_csv_jobs</code> - Active job gauge</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Testing the Service</h2>
+            <h3>Health Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8080/health | jq
+            </div>
+
+            <h3>Metrics Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8080/metrics | grep csv
+            </div>
+
+            <h3>Integration Testing</h3>
+            <p>Use the ingestion coordinator to submit CSV processing jobs:</p>
+            <div class="code-block">
+# Submit a CSV processing job via ingestion-coordinator
+curl -X POST http://localhost:8080/ingest/csv \
+  -H "Content-Type: application/json" \
+  -d '{
+    "source_config": {
+      "connection_config": {
+        "file_path": "/path/to/your/file.csv"
+      },
+      "read_options": {
+        "delimiter": ",",
+        "encoding": "utf-8"
+      }
+    },
+    "target_config": {
+      "database": "postgresql",
+      "table": "processed_data"
+    }
+  }'
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔗 Integration Examples</h2>
+
+            <h3>Python Client</h3>
+            <div class="code-block">
+import requests
+
+# Health check
+response = requests.get("http://localhost:8080/health")
+print(f"Service Status: {response.json()['status']}")
+
+# Submit CSV job
+job_data = {
+    "source_config": {
+        "connection_config": {"file_path": "data.csv"},
+        "read_options": {"delimiter": ","}
+    },
+    "target_config": {
+        "database": "postgresql",
+        "table": "processed_data"
+    }
+}
+
+response = requests.post(
+    "http://localhost:8080/ingest/csv",
+    json=job_data
+)
+print(f"Job submitted: {response.json()}")
+            </div>
+
+            <h3>JavaScript/Node.js</h3>
+            <div class="code-block">
+const axios = require('axios');
+
+// Health check
+const health = await axios.get('http://localhost:8080/health');
+console.log('Service Status:', health.data.status);
+
+// Submit CSV processing job
+const jobData = {
+    source_config: {
+        connection_config: { file_path: 'data.csv' },
+        read_options: { delimiter: ',' }
+    },
+    target_config: {
+        database: 'postgresql',
+        table: 'processed_data'
+    }
+};
+
+const response = await axios.post(
+    'http://localhost:8080/ingest/csv',
+    jobData
+);
+console.log('Job submitted:', response.data);
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Ingestion Service Guide - AgenticAI Platform</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .endpoint {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .method {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .info {
+            background-color: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🔄 JSON Ingestion Service Guide</h1>
+            <p>Complete guide for processing JSON files and API responses with schema validation</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🚀 Overview</h2>
+            <p>The JSON Ingestion Service processes JSON files and API responses with comprehensive schema validation, data quality checks, and performance monitoring.</p>
+            <div class="success">
+                <strong>Key Features:</strong>
+                <ul>
+                    <li>✅ JSON Schema validation</li>
+                    <li>✅ Nested object processing</li>
+                    <li>✅ Array flattening support</li>
+                    <li>✅ Data type validation</li>
+                    <li>✅ Performance monitoring</li>
+                    <li>✅ Error recovery</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Configuration</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Service Name</td>
+                    <td>json-ingestion-service</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>8085</td>
+                </tr>
+                <tr>
+                    <td>Health Endpoint</td>
+                    <td>/health</td>
+                </tr>
+                <tr>
+                    <td>Metrics Endpoint</td>
+                    <td>/metrics</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/health</strong>
+                <div class="code-block">
+curl http://localhost:8085/health
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/metrics</strong>
+                <div class="code-block">
+curl http://localhost:8085/metrics
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Supported JSON Formats</h2>
+            <table>
+                <tr>
+                    <th>Format Type</th>
+                    <th>Support</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>JSON Objects</td>
+                    <td>✅ Full</td>
+                    <td>Standard JSON object processing</td>
+                </tr>
+                <tr>
+                    <td>JSON Arrays</td>
+                    <td>✅ Full</td>
+                    <td>Array flattening and processing</td>
+                </tr>
+                <tr>
+                    <td>Nested Objects</td>
+                    <td>✅ Full</td>
+                    <td>Multi-level object traversal</td>
+                </tr>
+                <tr>
+                    <td>JSON Lines (.jsonl)</td>
+                    <td>✅ Full</td>
+                    <td>Line-delimited JSON files</td>
+                </tr>
+                <tr>
+                    <td>JSON Schema</td>
+                    <td>✅ Full</td>
+                    <td>Schema validation support</td>
+                </tr>
+                <tr>
+                    <td>API Responses</td>
+                    <td>✅ Full</td>
+                    <td>REST API response processing</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Testing Examples</h2>
+
+            <h3>Health Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8085/health | jq
+            </div>
+
+            <h3>Metrics Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8085/metrics | grep json
+            </div>
+
+            <h3>Python Integration</h3>
+            <div class="code-block">
+import requests
+
+# Test JSON file processing
+json_data = {
+    "users": [
+        {"id": 1, "name": "John", "email": "john@example.com"},
+        {"id": 2, "name": "Jane", "email": "jane@example.com"}
+    ]
+}
+
+response = requests.post(
+    "http://localhost:8080/ingest/json",
+    json={
+        "source_config": {
+            "data": json_data,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "name": {"type": "string"},
+                                "email": {"type": "string"}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            <div class="info">
+                <strong>Environment Variables:</strong>
+                <ul>
+                    <li><code>DATABASE_URL</code> - PostgreSQL connection</li>
+                    <li><code>RABBITMQ_HOST</code> - Message queue host</li>
+                    <li><code>PORT=8085</code> - Service port</li>
+                    <li><code>LOG_LEVEL=INFO</code> - Logging level</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

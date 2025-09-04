@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Ingestion Service Guide - AgenticAI Platform</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            --secondary-color: #059669;
+            --accent-color: #ea580c;
+            --background-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+
+        .endpoint {
+            background: #f1f5f9;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .method {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .success {
+            background-color: #dcfce7;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background-color: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>📄 PDF Ingestion Service Guide</h1>
+            <p>Complete guide for processing PDF files with OCR and text extraction</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🚀 Overview</h2>
+            <p>The PDF Ingestion Service extracts text content from PDF files using advanced OCR technology and text processing capabilities.</p>
+            <div class="success">
+                <strong>Key Features:</strong>
+                <ul>
+                    <li>✅ OCR text extraction (Tesseract)</li>
+                    <li>✅ Native PDF text extraction</li>
+                    <li>✅ Multi-page processing</li>
+                    <li>✅ Image-to-text conversion</li>
+                    <li>✅ Table extraction</li>
+                    <li>✅ Language detection</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Configuration</h2>
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Service Name</td>
+                    <td>pdf-ingestion-service</td>
+                </tr>
+                <tr>
+                    <td>Port</td>
+                    <td>8083</td>
+                </tr>
+                <tr>
+                    <td>OCR Engine</td>
+                    <td>Tesseract OCR</td>
+                </tr>
+                <tr>
+                    <td>Supported Languages</td>
+                    <td>English, Multiple</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📡 API Endpoints</h2>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/health</strong>
+                <div class="code-block">
+curl http://localhost:8083/health
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="method">GET</div>
+                <strong>/metrics</strong>
+                <div class="code-block">
+curl http://localhost:8083/metrics
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 OCR Capabilities</h2>
+            <table>
+                <tr>
+                    <th>Feature</th>
+                    <th>Support</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Text PDFs</td>
+                    <td>✅ Native</td>
+                    <td>Direct text extraction</td>
+                </tr>
+                <tr>
+                    <td>Image PDFs</td>
+                    <td>✅ OCR</td>
+                    <td>Tesseract OCR processing</td>
+                </tr>
+                <tr>
+                    <td>Mixed Content</td>
+                    <td>✅ Hybrid</td>
+                    <td>Text + OCR processing</td>
+                </tr>
+                <tr>
+                    <td>Multi-page</td>
+                    <td>✅ Full</td>
+                    <td>All pages processed</td>
+                </tr>
+                <tr>
+                    <td>Table Extraction</td>
+                    <td>✅ Basic</td>
+                    <td>Table structure detection</td>
+                </tr>
+                <tr>
+                    <td>Language Detection</td>
+                    <td>✅ Yes</td>
+                    <td>Auto language detection</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>🧪 Testing Examples</h2>
+
+            <h3>Health Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8083/health | jq
+            </div>
+
+            <h3>Metrics Check</h3>
+            <div class="code-block">
+curl -s http://localhost:8083/metrics | grep pdf
+            </div>
+
+            <h3>PDF Processing</h3>
+            <div class="code-block">
+import requests
+
+# Process a PDF file
+files = {'file': open('document.pdf', 'rb')}
+response = requests.post(
+    "http://localhost:8080/ingest/pdf",
+    files=files,
+    data={
+        'options': '{"ocr": true, "language": "eng"}'
+    }
+)
+
+result = response.json()
+print(f"Extracted text: {result['text']}")
+print(f"Pages processed: {result['pages']}")
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            <div class="warning">
+                <strong>OCR Requirements:</strong>
+                <ul>
+                    <li>Tesseract OCR must be installed</li>
+                    <li>Language packs for OCR processing</li>
+                    <li>Sufficient memory for large PDFs</li>
+                    <li>Image processing libraries</li>
+                </ul>
+            </div>
+
+            <p><strong>Environment Variables:</strong></p>
+            <ul>
+                <li><code>DATABASE_URL</code> - PostgreSQL connection</li>
+                <li><code>RABBITMQ_HOST</code> - Message queue host</li>
+                <li><code>PORT=8083</code> - Service port</li>
+                <li><code>TESSERACT_LANG=eng</code> - OCR language</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

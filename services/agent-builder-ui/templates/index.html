@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Builder - Agentic Brain Platform</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/static/css/agent-builder.css">
+
+    <!-- Custom Configuration for Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'agent-primary': '#6366f1',
+                        'agent-secondary': '#8b5cf6',
+                        'agent-success': '#10b981',
+                        'agent-warning': '#f59e0b',
+                        'agent-error': '#ef4444'
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-robot text-2xl text-agent-primary"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-xl font-bold text-gray-900">Agent Builder</h1>
+                        <p class="text-sm text-gray-500">No-Code AI Agent Creation Platform</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="new-agent-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-agent-primary hover:bg-agent-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        <i class="fas fa-plus mr-2"></i>
+                        New Agent
+                    </button>
+                    <button id="templates-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        <i class="fas fa-template-icon mr-2"></i>
+                        Templates
+                    </button>
+                    <button id="save-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        <i class="fas fa-save mr-2"></i>
+                        Save
+                    </button>
+                    <button id="deploy-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <i class="fas fa-rocket mr-2"></i>
+                        Deploy
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex h-screen bg-gray-50">
+        <!-- Component Palette Sidebar -->
+        <div id="component-palette" class="w-80 bg-white shadow-lg border-r border-gray-200 flex flex-col">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Components</h2>
+                <p class="text-sm text-gray-500 mt-1">Drag components onto the canvas</p>
+            </div>
+
+            <!-- Component Categories -->
+            <div class="flex-1 overflow-y-auto">
+                <div id="component-categories" class="p-4">
+                    <!-- Components will be loaded here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Palette Footer -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <span>Agent Builder v1.0</span>
+                    <button id="help-btn" class="text-agent-primary hover:text-agent-primary/80">
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Canvas Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Canvas Toolbar -->
+            <div class="bg-white border-b border-gray-200 px-4 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium text-gray-700">Agent:</span>
+                            <input id="agent-name" type="text" placeholder="My AI Agent" class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-agent-primary focus:border-transparent">
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm font-medium text-gray-700">Domain:</span>
+                            <select id="agent-domain" class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-agent-primary focus:border-transparent">
+                                <option value="general">General</option>
+                                <option value="underwriting">Underwriting</option>
+                                <option value="claims">Claims Processing</option>
+                                <option value="fraud_detection">Fraud Detection</option>
+                                <option value="customer_service">Customer Service</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="zoom-in-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <span id="zoom-level" class="text-sm text-gray-600">100%</span>
+                        <button id="zoom-out-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button id="fit-canvas-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                        <div class="border-l border-gray-300 h-6"></div>
+                        <button id="undo-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button id="redo-btn" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="flex-1 relative overflow-hidden">
+                <div id="canvas-container" class="absolute inset-0 bg-white">
+                    <svg id="canvas-svg" class="absolute inset-0 w-full h-full" style="min-width: 2000px; min-height: 1500px;">
+                        <!-- Connection lines will be drawn here -->
+                        <defs>
+                            <!-- Arrow marker for connections -->
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280" />
+                            </marker>
+                            <!-- Selected connection arrow -->
+                            <marker id="arrowhead-selected" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
+                            </marker>
+                            <!-- Valid connection preview arrow -->
+                            <marker id="arrowhead-valid" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#10b981" />
+                            </marker>
+                            <!-- Invalid connection preview arrow -->
+                            <marker id="arrowhead-invalid" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#ef4444" />
+                            </marker>
+                        </defs>
+                    </svg>
+
+                    <!-- Canvas Grid -->
+                    <div id="canvas-grid" class="absolute inset-0 pointer-events-none">
+                        <!-- Grid will be generated by JavaScript -->
+                    </div>
+
+                    <!-- Canvas Components Container -->
+                    <div id="canvas-components" class="absolute inset-0">
+                        <!-- Components will be placed here -->
+                    </div>
+
+                    <!-- Canvas Drop Zone Indicator -->
+                    <div id="drop-zone" class="absolute inset-0 border-2 border-dashed border-agent-primary bg-agent-primary/10 pointer-events-none opacity-0 transition-opacity duration-200 rounded-lg m-4">
+                        <div class="flex items-center justify-center h-full">
+                            <div class="text-center">
+                                <i class="fas fa-plus text-4xl text-agent-primary mb-2"></i>
+                                <p class="text-agent-primary font-medium">Drop component here</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Minimap -->
+                <div id="minimap" class="absolute bottom-4 right-4 w-48 h-32 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden opacity-0 transition-opacity duration-300">
+                    <div class="p-2 border-b border-gray-200">
+                        <span class="text-xs font-medium text-gray-700">Minimap</span>
+                    </div>
+                    <div id="minimap-view" class="relative w-full h-full bg-gray-50">
+                        <!-- Minimap content will be generated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Properties Panel -->
+        <div id="properties-panel" class="w-80 bg-white shadow-lg border-l border-gray-200 flex flex-col">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Properties</h2>
+                <p class="text-sm text-gray-500 mt-1">Configure selected component</p>
+            </div>
+
+            <!-- Properties Content -->
+            <div id="properties-content" class="flex-1 overflow-y-auto p-4">
+                <div id="no-selection" class="text-center py-8">
+                    <i class="fas fa-mouse-pointer text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500">Select a component to configure its properties</p>
+                </div>
+            </div>
+
+            <!-- Properties Footer -->
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <button id="reset-properties-btn" class="px-3 py-1 text-sm text-gray-600 hover:text-gray-800">
+                        Reset
+                    </button>
+                    <button id="apply-properties-btn" class="px-4 py-2 bg-agent-primary text-white text-sm font-medium rounded-md hover:bg-agent-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- New Agent Modal -->
+    <div id="new-agent-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Create New Agent</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Agent Name</label>
+                        <input id="new-agent-name" type="text" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-agent-primary focus:border-transparent" placeholder="My AI Agent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Domain</label>
+                        <select id="new-agent-domain-select" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-agent-primary focus:border-transparent">
+                            <option value="general">General Purpose</option>
+                            <option value="underwriting">Insurance Underwriting</option>
+                            <option value="claims">Claims Processing</option>
+                            <option value="fraud_detection">Fraud Detection</option>
+                            <option value="customer_service">Customer Service</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="new-agent-description" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-agent-primary focus:border-transparent" rows="3" placeholder="Describe your agent's purpose..."></textarea>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancel-new-agent-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button id="create-new-agent-btn" class="px-4 py-2 text-sm font-medium text-white bg-agent-primary hover:bg-agent-primary/90 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        Create Agent
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div id="templates-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white max-h-96 overflow-y-auto">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Choose a Template</h3>
+                <div id="templates-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Templates will be loaded here -->
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button id="close-templates-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Agent Builder Help</h3>
+                <div class="space-y-4 text-sm text-gray-700">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Getting Started</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li>Drag components from the palette onto the canvas</li>
+                            <li>Connect components by dragging from output to input handles</li>
+                            <li>Configure component properties in the properties panel</li>
+                            <li>Save and deploy your agent when ready</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Component Types</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Data Input:</strong> Load data from various sources</li>
+                            <li><strong>Processing:</strong> Transform and analyze data</li>
+                            <li><strong>Decision:</strong> Make conditional choices</li>
+                            <li><strong>Coordination:</strong> Manage multiple agents</li>
+                            <li><strong>Output:</strong> Store or send results</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-2">Keyboard Shortcuts</h4>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><kbd>Ctrl+Z</kbd> - Undo</li>
+                            <li><kbd>Ctrl+Y</kbd> - Redo</li>
+                            <li><kbd>Ctrl+S</kbd> - Save</li>
+                            <li><kbd>Delete</kbd> - Remove selected component</li>
+                            <li><kbd>Ctrl+A</kbd> - Select all</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button id="close-help-btn" class="px-4 py-2 text-sm font-medium text-white bg-agent-primary hover:bg-agent-primary/90 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-agent-primary"></div>
+            <span class="text-gray-700">Processing...</span>
+        </div>
+    </div>
+
+    <!-- Wire Connection Help Overlay -->
+    <div id="wire-help-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Creating Connections</h3>
+                <button id="close-wire-help-btn" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-mouse-pointer text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900">Step 1: Click and Drag</h4>
+                        <p class="text-sm text-gray-600">Click on an output port (right side of component) and drag to create a connection.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900">Step 2: Drop on Target</h4>
+                        <p class="text-sm text-gray-600">Drop the connection on an input port (left side of component). Green highlight = valid connection.</p>
+                    </div>
+                </div>
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-edit text-purple-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-900">Step 3: Manage Connections</h4>
+                        <p class="text-sm text-gray-600">Click connections to select them. Use Delete key or Properties panel to remove connections.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button id="got-it-wire-help-btn" class="px-4 py-2 bg-agent-primary text-white text-sm font-medium rounded-md hover:bg-agent-primary/90">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Dependencies -->
+    <script src="https://unpkg.com/@panva/hkdf@1.1.1/dist/index.js"></script>
+    <script src="https://unpkg.com/jose@4.14.4/dist/browser/index.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/agent-builder.js"></script>
+</body>
+</html>

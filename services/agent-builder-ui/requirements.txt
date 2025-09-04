@@ -1,0 +1,26 @@
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Template Engine
+jinja2==3.1.2
+
+# HTTP Client for API calls
+httpx==0.25.2
+
+# File handling
+python-multipart==0.0.6
+
+# Development and testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Logging
+structlog==23.2.0
+
+# Security
+python-jose[cryptography]==3.3.0
+
+# Utilities
+python-dotenv==1.0.0

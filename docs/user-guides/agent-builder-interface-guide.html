@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Builder Interface Guide - Agentic Brain Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-section h2 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .content-section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        .step-container {
+            display: flex;
+            align-items: flex-start;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+        }
+
+        .step-number {
+            background: #3498db;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .highlight-box {
+            background: #e8f4f8;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .info-box {
+            background: #d1ecf1;
+            border: 1px solid #17a2b8;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .component-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .component-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .component-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .component-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .properties-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .properties-table th,
+        .properties-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        .properties-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .workflow-diagram {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            color: #6c757d;
+        }
+
+        .keyboard-shortcuts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .shortcut {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .navigation {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: #adb5bd;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white;
+            background: #495057;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 Agent Builder Interface Guide</h1>
+        <p>Master the no-code visual interface for creating intelligent AI agents</p>
+    </div>
+
+    <div class="navigation">
+        <div class="nav-links">
+            <a href="#getting-started" class="nav-link">Getting Started</a>
+            <a href="#component-palette" class="nav-link">Component Palette</a>
+            <a href="#drag-drop" class="nav-link">Drag & Drop</a>
+            <a href="#properties-panel" class="nav-link">Properties Panel</a>
+            <a href="#workflow-building" class="nav-link">Workflow Building</a>
+            <a href="#validation-deployment" class="nav-link">Validation & Deployment</a>
+            <a href="#advanced-features" class="nav-link">Advanced Features</a>
+            <a href="#troubleshooting" class="nav-link">Troubleshooting</a>
+        </div>
+    </div>
+
+    <div id="getting-started" class="content-section">
+        <h2>🚀 Getting Started with Agent Builder</h2>
+        <p>The Agent Builder Interface is a powerful no-code visual environment that allows you to create sophisticated AI agents through an intuitive drag-and-drop interface. This guide will walk you through every aspect of building your first agent.</p>
+
+        <div class="step-container">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Access the Agent Builder</h4>
+                <p>Navigate to the Agent Builder UI at <code>http://localhost:8300</code> (or your configured port). The interface loads with a clean canvas ready for your agent design.</p>
+                <div class="info-box">
+                    <strong>💡 Pro Tip:</strong> Ensure all required services are running before accessing the Agent Builder. Check the platform status dashboard for service health.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Understand the Interface Layout</h4>
+                <p>The Agent Builder consists of three main areas:</p>
+                <ul>
+                    <li><strong>Component Palette</strong> (Left Sidebar): Available components for your agent</li>
+                    <li><strong>Canvas</strong> (Center): Visual workflow design area</li>
+                    <li><strong>Properties Panel</strong> (Right Sidebar): Component configuration settings</li>
+                </ul>
+                <div class="workflow-diagram">
+                    [Component Palette] ←→ [Canvas Area] ←→ [Properties Panel]<br>
+                    Drag components here and configure them here
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="component-palette" class="content-section">
+        <h2>🧩 Component Palette - Building Blocks of Your Agent</h2>
+        <p>The Component Palette contains all the building blocks you need to create intelligent agents. Each component serves a specific purpose in your agent's workflow.</p>
+
+        <div class="component-palette">
+            <div class="component-card">
+                <div class="component-icon">📥</div>
+                <h4>Data Input</h4>
+                <p>Ingest data from various sources (CSV, API, PDF, etc.)</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">🤖</div>
+                <h4>LLM Processor</h4>
+                <p>Process data using Large Language Models</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">⚖️</div>
+                <h4>Rule Engine</h4>
+                <p>Apply business rules and decision logic</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">🔀</div>
+                <h4>Decision Node</h4>
+                <p>Route workflow based on conditions</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">👥</div>
+                <h4>Multi-Agent Coordinator</h4>
+                <p>Coordinate multiple agents working together</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">💾</div>
+                <h4>Database Output</h4>
+                <p>Store results in databases</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">📧</div>
+                <h4>Email Output</h4>
+                <p>Send notifications and reports via email</p>
+            </div>
+            <div class="component-card">
+                <div class="component-icon">📄</div>
+                <h4>PDF Report Output</h4>
+                <p>Generate PDF reports from processed data</p>
+            </div>
+        </div>
+
+        <h3>Component Configuration Guide</h3>
+        <div class="highlight-box">
+            <h4>📥 Data Input Component</h4>
+            <table class="properties-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Source Type</td>
+                    <td>Dropdown</td>
+                    <td>Data source format</td>
+                    <td>CSV, API, PDF, JSON</td>
+                </tr>
+                <tr>
+                    <td>File Path/URL</td>
+                    <td>Text/URL</td>
+                    <td>Location of data source</td>
+                    <td>/data/policies.csv</td>
+                </tr>
+                <tr>
+                    <td>Authentication</td>
+                    <td>Credentials</td>
+                    <td>Access credentials if required</td>
+                    <td>API Key, Username/Password</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="highlight-box">
+            <h4>🤖 LLM Processor Component</h4>
+            <table class="properties-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+                <tr>
+                    <td>Model</td>
+                    <td>Dropdown</td>
+                    <td>LLM model to use</td>
+                    <td>GPT-4, GPT-3.5, Claude</td>
+                </tr>
+                <tr>
+                    <td>Temperature</td>
+                    <td>Slider</td>
+                    <td>Creativity level (0-1)</td>
+                    <td>0.7</td>
+                </tr>
+                <tr>
+                    <td>Prompt Template</td>
+                    <td>Textarea</td>
+                    <td>Instructions for the LLM</td>
+                    <td>Analyze this data for risk factors...</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="drag-drop" class="content-section">
+        <h2>🎯 Drag & Drop Interface - Building Your Workflow</h2>
+        <p>Creating agent workflows is as simple as dragging components onto the canvas and connecting them with wires.</p>
+
+        <div class="step-container">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Add Components to Canvas</h4>
+                <p>Click and drag any component from the palette onto the canvas. Components will snap to a grid for clean alignment.</p>
+                <div class="info-box">
+                    <strong>🎨 Visual Feedback:</strong> Components highlight when you hover over them, and connection points appear as small circles.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Connect Components</h4>
+                <p>Click on a connection point (small circle) on one component and drag to another component's connection point. Valid connections will show a green indicator.</p>
+                <div class="warning-box">
+                    <strong>⚠️ Connection Rules:</strong> Only compatible components can be connected. For example, Data Input can connect to LLM Processor, but not directly to Email Output.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Configure Connections</h4>
+                <p>Right-click on any connection to view connection properties, data mapping, and transformation rules.</p>
+            </div>
+        </div>
+
+        <h3>Keyboard Shortcuts</h3>
+        <div class="keyboard-shortcuts">
+            <div class="shortcut">
+                <span>Delete Component</span>
+                <span>Del</span>
+            </div>
+            <div class="shortcut">
+                <span>Copy Component</span>
+                <span>Ctrl+C</span>
+            </div>
+            <div class="shortcut">
+                <span>Paste Component</span>
+                <span>Ctrl+V</span>
+            </div>
+            <div class="shortcut">
+                <span>Select All</span>
+                <span>Ctrl+A</span>
+            </div>
+            <div class="shortcut">
+                <span>Undo</span>
+                <span>Ctrl+Z</span>
+            </div>
+            <div class="shortcut">
+                <span>Redo</span>
+                <span>Ctrl+Y</span>
+            </div>
+            <div class="shortcut">
+                <span>Zoom In</span>
+                <span>Ctrl++</span>
+            </div>
+            <div class="shortcut">
+                <span>Zoom Out</span>
+                <span>Ctrl+-</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="properties-panel" class="content-section">
+        <h2>⚙️ Properties Panel - Fine-Tuning Your Components</h2>
+        <p>The Properties Panel allows you to configure each component's behavior, parameters, and integration settings.</p>
+
+        <h3>Dynamic Property Types</h3>
+        <div class="highlight-box">
+            <h4>Available Property Input Types:</h4>
+            <ul>
+                <li><strong>Text Fields:</strong> Single-line text input for names, descriptions, file paths</li>
+                <li><strong>Text Areas:</strong> Multi-line text for prompts, descriptions, SQL queries</li>
+                <li><strong>Dropdowns:</strong> Predefined options for models, data types, authentication methods</li>
+                <li><strong>Number Inputs:</strong> Numeric values with validation and step controls</li>
+                <li><strong>Sliders:</strong> Visual controls for ranges (temperature, confidence thresholds)</li>
+                <li><strong>Boolean Toggles:</strong> On/off switches for features and options</li>
+                <li><strong>File Uploads:</strong> Document and data file selection</li>
+                <li><strong>JSON Editors:</strong> Structured data configuration with syntax validation</li>
+                <li><strong>Array Builders:</strong> Dynamic lists for multiple values or configurations</li>
+            </ul>
+        </div>
+
+        <h3>Real-Time Validation</h3>
+        <div class="info-box">
+            <strong>✅ Smart Validation:</strong> The Properties Panel provides real-time validation feedback:
+            <ul>
+                <li>Green checkmarks for valid configurations</li>
+                <li>Red warnings for invalid or missing required fields</li>
+                <li>Yellow warnings for recommended but optional settings</li>
+                <li>Help tooltips explaining each property's purpose</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="workflow-building" class="content-section">
+        <h2>🔄 Workflow Building - Creating Agent Logic</h2>
+        <p>Learn how to build sophisticated agent workflows with branching logic, parallel processing, and error handling.</p>
+
+        <h3>Basic Linear Workflow</h3>
+        <div class="code-block">
+Data Input → LLM Processor → Database Output
+       ↓
+   CSV File → Risk Analysis → Store Results
+        </div>
+
+        <h3>Decision-Based Workflow</h3>
+        <div class="code-block">
+Data Input → Rule Engine → Decision Node
+       ↓            ↓             ↓
+   Load Data → Apply Rules → Risk Score > 0.7?
+                              ↓            ↓
+                        Yes (High Risk)   No (Low Risk)
+                              ↓                   ↓
+                       Manual Review → Email Notification
+                              ↓
+                       Database Storage
+        </div>
+
+        <h3>Parallel Processing Workflow</h3>
+        <div class="code-block">
+               Data Input
+                  ↓
+            ┌─────┴─────┐
+            ↓           ↓
+    Fraud Analysis  Risk Assessment
+            ↓           ↓
+            └─────┬─────┘
+                  ↓
+            Decision Engine
+                  ↓
+         Final Recommendation
+        </div>
+
+        <h3>Advanced Workflow Patterns</h3>
+        <div class="highlight-box">
+            <h4>🔄 Loop Patterns</h4>
+            <p>Create iterative workflows that process data in batches or refine results through multiple passes.</p>
+        </div>
+
+        <div class="highlight-box">
+            <h4>🎯 Conditional Branching</h4>
+            <p>Route data through different processing paths based on conditions, thresholds, or classification results.</p>
+        </div>
+
+        <div class="highlight-box">
+            <h4>⚡ Parallel Execution</h4>
+            <p>Process multiple data streams simultaneously for improved performance and throughput.</p>
+        </div>
+    </div>
+
+    <div id="validation-deployment" class="content-section">
+        <h2>🚀 Validation & Deployment - Bringing Your Agent to Life</h2>
+        <p>Before deploying your agent, ensure it's properly configured and tested.</p>
+
+        <div class="step-container">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h4>Workflow Validation</h4>
+                <p>Click the "Validate" button to check your workflow for:</p>
+                <ul>
+                    <li>Component connectivity and compatibility</li>
+                    <li>Required property configurations</li>
+                    <li>Data flow integrity</li>
+                    <li>Potential bottlenecks or inefficiencies</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h4>Test Execution</h4>
+                <p>Run your agent with sample data to verify functionality before deployment.</p>
+                <div class="info-box">
+                    <strong>🧪 Test Mode:</strong> Test executions don't affect production data and provide detailed execution logs for debugging.
+                </div>
+            </div>
+        </div>
+
+        <div class="step-container">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h4>Deploy Agent</h4>
+                <p>Once validated and tested, deploy your agent to the production environment.</p>
+                <div class="warning-box">
+                    <strong>⚠️ Deployment Checklist:</strong>
+                    <ul>
+                        <li>All required services are running</li>
+                        <li>Agent has proper resource allocation</li>
+                        <li>Monitoring and logging are configured</li>
+                        <li>Rollback plan is in place</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="advanced-features" class="content-section">
+        <h2>🔬 Advanced Features - Power User Capabilities</h2>
+        <p>Unlock the full potential of the Agent Builder with advanced features and configuration options.</p>
+
+        <h3>Template System</h3>
+        <div class="highlight-box">
+            <h4>📋 Pre-built Templates</h4>
+            <p>Use professionally designed agent templates for common business scenarios:</p>
+            <ul>
+                <li><strong>Underwriting Agent:</strong> Risk assessment and policy approval</li>
+                <li><strong>Claims Processor:</strong> Fraud detection and claim validation</li>
+                <li><strong>Customer Service Bot:</strong> Automated customer interaction</li>
+                <li><strong>Data Analytics Agent:</strong> Automated reporting and insights</li>
+                <li><strong>Document Processor:</strong> OCR and content analysis</li>
+            </ul>
+        </div>
+
+        <h3>Plugin Integration</h3>
+        <div class="highlight-box">
+            <h4>🔌 Domain-Specific Plugins</h4>
+            <p>Extend your agents with specialized plugins:</p>
+            <ul>
+                <li><strong>Risk Calculator:</strong> Advanced risk modeling</li>
+                <li><strong>Fraud Detector:</strong> Machine learning fraud detection</li>
+                <li><strong>Regulatory Checker:</strong> Compliance monitoring</li>
+                <li><strong>Document Analyzer:</strong> AI-powered document processing</li>
+                <li><strong>Sentiment Analyzer:</strong> Customer feedback analysis</li>
+            </ul>
+        </div>
+
+        <h3>Multi-Agent Coordination</h3>
+        <div class="highlight-box">
+            <h4>👥 Collaborative Agents</h4>
+            <p>Create complex systems where multiple agents work together:</p>
+            <ul>
+                <li>Agent specialization and task delegation</li>
+                <li>Inter-agent communication protocols</li>
+                <li>Consensus-based decision making</li>
+                <li>Load balancing and resource optimization</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="troubleshooting" class="content-section">
+        <h2>🔧 Troubleshooting - Common Issues & Solutions</h2>
+        <p>Find solutions to common problems encountered while building agents.</p>
+
+        <h3>Connection Issues</h3>
+        <div class="warning-box">
+            <h4>❌ "Cannot connect components" Error</h4>
+            <p><strong>Solution:</strong> Ensure component compatibility. Check the data types and expected inputs/outputs in the component documentation.</p>
+        </div>
+
+        <h3>Configuration Problems</h3>
+        <div class="warning-box">
+            <h4>❌ "Required field missing" Validation Error</h4>
+            <p><strong>Solution:</strong> Review the Properties Panel for all components. Red-highlighted fields indicate missing required configurations.</p>
+        </div>
+
+        <h3>Performance Issues</h3>
+        <div class="warning-box">
+            <h4>❌ Agent running slowly</h4>
+            <p><strong>Solutions:</strong>
+                <ul>
+                    <li>Optimize LLM model selection (use smaller models for simple tasks)</li>
+                    <li>Reduce parallel processing if resource constraints exist</li>
+                    <li>Implement caching for frequently accessed data</li>
+                    <li>Review and optimize data processing pipelines</li>
+                </ul>
+            </p>
+        </div>
+
+        <h3>Deployment Failures</h3>
+        <div class="warning-box">
+            <h4>❌ Deployment validation errors</h4>
+            <p><strong>Solution:</strong> Run the validation checker before deployment. Address all warnings and errors in the validation report.</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Agentic Brain Platform. Built with ❤️ for intelligent automation.</p>
+        <p>Need help? Check our <a href="troubleshooting-guide.html">Troubleshooting Guide</a> or contact support.</p>
+    </div>
+</body>
+</html>
