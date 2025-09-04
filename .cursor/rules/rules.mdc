@@ -19,7 +19,7 @@ alwaysApply: true
 12. After every feature development, you will perform automated testing of the UI and every code to ensure they are functional before moving on to the next feature item.
 13. UNDER NO CIRCUMSTANCE WILL YOU CREATE A MAKE SHIFT OR WORKAROUND OR SIMPLIED VERSION OF ANY CODE JUST TO PASS TESTS OR MAKE THINGS WORK. THINGS MUST BE PRODUCTION GRADE.
 14. YOU WILL NOT PROVIDE LONG SUMMARIES AFTER EACH TASK, TASK/PHASE COMPLETION SUMMARIES MUST BE SHORT AND CRISP.
-15. YOU WILL ABSOLUTELY NO PROCEED TO SUBSEQUENT PHASES UNLESS ALL ISSUES IN CURRENT PHASE ARE COMPLETED NO MATTER NOW SMALL OR NON-CRITICAL THEY ARE.
+15. YOU WILL ABSOLUTELY NO PROCEED TO SUBSEQUENT PHASES UNLESS ALL ISSUES IN CURRENT PHASE ARE COMPLETED NO MATTER HOW SMALL OR NON-CRITICAL THEY ARE.
 16. You will not create a make shift or workaround or simplified version of any code just to pass tests or make things work. Things must be production grade.
 17. Every code must have comments about what the code is for and comments acorss the code which will enable the otherdevelopers to understand what the code is for.
 18. Absolutely no VENV and everything should be docker tested, unless you cannot use docker you must let me know and then get approval before using VENV.

@@ -80,6 +80,28 @@ volumes:
   e2e_testing_data:
   e2e_testing_screenshots:
 
+  # Automated Testing Service volumes
+  automated_testing_workspace:
+  automated_testing_results:
+  automated_testing_logs:
+
+  # UI Quality Verification Service volumes
+  ui_quality_screenshots:
+  ui_quality_reports:
+  ui_quality_temp:
+
+  # Documentation Service volumes
+  docs_content:
+  docs_media:
+
+  # Performance Optimization Service volumes
+  performance_optimization_data:
+  performance_optimization_logs:
+
+  # Platform Validation Service volumes
+  platform_validation_data:
+  platform_validation_logs:
+
 services:
   # === INPUT LAYER SERVICES ===
 
@@ -2154,6 +2176,222 @@ services:
       - agentic-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8380/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Automated Testing Service - Comprehensive automated testing framework
+  automated-testing-service:
+    build: ./services/automated-testing-service
+    container_name: agentic-automated-testing-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - AUTOMATED_TESTING_PORT=${AUTOMATED_TESTING_PORT:-8390}
+      - HOST=0.0.0.0
+      - MAX_CONCURRENT_TESTS=${MAX_CONCURRENT_TESTS:-10}
+      - TEST_TIMEOUT_SECONDS=${TEST_TIMEOUT_SECONDS:-600}
+      - RESULTS_RETENTION_DAYS=${RESULTS_RETENTION_DAYS:-30}
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - UI_TESTING_URL=http://ui-testing-service:8310
+      - INTEGRATION_TESTS_URL=http://integration-tests:8320
+      - AUTHENTICATION_URL=http://authentication-service:8330
+      - MONITORING_SERVICE_URL=http://monitoring-metrics-service:8350
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - automated_testing_workspace:/app/test_workspace
+      - automated_testing_results:/app/test_results
+      - automated_testing_logs:/app/test_logs
+    ports:
+      - "${AUTOMATED_TESTING_PORT:-8390}:8390"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8390/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # UI Quality Verification Service - Comprehensive UI quality assessment
+  ui-quality-verification-service:
+    build: ./services/ui-quality-verification-service
+    container_name: agentic-ui-quality-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - UI_QUALITY_PORT=${UI_QUALITY_PORT:-8400}
+      - HOST=0.0.0.0
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - DASHBOARD_UI_URL=http://nginx:80
+      - UI_TESTING_URL=http://ui-testing-service:8310
+      - MIN_COLOR_CONTRAST_RATIO=${MIN_COLOR_CONTRAST_RATIO:-4.5}
+      - MIN_FONT_SIZE=${MIN_FONT_SIZE:-14}
+      - MAX_LOAD_TIME_SECONDS=${MAX_LOAD_TIME_SECONDS:-3.0}
+      - MIN_INTERACTION_TIME_MS=${MIN_INTERACTION_TIME_MS:-100}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - ui_quality_screenshots:/app/screenshots
+      - ui_quality_reports:/app/reports
+      - ui_quality_temp:/app/temp
+    ports:
+      - "${UI_QUALITY_PORT:-8400}:8400"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8400/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Documentation Service - Web-based documentation portal
+  documentation-service:
+    build: ./services/documentation-service
+    container_name: agentic-documentation-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DOCUMENTATION_PORT=${DOCUMENTATION_PORT:-8410}
+      - HOST=0.0.0.0
+      - DOCS_LANGUAGE=${DOCS_LANGUAGE:-en}
+      - SUPPORTED_LANGUAGES=${SUPPORTED_LANGUAGES:-en,es,fr,de,zh}
+      - DOCS_CACHE_TTL=${DOCS_CACHE_TTL:-3600}
+      - MAX_CONTENT_SIZE=${MAX_CONTENT_SIZE:-10485760}
+      - ENABLE_ANALYTICS=${ENABLE_ANALYTICS:-true}
+      - ANALYTICS_RETENTION_DAYS=${ANALYTICS_RETENTION_DAYS:-365}
+      - AGENT_BUILDER_UI_URL=http://agent-builder-ui:8300
+      - API_BASE_URL=http://agent-orchestrator:8200
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - docs_content:/app/docs_content
+      - docs_media:/app/docs_media
+    ports:
+      - "${DOCUMENTATION_PORT:-8410}:8410"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8410/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Performance Optimization Service - Automated performance monitoring and optimization
+  performance-optimization-service:
+    build: ./services/performance-optimization-service
+    container_name: agentic-performance-optimization-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - PERFORMANCE_OPTIMIZATION_PORT=${PERFORMANCE_OPTIMIZATION_PORT:-8420}
+      - HOST=0.0.0.0
+      - MONITORING_INTERVAL=${MONITORING_INTERVAL:-30}
+      - PERFORMANCE_RETENTION_DAYS=${PERFORMANCE_RETENTION_DAYS:-30}
+      - ALERT_THRESHOLD_CPU=${ALERT_THRESHOLD_CPU:-80.0}
+      - ALERT_THRESHOLD_MEMORY=${ALERT_THRESHOLD_MEMORY:-85.0}
+      - ALERT_THRESHOLD_DISK=${ALERT_THRESHOLD_DISK:-90.0}
+      - ENABLE_AUTO_OPTIMIZATION=${ENABLE_AUTO_OPTIMIZATION:-true}
+      - OPTIMIZATION_CHECK_INTERVAL=${OPTIMIZATION_CHECK_INTERVAL:-300}
+      - CONNECTION_POOL_SIZE=${CONNECTION_POOL_SIZE:-20}
+      - CACHE_TTL_SECONDS=${CACHE_TTL_SECONDS:-3600}
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - MONITORING_SERVICE_URL=http://monitoring-metrics-service:8350
+      - PROMETHEUS_URL=${PROMETHEUS_URL:-http://prometheus:9090}
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+    volumes:
+      - performance_optimization_data:/app/performance_data
+      - performance_optimization_logs:/app/optimization_logs
+    ports:
+      - "${PERFORMANCE_OPTIMIZATION_PORT:-8420}:8420"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8420/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # Platform Validation Service - Comprehensive platform validation and production readiness assessment
+  platform-validation-service:
+    build: ./services/platform-validation-service
+    container_name: agentic-platform-validation-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      agent-orchestrator:
+        condition: service_healthy
+      brain-factory:
+        condition: service_healthy
+      deployment-pipeline:
+        condition: service_healthy
+    environment:
+      - PLATFORM_VALIDATION_PORT=${PLATFORM_VALIDATION_PORT:-8430}
+      - HOST=0.0.0.0
+      - DATABASE_URL=postgresql://user:password@postgres:5432/agentic_brain
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - VALIDATION_TIMEOUT=${VALIDATION_TIMEOUT:-300}
+      - HEALTH_CHECK_INTERVAL=${HEALTH_CHECK_INTERVAL:-60}
+      - PERFORMANCE_TEST_DURATION=${PERFORMANCE_TEST_DURATION:-60}
+      - AGENT_ORCHESTRATOR_URL=http://agent-orchestrator:8200
+      - BRAIN_FACTORY_URL=http://brain-factory:8301
+      - DEPLOYMENT_PIPELINE_URL=http://deployment-pipeline:8303
+      - MONITORING_METRICS_URL=http://monitoring-metrics-service:8350
+      - AUDIT_LOGGING_URL=http://audit-logging-service:8340
+      - UI_TESTING_URL=http://ui-testing-service:8310
+      - INTEGRATION_TESTS_URL=http://integration-tests:8320
+      - AUTOMATED_TESTING_URL=http://automated-testing-service:8390
+      - UI_QUALITY_URL=http://ui-quality-verification-service:8400
+      - DOCUMENTATION_URL=http://documentation-service:8410
+      - PERFORMANCE_OPTIMIZATION_URL=http://performance-optimization-service:8420
+    volumes:
+      - platform_validation_data:/app/data
+      - platform_validation_logs:/app/logs
+    ports:
+      - "${PLATFORM_VALIDATION_PORT:-8430}:8430"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8430/health"]
       interval: 30s
       timeout: 10s
       retries: 3

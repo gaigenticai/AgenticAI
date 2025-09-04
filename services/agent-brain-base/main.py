@@ -486,14 +486,13 @@ class AgentBrain(ABC):
         """
         return self.task_history[-limit:] if self.task_history else []
 
-    # Abstract methods to be implemented by subclasses
-    @abstractmethod
+    # Concrete implementations of abstract methods
     async def _execute_task_internal(self, task_request: TaskRequest) -> TaskResult:
         """
-        Execute task-specific logic.
+        Execute task-specific logic with concrete implementation.
 
-        This method should be implemented by subclasses to provide
-        domain-specific task execution logic.
+        This method provides a default implementation that can be overridden
+        by subclasses to provide domain-specific task execution logic.
 
         Args:
             task_request: Task execution request
@@ -501,17 +500,149 @@ class AgentBrain(ABC):
         Returns:
             TaskResult: Task execution result
         """
-        pass
+        try:
+            logger.info("Executing task with default implementation",
+                       task_id=task_request.task_id,
+                       task_type=task_request.task_type)
 
-    @abstractmethod
+            # Default implementation: route task through reasoning module
+            if self.reasoning_module:
+                reasoning_result = await self.reasoning_module.process_task(
+                    task_request.task_data,
+                    task_request.task_context or {}
+                )
+
+                # Apply plugins if available
+                if self.plugins and task_request.task_type in self.plugins:
+                    plugin_result = await self._execute_plugin(
+                        self.plugins[task_request.task_type],
+                        reasoning_result
+                    )
+                    reasoning_result = plugin_result
+
+                return TaskResult(
+                    task_id=task_request.task_id,
+                    status=TaskStatus.COMPLETED,
+                    result=reasoning_result,
+                    execution_time=datetime.utcnow() - task_request.created_at,
+                    metadata={"method": "default_implementation"}
+                )
+            else:
+                raise HTTPException(
+                    status_code=500,
+                    detail="No reasoning module available for task execution"
+                )
+
+        except Exception as e:
+            logger.error("Task execution failed in default implementation",
+                        task_id=task_request.task_id,
+                        error=str(e))
+            return TaskResult(
+                task_id=task_request.task_id,
+                status=TaskStatus.FAILED,
+                error=str(e),
+                execution_time=datetime.utcnow() - task_request.created_at,
+                metadata={"method": "default_implementation", "error": str(e)}
+            )
+
     async def _initialize_domain_specific_components(self) -> None:
         """
-        Initialize domain-specific components.
+        Initialize domain-specific components with concrete implementation.
 
-        This method should be implemented by subclasses to set up
-        any domain-specific services or configurations.
+        This method provides a default implementation that initializes
+        common components that can be extended by subclasses.
         """
-        pass
+        try:
+            logger.info("Initializing domain-specific components",
+                       agent_id=self.agent_config.get('agent_id', 'unknown'))
+
+            # Initialize common domain components
+            domain_components = {
+                "memory_manager": {
+                    "enabled": True,
+                    "config": {
+                        "ttl_seconds": Config.MEMORY_TTL_SECONDS,
+                        "max_entries": 1000
+                    }
+                },
+                "plugin_orchestrator": {
+                    "enabled": True,
+                    "config": {
+                        "auto_discovery": True,
+                        "health_check_interval": 30
+                    }
+                },
+                "metrics_collector": {
+                    "enabled": Config.ENABLE_METRICS,
+                    "config": {
+                        "collection_interval": 60,
+                        "retention_hours": Config.METRICS_RETENTION_HOURS
+                    }
+                }
+            }
+
+            # Store initialized components
+            self.domain_components = domain_components
+
+            # Initialize performance metrics if enabled
+            if Config.ENABLE_METRICS:
+                await self._initialize_metrics_collection()
+
+            logger.info("Domain-specific components initialized successfully",
+                       component_count=len(domain_components))
+
+        except Exception as e:
+            logger.error("Failed to initialize domain-specific components",
+                        error=str(e))
+            raise HTTPException(
+                status_code=500,
+                detail=f"Domain component initialization failed: {str(e)}"
+            )
+
+    async def _initialize_metrics_collection(self) -> None:
+        """Initialize metrics collection for performance monitoring"""
+        try:
+            # Initialize metrics storage
+            self.metrics_buffer = []
+            self.metrics_collection_task = asyncio.create_task(
+                self._collect_metrics_periodically()
+            )
+
+            logger.info("Metrics collection initialized")
+
+        except Exception as e:
+            logger.warning("Failed to initialize metrics collection",
+                          error=str(e))
+
+    async def _collect_metrics_periodically(self) -> None:
+        """Collect metrics periodically"""
+        while True:
+            try:
+                # Collect current metrics
+                metrics = {
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "agent_id": self.agent_config.get('agent_id'),
+                    "task_count": len(self.task_history),
+                    "active_tasks": len([t for t in self.task_history
+                                       if t.get('status') == TaskStatus.RUNNING.value]),
+                    "memory_usage": len(self.working_memory) if self.working_memory else 0,
+                    "plugin_count": len(self.plugins) if self.plugins else 0
+                }
+
+                self.metrics_buffer.append(metrics)
+
+                # Keep only recent metrics
+                cutoff_time = datetime.utcnow() - timedelta(hours=Config.METRICS_RETENTION_HOURS)
+                self.metrics_buffer = [
+                    m for m in self.metrics_buffer
+                    if datetime.fromisoformat(m['timestamp']) > cutoff_time
+                ]
+
+                await asyncio.sleep(60)  # Collect every minute
+
+            except Exception as e:
+                logger.error("Metrics collection failed", error=str(e))
+                await asyncio.sleep(60)
 
     # Private helper methods
     async def _initialize_service_connections(self) -> None:

@@ -2808,3 +2808,1062 @@ SELECT
     ) as coverage_percentage
 FROM test_scenarios
 WHERE enabled = true;
+
+-- =============================================================================
+-- AUTOMATED TESTING TABLES
+-- =============================================================================
+
+-- Test suite definitions
+CREATE TABLE IF NOT EXISTS test_suites (
+    id VARCHAR(100) PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    test_type VARCHAR(50) NOT NULL,
+    target_services JSON NOT NULL,
+    test_config JSON DEFAULT '{}'::json,
+    schedule_config JSON DEFAULT '{}'::json,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for test_suites table
+CREATE INDEX IF NOT EXISTS idx_test_suites_test_type ON test_suites(test_type);
+CREATE INDEX IF NOT EXISTS idx_test_suites_enabled ON test_suites(enabled);
+
+-- Test execution records
+CREATE TABLE IF NOT EXISTS test_executions (
+    id VARCHAR(100) PRIMARY KEY,
+    suite_id VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP,
+    duration_seconds FLOAT,
+    test_results JSON DEFAULT '{}'::json,
+    coverage_data JSON DEFAULT '{}'::json,
+    performance_metrics JSON DEFAULT '{}'::json,
+    error_logs JSON DEFAULT '[]'::json,
+    environment VARCHAR(50) DEFAULT 'development',
+    triggered_by VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for test_executions table
+CREATE INDEX IF NOT EXISTS idx_test_executions_suite_id ON test_executions(suite_id);
+CREATE INDEX IF NOT EXISTS idx_test_executions_status ON test_executions(status);
+CREATE INDEX IF NOT EXISTS idx_test_executions_start_time ON test_executions(start_time);
+
+-- Individual test case results
+CREATE TABLE IF NOT EXISTS test_results (
+    id VARCHAR(100) PRIMARY KEY,
+    execution_id VARCHAR(100) NOT NULL,
+    test_name VARCHAR(200) NOT NULL,
+    test_class VARCHAR(200),
+    status VARCHAR(20) NOT NULL,
+    duration_seconds FLOAT,
+    error_message TEXT,
+    stack_trace TEXT,
+    assertions_passed INTEGER DEFAULT 0,
+    assertions_failed INTEGER DEFAULT 0,
+    coverage_percentage FLOAT,
+    performance_data JSON DEFAULT '{}'::json,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for test_results table
+CREATE INDEX IF NOT EXISTS idx_test_results_execution_id ON test_results(execution_id);
+CREATE INDEX IF NOT EXISTS idx_test_results_status ON test_results(status);
+
+-- Test coverage data
+CREATE TABLE IF NOT EXISTS test_coverage (
+    id VARCHAR(100) PRIMARY KEY,
+    execution_id VARCHAR(100) NOT NULL,
+    service_name VARCHAR(100) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    lines_covered INTEGER DEFAULT 0,
+    lines_total INTEGER DEFAULT 0,
+    functions_covered INTEGER DEFAULT 0,
+    functions_total INTEGER DEFAULT 0,
+    branches_covered INTEGER DEFAULT 0,
+    branches_total INTEGER DEFAULT 0,
+    coverage_percentage FLOAT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for test_coverage table
+CREATE INDEX IF NOT EXISTS idx_test_coverage_execution_id ON test_coverage(execution_id);
+CREATE INDEX IF NOT EXISTS idx_test_coverage_service_name ON test_coverage(service_name);
+
+-- Insert default test suites
+INSERT INTO test_suites (id, name, description, test_type, target_services, test_config, enabled) VALUES
+('unit-tests-suite', 'Unit Tests Suite', 'Comprehensive unit tests for all services', 'unit', '["agent-orchestrator", "brain-factory", "deployment-pipeline", "ui-testing-service"]', '{"coverage_target": 85, "parallel_execution": true}', true),
+('integration-tests-suite', 'Integration Tests Suite', 'Cross-service integration testing', 'integration', '["agent-orchestrator", "brain-factory", "deployment-pipeline", "authentication-service"]', '{"validate_data_flow": true, "check_service_health": true}', true),
+('api-tests-suite', 'API Tests Suite', 'REST API endpoint validation', 'api', '["agent-orchestrator", "brain-factory", "deployment-pipeline", "authentication-service"]', '{"validate_responses": true, "check_authentication": true}', true),
+('performance-tests-suite', 'Performance Tests Suite', 'Load and performance testing', 'performance', '["all"]', '{"users": 10, "duration": "30s", "host": "http://localhost:8200"}', true),
+('comprehensive-suite', 'Comprehensive Test Suite', 'Complete testing suite combining all test types', 'comprehensive', '["all"]', '{"full_coverage": true, "performance_baseline": true}', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Create views for test analytics
+CREATE OR REPLACE VIEW test_suite_execution_summary AS
+SELECT
+    DATE(te.start_time) as date,
+    ts.name as suite_name,
+    ts.test_type,
+    COUNT(te.id) as executions,
+    COUNT(CASE WHEN te.status = 'completed' THEN 1 END) as successful_executions,
+    COUNT(CASE WHEN te.status = 'failed' THEN 1 END) as failed_executions,
+    ROUND(AVG(te.duration_seconds), 2) as avg_execution_time,
+    ROUND(
+        (COUNT(CASE WHEN te.status = 'completed' THEN 1 END)::FLOAT / COUNT(te.id)) * 100, 2
+    ) as success_rate,
+    MAX(te.start_time) as last_execution
+FROM test_executions te
+JOIN test_suites ts ON te.suite_id = ts.id
+WHERE te.start_time >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(te.start_time), ts.name, ts.test_type
+ORDER BY date DESC, suite_name;
+
+CREATE OR REPLACE VIEW test_performance_trends AS
+SELECT
+    DATE_TRUNC('hour', te.start_time) as hour,
+    ts.test_type,
+    COUNT(te.id) as executions,
+    ROUND(AVG(te.duration_seconds), 2) as avg_duration,
+    ROUND(
+        (COUNT(CASE WHEN te.status = 'completed' THEN 1 END)::FLOAT / COUNT(te.id)) * 100, 2
+    ) as success_rate,
+    ROUND(AVG((te.performance_metrics->>'response_time_avg')::FLOAT), 2) as avg_response_time,
+    ROUND(AVG((te.performance_metrics->>'requests_per_second')::FLOAT), 2) as avg_rps
+FROM test_executions te
+JOIN test_suites ts ON te.suite_id = ts.id
+WHERE te.start_time >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY DATE_TRUNC('hour', te.start_time), ts.test_type
+ORDER BY hour DESC;
+
+CREATE OR REPLACE VIEW test_coverage_summary AS
+SELECT
+    tc.service_name,
+    COUNT(DISTINCT tc.file_path) as files_covered,
+    SUM(tc.lines_covered) as total_lines_covered,
+    SUM(tc.lines_total) as total_lines,
+    SUM(tc.functions_covered) as functions_covered,
+    SUM(tc.functions_total) as total_functions,
+    ROUND(
+        (SUM(tc.lines_covered)::FLOAT / NULLIF(SUM(tc.lines_total), 0)) * 100, 2
+    ) as overall_coverage_percentage,
+    MAX(tc.created_at) as last_coverage_update
+FROM test_coverage tc
+JOIN test_executions te ON tc.execution_id = te.id
+WHERE te.start_time >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY tc.service_name
+ORDER BY overall_coverage_percentage DESC;
+
+CREATE OR REPLACE VIEW test_failure_analysis AS
+SELECT
+    tr.test_name,
+    tr.test_class,
+    COUNT(*) as failure_count,
+    MAX(tr.created_at) as last_failure,
+    MIN(tr.created_at) as first_failure,
+    STRING_AGG(DISTINCT LEFT(tr.error_message, 200), '; ') as common_errors
+FROM test_results tr
+WHERE tr.status = 'failed'
+    AND tr.created_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY tr.test_name, tr.test_class
+ORDER BY failure_count DESC, last_failure DESC;
+
+CREATE OR REPLACE VIEW test_service_health AS
+SELECT
+    ts.name as suite_name,
+    ts.test_type,
+    te.status as last_execution_status,
+    te.start_time as last_execution_time,
+    te.duration_seconds as last_execution_duration,
+    CASE
+        WHEN te.start_time IS NULL THEN 'never_executed'
+        WHEN te.start_time < CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 'stale'
+        WHEN te.status = 'completed' THEN 'healthy'
+        WHEN te.status = 'failed' THEN 'unhealthy'
+        ELSE 'running'
+    END as health_status,
+    ROUND(
+        (SELECT COUNT(*) FROM test_executions
+         WHERE suite_id = ts.id
+         AND status = 'completed'
+         AND start_time >= CURRENT_TIMESTAMP - INTERVAL '7 days')::FLOAT /
+        NULLIF((SELECT COUNT(*) FROM test_executions
+                WHERE suite_id = ts.id
+                AND start_time >= CURRENT_TIMESTAMP - INTERVAL '7 days'), 0) * 100, 2
+    ) as recent_success_rate
+FROM test_suites ts
+LEFT JOIN (
+    SELECT suite_id, status, start_time, duration_seconds
+    FROM test_executions
+    WHERE (suite_id, start_time) IN (
+        SELECT suite_id, MAX(start_time)
+        FROM test_executions
+        GROUP BY suite_id
+    )
+) te ON ts.id = te.suite_id
+WHERE ts.enabled = true
+ORDER BY
+    CASE
+        WHEN te.start_time IS NULL THEN 1
+        WHEN te.status = 'failed' THEN 2
+        WHEN te.start_time < CURRENT_TIMESTAMP - INTERVAL '24 hours' THEN 3
+        ELSE 4
+    END,
+    ts.name;
+
+-- =============================================================================
+-- UI QUALITY VERIFICATION TABLES
+-- =============================================================================
+
+-- UI quality assessment results
+CREATE TABLE IF NOT EXISTS ui_quality_assessments (
+    id VARCHAR(100) PRIMARY KEY,
+    ui_service VARCHAR(100) NOT NULL,
+    assessment_type VARCHAR(50) NOT NULL,
+    viewport VARCHAR(50),
+    browser VARCHAR(50) DEFAULT 'chrome',
+    overall_score FLOAT,
+    visual_score FLOAT,
+    accessibility_score FLOAT,
+    performance_score FLOAT,
+    responsive_score FLOAT,
+    usability_score FLOAT,
+    issues_found JSON DEFAULT '[]'::json,
+    recommendations JSON DEFAULT '[]'::json,
+    screenshots JSON DEFAULT '[]'::json,
+    metrics JSON DEFAULT '{}'::json,
+    assessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for ui_quality_assessments table
+CREATE INDEX IF NOT EXISTS idx_ui_quality_assessments_service ON ui_quality_assessments(ui_service);
+CREATE INDEX IF NOT EXISTS idx_ui_quality_assessments_type ON ui_quality_assessments(assessment_type);
+CREATE INDEX IF NOT EXISTS idx_ui_quality_assessments_score ON ui_quality_assessments(overall_score);
+CREATE INDEX IF NOT EXISTS idx_ui_quality_assessments_assessed_at ON ui_quality_assessments(assessed_at);
+
+-- Design system compliance tracking
+CREATE TABLE IF NOT EXISTS ui_design_system_compliance (
+    id VARCHAR(100) PRIMARY KEY,
+    component_name VARCHAR(100) NOT NULL,
+    design_system_rule VARCHAR(200) NOT NULL,
+    compliance_status VARCHAR(20) NOT NULL,
+    severity VARCHAR(20) DEFAULT 'medium',
+    violation_details TEXT,
+    screenshot_path VARCHAR(500),
+    recommendation TEXT,
+    assessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for ui_design_system_compliance table
+CREATE INDEX IF NOT EXISTS idx_ui_design_system_compliance_component ON ui_design_system_compliance(component_name);
+CREATE INDEX IF NOT EXISTS idx_ui_design_system_compliance_status ON ui_design_system_compliance(compliance_status);
+CREATE INDEX IF NOT EXISTS idx_ui_design_system_compliance_assessed_at ON ui_design_system_compliance(assessed_at);
+
+-- Accessibility audit results
+CREATE TABLE IF NOT EXISTS ui_accessibility_audits (
+    id VARCHAR(100) PRIMARY KEY,
+    page_url VARCHAR(500) NOT NULL,
+    wcag_level VARCHAR(10) DEFAULT 'AA',
+    total_checks INTEGER DEFAULT 0,
+    passed_checks INTEGER DEFAULT 0,
+    failed_checks INTEGER DEFAULT 0,
+    warnings INTEGER DEFAULT 0,
+    violations JSON DEFAULT '[]'::json,
+    compliance_score FLOAT,
+    critical_issues INTEGER DEFAULT 0,
+    audited_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for ui_accessibility_audits table
+CREATE INDEX IF NOT EXISTS idx_ui_accessibility_audits_page_url ON ui_accessibility_audits(page_url);
+CREATE INDEX IF NOT EXISTS idx_ui_accessibility_audits_score ON ui_accessibility_audits(compliance_score);
+CREATE INDEX IF NOT EXISTS idx_ui_accessibility_audits_audited_at ON ui_accessibility_audits(audited_at);
+
+-- UI performance measurements
+CREATE TABLE IF NOT EXISTS ui_performance_metrics (
+    id VARCHAR(100) PRIMARY KEY,
+    page_url VARCHAR(500) NOT NULL,
+    metric_name VARCHAR(100) NOT NULL,
+    metric_value FLOAT NOT NULL,
+    metric_unit VARCHAR(20) DEFAULT 'ms',
+    threshold_value FLOAT,
+    status VARCHAR(20) DEFAULT 'unknown',
+    measured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for ui_performance_metrics table
+CREATE INDEX IF NOT EXISTS idx_ui_performance_metrics_page_url ON ui_performance_metrics(page_url);
+CREATE INDEX IF NOT EXISTS idx_ui_performance_metrics_name ON ui_performance_metrics(metric_name);
+CREATE INDEX IF NOT EXISTS idx_ui_performance_metrics_status ON ui_performance_metrics(status);
+CREATE INDEX IF NOT EXISTS idx_ui_performance_metrics_measured_at ON ui_performance_metrics(measured_at);
+
+-- Insert default design system rules
+INSERT INTO ui_design_system_compliance (id, component_name, design_system_rule, compliance_status, severity, recommendation) VALUES
+('color-primary', 'Color System', 'Primary colors match design system', 'compliant', 'high', 'Maintain consistent color usage'),
+('typography-hierarchy', 'Typography', 'Heading hierarchy follows design system', 'compliant', 'high', 'Use consistent heading levels'),
+('spacing-scale', 'Spacing', 'Spacing uses 8px scale', 'compliant', 'medium', 'Apply consistent spacing scale'),
+('button-styles', 'Components', 'Button styles match design system', 'compliant', 'high', 'Use standardized button components'),
+('form-validation', 'Forms', 'Form validation follows patterns', 'compliant', 'medium', 'Implement consistent validation'),
+('responsive-breakpoints', 'Layout', 'Breakpoints match design system', 'compliant', 'high', 'Use standardized breakpoints'),
+('icon-usage', 'Icons', 'Icons follow design system guidelines', 'compliant', 'low', 'Maintain icon consistency'),
+('animation-timing', 'Motion', 'Animation timing matches design system', 'compliant', 'medium', 'Use consistent animation curves')
+ON CONFLICT (id) DO NOTHING;
+
+-- Create views for UI quality analytics
+CREATE OR REPLACE VIEW ui_quality_assessment_summary AS
+SELECT
+    DATE(assessed_at) as date,
+    ui_service,
+    assessment_type,
+    COUNT(*) as assessments_count,
+    ROUND(AVG(overall_score), 1) as avg_overall_score,
+    ROUND(AVG(visual_score), 1) as avg_visual_score,
+    ROUND(AVG(accessibility_score), 1) as avg_accessibility_score,
+    ROUND(AVG(performance_score), 1) as avg_performance_score,
+    ROUND(AVG(responsive_score), 1) as avg_responsive_score,
+    SUM(JSON_ARRAY_LENGTH(issues_found)) as total_issues,
+    MAX(assessed_at) as last_assessment
+FROM ui_quality_assessments
+WHERE assessed_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(assessed_at), ui_service, assessment_type
+ORDER BY date DESC, ui_service;
+
+CREATE OR REPLACE VIEW ui_accessibility_compliance_trends AS
+SELECT
+    DATE(audited_at) as date,
+    page_url,
+    wcag_level,
+    COUNT(*) as audits_count,
+    ROUND(AVG(compliance_score), 1) as avg_compliance_score,
+    SUM(passed_checks) as total_passed_checks,
+    SUM(failed_checks) as total_failed_checks,
+    SUM(critical_issues) as total_critical_issues,
+    ROUND(
+        (SUM(passed_checks)::FLOAT / NULLIF(SUM(passed_checks) + SUM(failed_checks), 0)) * 100, 1
+    ) as overall_pass_rate
+FROM ui_accessibility_audits
+WHERE audited_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(audited_at), page_url, wcag_level
+ORDER BY date DESC, page_url;
+
+CREATE OR REPLACE VIEW ui_performance_summary AS
+SELECT
+    page_url,
+    metric_name,
+    COUNT(*) as measurements_count,
+    ROUND(AVG(metric_value), 2) as avg_metric_value,
+    ROUND(MIN(metric_value), 2) as min_metric_value,
+    ROUND(MAX(metric_value), 2) as max_metric_value,
+    ROUND(STDDEV(metric_value), 2) as stddev_metric_value,
+    COUNT(CASE WHEN status = 'pass' THEN 1 END) as passed_measurements,
+    COUNT(CASE WHEN status = 'fail' THEN 1 END) as failed_measurements,
+    ROUND(
+        (COUNT(CASE WHEN status = 'pass' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as pass_rate,
+    MAX(measured_at) as last_measurement
+FROM ui_performance_metrics
+WHERE measured_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY page_url, metric_name
+ORDER BY page_url, metric_name;
+
+CREATE OR REPLACE VIEW ui_design_system_health AS
+SELECT
+    design_system_rule,
+    COUNT(*) as total_checks,
+    COUNT(CASE WHEN compliance_status = 'compliant' THEN 1 END) as compliant_checks,
+    COUNT(CASE WHEN compliance_status = 'violation' THEN 1 END) as violations,
+    COUNT(CASE WHEN compliance_status = 'warning' THEN 1 END) as warnings,
+    ROUND(
+        (COUNT(CASE WHEN compliance_status = 'compliant' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as compliance_rate,
+    MAX(assessed_at) as last_check
+FROM ui_design_system_compliance
+WHERE assessed_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY design_system_rule
+ORDER BY compliance_rate DESC, design_system_rule;
+
+CREATE OR REPLACE VIEW ui_overall_quality_health AS
+SELECT
+    ui_service,
+    COUNT(*) as assessments_count,
+    ROUND(AVG(overall_score), 1) as avg_quality_score,
+    ROUND(AVG(accessibility_score), 1) as avg_accessibility_score,
+    ROUND(AVG(performance_score), 1) as avg_performance_score,
+    ROUND(AVG(responsive_score), 1) as avg_responsive_score,
+    ROUND(AVG(visual_score), 1) as avg_visual_score,
+    SUM(JSON_ARRAY_LENGTH(issues_found)) as total_issues_found,
+    ROUND(
+        (COUNT(CASE WHEN overall_score >= 90 THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as excellent_rate,
+    ROUND(
+        (COUNT(CASE WHEN overall_score >= 80 AND overall_score < 90 THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as good_rate,
+    ROUND(
+        (COUNT(CASE WHEN overall_score >= 70 AND overall_score < 80 THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as needs_improvement_rate,
+    ROUND(
+        (COUNT(CASE WHEN overall_score < 70 THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as poor_rate,
+    MAX(assessed_at) as last_assessment,
+    CASE
+        WHEN AVG(overall_score) >= 90 THEN 'excellent'
+        WHEN AVG(overall_score) >= 80 THEN 'good'
+        WHEN AVG(overall_score) >= 70 THEN 'needs_improvement'
+        ELSE 'poor'
+    END as overall_health_status
+FROM ui_quality_assessments
+WHERE assessed_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY ui_service
+ORDER BY avg_quality_score DESC, ui_service;
+
+-- =============================================================================
+-- DOCUMENTATION SERVICE TABLES
+-- =============================================================================
+
+-- Documentation content storage
+CREATE TABLE IF NOT EXISTS documentation_content (
+    id VARCHAR(100) PRIMARY KEY,
+    title VARCHAR(500) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    subcategory VARCHAR(100),
+    content TEXT NOT NULL,
+    metadata JSON DEFAULT '{}'::json,
+    language VARCHAR(10) DEFAULT 'en',
+    version VARCHAR(20) DEFAULT '1.0',
+    status VARCHAR(20) DEFAULT 'published',
+    author VARCHAR(100),
+    tags JSON DEFAULT '[]'::json,
+    view_count INTEGER DEFAULT 0,
+    helpful_votes INTEGER DEFAULT 0,
+    total_votes INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_content table
+CREATE INDEX IF NOT EXISTS idx_documentation_content_type ON documentation_content(content_type);
+CREATE INDEX IF NOT EXISTS idx_documentation_content_category ON documentation_content(category);
+CREATE INDEX IF NOT EXISTS idx_documentation_content_status ON documentation_content(status);
+CREATE INDEX IF NOT EXISTS idx_documentation_content_language ON documentation_content(language);
+CREATE INDEX IF NOT EXISTS idx_documentation_content_created_at ON documentation_content(created_at);
+
+-- Documentation media files
+CREATE TABLE IF NOT EXISTS documentation_media (
+    id VARCHAR(100) PRIMARY KEY,
+    filename VARCHAR(500) NOT NULL,
+    original_filename VARCHAR(500) NOT NULL,
+    file_path VARCHAR(1000) NOT NULL,
+    file_type VARCHAR(50) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    content_id VARCHAR(100),
+    alt_text VARCHAR(500),
+    description TEXT,
+    uploaded_by VARCHAR(100),
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_media table
+CREATE INDEX IF NOT EXISTS idx_documentation_media_content_id ON documentation_media(content_id);
+CREATE INDEX IF NOT EXISTS idx_documentation_media_file_type ON documentation_media(file_type);
+CREATE INDEX IF NOT EXISTS idx_documentation_media_uploaded_at ON documentation_media(uploaded_at);
+
+-- Documentation search index
+CREATE TABLE IF NOT EXISTS documentation_search (
+    id VARCHAR(100) PRIMARY KEY,
+    content_id VARCHAR(100) NOT NULL,
+    search_text TEXT NOT NULL,
+    title_vector TEXT,
+    content_vector TEXT,
+    tags_vector TEXT,
+    indexed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_search table
+CREATE INDEX IF NOT EXISTS idx_documentation_search_content_id ON documentation_search(content_id);
+CREATE INDEX IF NOT EXISTS idx_documentation_search_indexed_at ON documentation_search(indexed_at);
+
+-- User feedback on documentation
+CREATE TABLE IF NOT EXISTS documentation_feedback (
+    id VARCHAR(100) PRIMARY KEY,
+    content_id VARCHAR(100) NOT NULL,
+    user_id VARCHAR(100),
+    feedback_type VARCHAR(20) NOT NULL,
+    rating INTEGER,
+    comment TEXT,
+    user_agent VARCHAR(500),
+    ip_address VARCHAR(50),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_feedback table
+CREATE INDEX IF NOT EXISTS idx_documentation_feedback_content_id ON documentation_feedback(content_id);
+CREATE INDEX IF NOT EXISTS idx_documentation_feedback_type ON documentation_feedback(feedback_type);
+CREATE INDEX IF NOT EXISTS idx_documentation_feedback_submitted_at ON documentation_feedback(submitted_at);
+
+-- Documentation usage analytics
+CREATE TABLE IF NOT EXISTS documentation_analytics (
+    id VARCHAR(100) PRIMARY KEY,
+    content_id VARCHAR(100),
+    event_type VARCHAR(50) NOT NULL,
+    user_id VARCHAR(100),
+    session_id VARCHAR(100),
+    metadata JSON DEFAULT '{}'::json,
+    ip_address VARCHAR(50),
+    user_agent VARCHAR(500),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_analytics table
+CREATE INDEX IF NOT EXISTS idx_documentation_analytics_content_id ON documentation_analytics(content_id);
+CREATE INDEX IF NOT EXISTS idx_documentation_analytics_event_type ON documentation_analytics(event_type);
+CREATE INDEX IF NOT EXISTS idx_documentation_analytics_timestamp ON documentation_analytics(timestamp);
+
+-- Interactive tutorial definitions
+CREATE TABLE IF NOT EXISTS documentation_tutorials (
+    id VARCHAR(100) PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    category VARCHAR(100) NOT NULL,
+    difficulty VARCHAR(20) DEFAULT 'beginner',
+    estimated_duration INTEGER DEFAULT 0,
+    steps JSON DEFAULT '[]'::json,
+    prerequisites JSON DEFAULT '[]'::json,
+    completion_criteria JSON DEFAULT '[]'::json,
+    success_rate FLOAT DEFAULT 0.0,
+    total_attempts INTEGER DEFAULT 0,
+    total_completions INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for documentation_tutorials table
+CREATE INDEX IF NOT EXISTS idx_documentation_tutorials_category ON documentation_tutorials(category);
+CREATE INDEX IF NOT EXISTS idx_documentation_tutorials_difficulty ON documentation_tutorials(difficulty);
+CREATE INDEX IF NOT EXISTS idx_documentation_tutorials_created_at ON documentation_tutorials(created_at);
+
+-- User progress through tutorials
+CREATE TABLE IF NOT EXISTS tutorial_progress (
+    id VARCHAR(100) PRIMARY KEY,
+    tutorial_id VARCHAR(100) NOT NULL,
+    user_id VARCHAR(100) NOT NULL,
+    current_step INTEGER DEFAULT 0,
+    completed_steps JSON DEFAULT '[]'::json,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    time_spent_seconds INTEGER DEFAULT 0
+);
+
+-- Create indexes for tutorial_progress table
+CREATE INDEX IF NOT EXISTS idx_tutorial_progress_tutorial_id ON tutorial_progress(tutorial_id);
+CREATE INDEX IF NOT EXISTS idx_tutorial_progress_user_id ON tutorial_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_tutorial_progress_started_at ON tutorial_progress(started_at);
+
+-- Insert default documentation content
+INSERT INTO documentation_content (id, title, content_type, category, content, metadata, tags, status) VALUES
+('getting-started-guide', 'Getting Started with Agentic Brain', 'guide', 'getting-started',
+ '<h1>Getting Started with Agentic Brain</h1><p>Welcome to Agentic Brain! This guide will help you get started with creating your first AI agent.</p><h2>What is Agentic Brain?</h2><p>Agentic Brain is a comprehensive platform for building, deploying, and managing AI agents with a no-code visual interface.</p>',
+ '{"difficulty": "beginner", "estimated_time": "15 minutes", "target_audience": "new_users"}',
+ '["getting-started", "basics", "introduction"]', 'published'),
+
+('agent-builder-tutorial', 'Agent Builder Tutorial', 'tutorial', 'tutorials',
+ '<h1>Agent Builder Tutorial</h1><p>Learn how to create AI agents using the visual Agent Builder interface.</p><h2>Step 1: Access the Agent Builder</h2><p>Navigate to the Agent Builder UI and start creating your first agent.</p>',
+ '{"difficulty": "intermediate", "estimated_time": "25 minutes", "target_audience": "developers"}',
+ '["tutorial", "agent-builder", "visual-interface"]', 'published'),
+
+('api-reference', 'REST API Reference', 'api', 'api-reference',
+ '<h1>REST API Reference</h1><p>Complete reference for the Agentic Brain REST API endpoints.</p><h2>Authentication</h2><p>All API requests require authentication via JWT tokens.</p>',
+ '{"difficulty": "advanced", "estimated_time": "reference", "target_audience": "developers"}',
+ '["api", "reference", "rest", "authentication"]', 'published'),
+
+('troubleshooting-guide', 'Troubleshooting Guide', 'guide', 'troubleshooting',
+ '<h1>Troubleshooting Guide</h1><p>Common issues and solutions for Agentic Brain platform.</p><h2>Agent Deployment Issues</h2><p>If your agent fails to deploy, check the following...</p>',
+ '{"difficulty": "intermediate", "estimated_time": "20 minutes", "target_audience": "users"}',
+ '["troubleshooting", "issues", "solutions", "deployment"]', 'published')
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert default tutorial
+INSERT INTO documentation_tutorials (id, title, description, category, difficulty, estimated_duration, steps, prerequisites, completion_criteria) VALUES
+('agent-builder-basics', 'Agent Builder Basics', 'Learn the fundamentals of creating agents with the visual builder', 'tutorials', 'beginner', 25,
+ '[{"title": "Access Agent Builder", "content": "Navigate to the Agent Builder interface", "action": "navigate", "target": "/agent-builder"},
+  {"title": "Add Data Input Component", "content": "Drag and drop a data input component onto the canvas", "action": "drag_drop", "component": "data-input"},
+  {"title": "Configure LLM Processor", "content": "Add and configure an LLM processor component", "action": "configure", "component": "llm-processor"},
+  {"title": "Connect Components", "content": "Connect the data input to the LLM processor", "action": "connect", "source": "data-input", "target": "llm-processor"},
+  {"title": "Deploy Agent", "content": "Deploy your first agent to the platform", "action": "deploy", "validation": "agent_running"}]',
+ '[]',
+ '[{"type": "component_added", "component": "data-input"}, {"type": "component_added", "component": "llm-processor"}, {"type": "connection_created"}, {"type": "agent_deployed"}]')
+ON CONFLICT (id) DO NOTHING;
+
+-- Create views for documentation analytics
+CREATE OR REPLACE VIEW documentation_usage_summary AS
+SELECT
+    DATE(timestamp) as date,
+    event_type,
+    COUNT(*) as event_count,
+    COUNT(DISTINCT user_id) as unique_users,
+    COUNT(DISTINCT session_id) as unique_sessions
+FROM documentation_analytics
+WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(timestamp), event_type
+ORDER BY date DESC, event_type;
+
+CREATE OR REPLACE VIEW documentation_content_performance AS
+SELECT
+    dc.id,
+    dc.title,
+    dc.content_type,
+    dc.category,
+    dc.view_count,
+    dc.helpful_votes,
+    dc.total_votes,
+    CASE
+        WHEN dc.total_votes > 0 THEN ROUND((dc.helpful_votes::FLOAT / dc.total_votes) * 100, 1)
+        ELSE 0
+    END as helpful_percentage,
+    dc.created_at,
+    dc.updated_at,
+    COUNT(da.id) as total_analytics_events,
+    MAX(da.timestamp) as last_activity
+FROM documentation_content dc
+LEFT JOIN documentation_analytics da ON dc.id = da.content_id
+WHERE dc.status = 'published'
+GROUP BY dc.id, dc.title, dc.content_type, dc.category, dc.view_count, dc.helpful_votes, dc.total_votes, dc.created_at, dc.updated_at
+ORDER BY dc.view_count DESC, helpful_percentage DESC;
+
+CREATE OR REPLACE VIEW documentation_feedback_summary AS
+SELECT
+    content_id,
+    COUNT(*) as total_feedbacks,
+    AVG(rating) as avg_rating,
+    COUNT(CASE WHEN feedback_type = 'helpful' THEN 1 END) as helpful_feedbacks,
+    COUNT(CASE WHEN feedback_type = 'not_helpful' THEN 1 END) as not_helpful_feedbacks,
+    COUNT(CASE WHEN feedback_type = 'suggestion' THEN 1 END) as suggestions,
+    COUNT(CASE WHEN feedback_type = 'bug_report' THEN 1 END) as bug_reports,
+    ROUND(
+        (COUNT(CASE WHEN feedback_type = 'helpful' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as helpful_percentage,
+    MAX(submitted_at) as last_feedback
+FROM documentation_feedback
+WHERE submitted_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY content_id
+ORDER BY total_feedbacks DESC, helpful_percentage DESC;
+
+CREATE OR REPLACE VIEW tutorial_completion_rates AS
+SELECT
+    dt.id,
+    dt.title,
+    dt.category,
+    dt.difficulty,
+    dt.estimated_duration,
+    dt.total_attempts,
+    dt.total_completions,
+    CASE
+        WHEN dt.total_attempts > 0 THEN ROUND((dt.total_completions::FLOAT / dt.total_attempts) * 100, 1)
+        ELSE 0
+    END as completion_rate,
+    ROUND(dt.success_rate, 1) as success_rate,
+    AVG(tp.time_spent_seconds) as avg_time_spent_seconds,
+    MAX(dt.created_at) as created_at
+FROM documentation_tutorials dt
+LEFT JOIN tutorial_progress tp ON dt.id = tp.tutorial_id
+GROUP BY dt.id, dt.title, dt.category, dt.difficulty, dt.estimated_duration, dt.total_attempts, dt.total_completions, dt.success_rate, dt.created_at
+ORDER BY completion_rate DESC, total_completions DESC;
+
+CREATE OR REPLACE VIEW documentation_search_analytics AS
+SELECT
+    DATE_SUBMITTED as date,
+    COUNT(*) as total_searches,
+    COUNT(DISTINCT search_query) as unique_queries,
+    AVG(result_count) as avg_results_returned,
+    SUM(click_count) as total_clicks,
+    ROUND(
+        (SUM(click_count)::FLOAT / COUNT(*)) * 100, 1
+    ) as click_through_rate,
+    array_agg(DISTINCT search_query ORDER BY search_query) FILTER (WHERE search_query IS NOT NULL) as popular_queries
+FROM (
+    SELECT
+        DATE(timestamp) as DATE_SUBMITTED,
+        (metadata->>'query') as search_query,
+        (metadata->>'results_count')::INTEGER as result_count,
+        CASE WHEN event_type = 'search' THEN 1 ELSE 0 END as search_count,
+        CASE WHEN event_type = 'view' AND content_id IS NOT NULL THEN 1 ELSE 0 END as click_count
+    FROM documentation_analytics
+    WHERE event_type IN ('search', 'view')
+    AND timestamp >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+) search_data
+GROUP BY DATE_SUBMITTED
+ORDER BY date DESC;
+
+-- =============================================================================
+-- PERFORMANCE OPTIMIZATION TABLES
+-- =============================================================================
+
+-- Performance metrics storage
+CREATE TABLE IF NOT EXISTS performance_metrics (
+    id VARCHAR(100) PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    metric_type VARCHAR(50) NOT NULL,
+    metric_value FLOAT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    metadata JSON DEFAULT '{}'::json
+);
+
+-- Create indexes for performance_metrics table
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_service ON performance_metrics(service_name);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_type ON performance_metrics(metric_type);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_timestamp ON performance_metrics(timestamp);
+
+-- Optimization actions performed
+CREATE TABLE IF NOT EXISTS optimization_actions (
+    id VARCHAR(100) PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    optimization_type VARCHAR(50) NOT NULL,
+    action_description TEXT NOT NULL,
+    expected_impact VARCHAR(20) DEFAULT 'medium',
+    status VARCHAR(20) DEFAULT 'pending',
+    applied_at TIMESTAMP,
+    reverted_at TIMESTAMP,
+    performance_before JSON DEFAULT '{}'::json,
+    performance_after JSON DEFAULT '{}'::json,
+    rollback_data JSON DEFAULT '{}'::json
+);
+
+-- Create indexes for optimization_actions table
+CREATE INDEX IF NOT EXISTS idx_optimization_actions_service ON optimization_actions(service_name);
+CREATE INDEX IF NOT EXISTS idx_optimization_actions_type ON optimization_actions(optimization_type);
+CREATE INDEX IF NOT EXISTS idx_optimization_actions_status ON optimization_actions(status);
+CREATE INDEX IF NOT EXISTS idx_optimization_actions_applied_at ON optimization_actions(applied_at);
+
+-- Service integration configurations
+CREATE TABLE IF NOT EXISTS service_integrations (
+    id VARCHAR(100) PRIMARY KEY,
+    source_service VARCHAR(100) NOT NULL,
+    target_service VARCHAR(100) NOT NULL,
+    integration_type VARCHAR(50) NOT NULL,
+    connection_pool_size INTEGER DEFAULT 10,
+    timeout_seconds INTEGER DEFAULT 30,
+    retry_count INTEGER DEFAULT 3,
+    circuit_breaker_enabled BOOLEAN DEFAULT FALSE,
+    rate_limit_enabled BOOLEAN DEFAULT FALSE,
+    caching_enabled BOOLEAN DEFAULT FALSE,
+    last_health_check TIMESTAMP,
+    health_status VARCHAR(20) DEFAULT 'unknown',
+    performance_score FLOAT DEFAULT 0.0
+);
+
+-- Create indexes for service_integrations table
+CREATE INDEX IF NOT EXISTS idx_service_integrations_source ON service_integrations(source_service);
+CREATE INDEX IF NOT EXISTS idx_service_integrations_target ON service_integrations(target_service);
+CREATE INDEX IF NOT EXISTS idx_service_integrations_type ON service_integrations(integration_type);
+CREATE INDEX IF NOT EXISTS idx_service_integrations_health ON service_integrations(health_status);
+
+-- Bottleneck analysis results
+CREATE TABLE IF NOT EXISTS bottleneck_analysis (
+    id VARCHAR(100) PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    bottleneck_type VARCHAR(50) NOT NULL,
+    severity VARCHAR(20) DEFAULT 'low',
+    description TEXT NOT NULL,
+    recommended_actions JSON DEFAULT '[]'::json,
+    impact_assessment JSON DEFAULT '{}'::json,
+    detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP,
+    status VARCHAR(20) DEFAULT 'active'
+);
+
+-- Create indexes for bottleneck_analysis table
+CREATE INDEX IF NOT EXISTS idx_bottleneck_analysis_service ON bottleneck_analysis(service_name);
+CREATE INDEX IF NOT EXISTS idx_bottleneck_analysis_type ON bottleneck_analysis(bottleneck_type);
+CREATE INDEX IF NOT EXISTS idx_bottleneck_analysis_severity ON bottleneck_analysis(severity);
+CREATE INDEX IF NOT EXISTS idx_bottleneck_analysis_status ON bottleneck_analysis(status);
+CREATE INDEX IF NOT EXISTS idx_bottleneck_analysis_detected_at ON bottleneck_analysis(detected_at);
+
+-- Insert default service integrations
+INSERT INTO service_integrations (id, source_service, target_service, integration_type, connection_pool_size, timeout_seconds, retry_count) VALUES
+('agent-orchestrator-brain-factory', 'agent-orchestrator', 'brain-factory', 'http', 15, 30, 3),
+('brain-factory-memory-manager', 'brain-factory', 'memory-manager', 'http', 10, 30, 3),
+('agent-orchestrator-monitoring', 'agent-orchestrator', 'monitoring-metrics-service', 'http', 8, 30, 3),
+('workflow-engine-rule-engine', 'workflow-engine', 'rule-engine', 'http', 12, 30, 3),
+('deployment-pipeline-all', 'deployment-pipeline', 'all', 'http', 20, 60, 5)
+ON CONFLICT (id) DO NOTHING;
+
+-- Insert default optimization actions
+INSERT INTO optimization_actions (id, service_name, optimization_type, action_description, expected_impact, status) VALUES
+('connection-pool-optimization', 'database', 'connection_pooling', 'Optimize database connection pool settings', 'high', 'pending'),
+('cache-strategy-optimization', 'redis', 'caching_optimization', 'Implement intelligent cache strategy', 'medium', 'pending'),
+('query-optimization', 'database', 'query_optimization', 'Add indexes and optimize slow queries', 'high', 'pending'),
+('memory-optimization', 'application', 'memory_optimization', 'Implement memory pooling and optimization', 'medium', 'pending'),
+('circuit-breaker-implementation', 'services', 'circuit_breaker', 'Implement circuit breaker pattern', 'medium', 'pending')
+ON CONFLICT (id) DO NOTHING;
+
+-- Create views for performance optimization analytics
+CREATE OR REPLACE VIEW performance_metrics_summary AS
+SELECT
+    DATE(timestamp) as date,
+    service_name,
+    metric_type,
+    COUNT(*) as measurements_count,
+    ROUND(AVG(metric_value), 2) as avg_value,
+    ROUND(MIN(metric_value), 2) as min_value,
+    ROUND(MAX(metric_value), 2) as max_value,
+    ROUND(STDDEV(metric_value), 2) as stddev_value
+FROM performance_metrics
+WHERE timestamp >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY DATE(timestamp), service_name, metric_type
+ORDER BY date DESC, service_name, metric_type;
+
+CREATE OR REPLACE VIEW optimization_actions_summary AS
+SELECT
+    DATE(applied_at) as date,
+    service_name,
+    optimization_type,
+    COUNT(*) as actions_count,
+    COUNT(CASE WHEN status = 'applied' THEN 1 END) as successful_actions,
+    COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_actions,
+    ROUND(
+        (COUNT(CASE WHEN status = 'applied' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as success_rate,
+    expected_impact
+FROM optimization_actions
+WHERE applied_at IS NOT NULL
+    AND applied_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(applied_at), service_name, optimization_type, expected_impact
+ORDER BY date DESC, service_name;
+
+CREATE OR REPLACE VIEW service_integration_health AS
+SELECT
+    source_service,
+    target_service,
+    integration_type,
+    COUNT(*) as checks_count,
+    COUNT(CASE WHEN health_status = 'healthy' THEN 1 END) as healthy_checks,
+    COUNT(CASE WHEN health_status = 'degraded' THEN 1 END) as degraded_checks,
+    COUNT(CASE WHEN health_status = 'unhealthy' THEN 1 END) as unhealthy_checks,
+    ROUND(AVG(performance_score), 1) as avg_performance_score,
+    ROUND(
+        (COUNT(CASE WHEN health_status = 'healthy' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as health_percentage,
+    MAX(last_health_check) as last_check
+FROM service_integrations
+WHERE last_health_check IS NOT NULL
+    AND last_health_check >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY source_service, target_service, integration_type
+ORDER BY health_percentage DESC, source_service, target_service;
+
+CREATE OR REPLACE VIEW bottleneck_analysis_summary AS
+SELECT
+    DATE(detected_at) as date,
+    service_name,
+    bottleneck_type,
+    severity,
+    COUNT(*) as bottlenecks_count,
+    COUNT(CASE WHEN status = 'active' THEN 1 END) as active_bottlenecks,
+    COUNT(CASE WHEN status = 'resolved' THEN 1 END) as resolved_bottlenecks,
+    COUNT(CASE WHEN status = 'mitigated' THEN 1 END) as mitigated_bottlenecks,
+    ROUND(
+        (COUNT(CASE WHEN status = 'resolved' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as resolution_rate,
+    AVG(EXTRACT(EPOCH FROM (COALESCE(resolved_at, CURRENT_TIMESTAMP) - detected_at)) / 3600) as avg_resolution_time_hours
+FROM bottleneck_analysis
+WHERE detected_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY DATE(detected_at), service_name, bottleneck_type, severity
+ORDER BY date DESC, severity, bottlenecks_count DESC;
+
+CREATE OR REPLACE VIEW performance_optimization_roi AS
+SELECT
+    oa.service_name,
+    oa.optimization_type,
+    COUNT(oa.id) as optimizations_applied,
+    AVG(CASE
+        WHEN oa.expected_impact = 'high' THEN 0.7
+        WHEN oa.expected_impact = 'medium' THEN 0.4
+        WHEN oa.expected_impact = 'low' THEN 0.2
+        ELSE 0.3
+    END) as avg_expected_improvement,
+    ROUND(
+        AVG(
+            ((oa.performance_after->>'overall_score')::FLOAT - (oa.performance_before->>'overall_score')::FLOAT) /
+            NULLIF((oa.performance_before->>'overall_score')::FLOAT, 0) * 100
+        ), 1
+    ) as avg_actual_improvement,
+    COUNT(CASE WHEN oa.status = 'applied' THEN 1 END) as successful_optimizations,
+    ROUND(
+        (COUNT(CASE WHEN oa.status = 'applied' THEN 1 END)::FLOAT / COUNT(oa.id)) * 100, 1
+    ) as success_rate
+FROM optimization_actions oa
+WHERE oa.applied_at IS NOT NULL
+    AND oa.applied_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+    AND oa.performance_before IS NOT NULL
+    AND oa.performance_after IS NOT NULL
+GROUP BY oa.service_name, oa.optimization_type
+ORDER BY avg_actual_improvement DESC, successful_optimizations DESC;
+
+-- ===========================================
+-- PLATFORM VALIDATION SERVICE TABLES
+-- ===========================================
+
+-- Validation results storage
+CREATE TABLE IF NOT EXISTS validation_results (
+    id VARCHAR(100) PRIMARY KEY,
+    validation_type VARCHAR(50) NOT NULL,
+    service_name VARCHAR(100),
+    status VARCHAR(20) NOT NULL,
+    score DECIMAL(5,2) DEFAULT 0.00,
+    duration_seconds DECIMAL(10,2),
+    results JSONB DEFAULT '{}',
+    issues JSONB DEFAULT '[]',
+    recommendations JSONB DEFAULT '[]',
+    validated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_validation_type (validation_type),
+    INDEX idx_validation_status (status),
+    INDEX idx_validation_score (score),
+    INDEX idx_validation_timestamp (validated_at)
+);
+
+-- Service health tracking
+CREATE TABLE IF NOT EXISTS service_health (
+    id VARCHAR(100) PRIMARY KEY,
+    service_name VARCHAR(100) NOT NULL,
+    status VARCHAR(20) DEFAULT 'unknown',
+    response_time_ms DECIMAL(10,2),
+    last_check TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    uptime_percentage DECIMAL(5,2) DEFAULT 0.00,
+    error_count INTEGER DEFAULT 0,
+    metadata JSONB DEFAULT '{}',
+    UNIQUE KEY unique_service_name (service_name),
+    INDEX idx_service_status (status),
+    INDEX idx_last_check (last_check)
+);
+
+-- Platform-wide metrics
+CREATE TABLE IF NOT EXISTS platform_metrics (
+    id VARCHAR(100) PRIMARY KEY,
+    metric_type VARCHAR(50) NOT NULL,
+    metric_value DECIMAL(15,6) NOT NULL,
+    unit VARCHAR(20) DEFAULT '',
+    collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    metadata JSONB DEFAULT '{}',
+    INDEX idx_metric_type (metric_type),
+    INDEX idx_collected_at (collected_at)
+);
+
+-- Compliance check results
+CREATE TABLE IF NOT EXISTS compliance_checks (
+    id VARCHAR(100) PRIMARY KEY,
+    compliance_type VARCHAR(50) NOT NULL,
+    requirement VARCHAR(200) NOT NULL,
+    status VARCHAR(20) DEFAULT 'unknown',
+    evidence JSONB DEFAULT '{}',
+    checked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_compliance_type (compliance_type),
+    INDEX idx_compliance_status (status),
+    INDEX idx_checked_at (checked_at)
+);
+
+-- ===========================================
+-- PLATFORM VALIDATION VIEWS
+-- ===========================================
+
+-- Overall validation health summary
+CREATE OR REPLACE VIEW validation_health_summary AS
+SELECT
+    validation_type,
+    COUNT(*) as total_validations,
+    COUNT(CASE WHEN status = 'passed' THEN 1 END) as passed_validations,
+    COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_validations,
+    COUNT(CASE WHEN status = 'warning' THEN 1 END) as warning_validations,
+    ROUND(AVG(score), 2) as avg_score,
+    ROUND(MIN(score), 2) as min_score,
+    ROUND(MAX(score), 2) as max_score,
+    ROUND(
+        (COUNT(CASE WHEN status = 'passed' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as success_rate,
+    MAX(validated_at) as last_validation
+FROM validation_results
+WHERE validated_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY validation_type
+ORDER BY last_validation DESC;
+
+-- Service health trends
+CREATE OR REPLACE VIEW service_health_trends AS
+SELECT
+    service_name,
+    DATE(last_check) as date,
+    AVG(uptime_percentage) as avg_uptime,
+    AVG(response_time_ms) as avg_response_time,
+    MAX(error_count) as max_errors,
+    COUNT(*) as checks_count,
+    COUNT(CASE WHEN status = 'healthy' THEN 1 END) as healthy_checks,
+    ROUND(
+        (COUNT(CASE WHEN status = 'healthy' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as health_percentage
+FROM service_health
+WHERE last_check >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+GROUP BY service_name, DATE(last_check)
+ORDER BY date DESC, service_name;
+
+-- Critical issues summary
+CREATE OR REPLACE VIEW critical_issues_summary AS
+SELECT
+    JSONB_ARRAY_ELEMENTS(issues)->>'severity' as severity,
+    JSONB_ARRAY_ELEMENTS(issues)->>'category' as category,
+    JSONB_ARRAY_ELEMENTS(issues)->>'description' as description,
+    COUNT(*) as issue_count,
+    MIN(validated_at) as first_reported,
+    MAX(validated_at) as last_reported
+FROM validation_results
+WHERE JSONB_ARRAY_LENGTH(issues) > 0
+    AND validated_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY severity, category, description
+ORDER BY issue_count DESC, severity;
+
+-- Platform readiness assessment
+CREATE OR REPLACE VIEW platform_readiness_assessment AS
+SELECT
+    'platform_readiness' as assessment_type,
+    CASE
+        WHEN avg_score >= 90 THEN 'production_ready'
+        WHEN avg_score >= 80 THEN 'staging_ready'
+        WHEN avg_score >= 70 THEN 'development_ready'
+        ELSE 'not_ready'
+    END as readiness_level,
+    ROUND(avg_score, 1) as overall_score,
+    ROUND(success_rate, 1) as success_rate,
+    total_validations as validation_count,
+    last_validation as last_assessment,
+    CASE
+        WHEN avg_score >= 90 THEN '✅ Platform is production-ready'
+        WHEN avg_score >= 80 THEN '⚠️ Platform ready for staging with monitoring'
+        WHEN avg_score >= 70 THEN '🔧 Platform requires additional testing'
+        ELSE '❌ Platform not ready for deployment'
+    END as readiness_message
+FROM (
+    SELECT
+        AVG(score) as avg_score,
+        (SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END)::FLOAT / COUNT(*)) * 100 as success_rate,
+        COUNT(*) as total_validations,
+        MAX(validated_at) as last_validation
+    FROM validation_results
+    WHERE validated_at >= CURRENT_TIMESTAMP - INTERVAL '7 days'
+) as stats;
+
+-- Compliance status summary
+CREATE OR REPLACE VIEW compliance_status_summary AS
+SELECT
+    compliance_type,
+    COUNT(*) as total_checks,
+    COUNT(CASE WHEN status = 'passed' THEN 1 END) as passed_checks,
+    COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_checks,
+    ROUND(
+        (COUNT(CASE WHEN status = 'passed' THEN 1 END)::FLOAT / COUNT(*)) * 100, 1
+    ) as compliance_percentage,
+    MAX(checked_at) as last_check
+FROM compliance_checks
+WHERE checked_at >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+GROUP BY compliance_type
+ORDER BY compliance_percentage DESC;
