@@ -152,7 +152,7 @@ services:
       - agentic-network
     restart: unless-stopped
 
-  # PDF Ingestion Service
+  # PDF Ingestion Service - IMPLEMENTED ✅
   pdf-ingestion-service:
     build: ./ingestion-services/pdf-service
     container_name: agentic-pdf-ingestion
@@ -163,6 +163,7 @@ services:
       - SERVICE_TYPE=pdf
       - OCR_ENGINE=tesseract
       - COORDINATOR_HOST=ingestion-coordinator
+      - COORDINATOR_PORT=8080
       - QUEUE_HOST=rabbitmq
       - DB_HOST=postgresql_ingestion
       - CACHE_HOST=redis_ingestion
@@ -172,77 +173,85 @@ services:
       - agentic-network
     restart: unless-stopped
 
-  # Excel Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
-  # excel-ingestion-service:
-  #   build: ./ingestion-services/excel-service
-  #   container_name: agentic-excel-ingestion
-  #   depends_on:
-  #     ingestion-coordinator:
-  #       condition: service_healthy
-  #   environment:
-  #     - SERVICE_TYPE=excel
-  #     - COORDINATOR_HOST=ingestion-coordinator
-  #     - QUEUE_HOST=rabbitmq
-  #     - DB_HOST=postgresql_ingestion
-  #     - CACHE_HOST=redis_ingestion
-  #   volumes:
-  #     - ingestion_data:/app/data
-  #   networks:
-  #     - agentic-network
-  #   restart: unless-stopped
+  # Excel Ingestion Service - IMPLEMENTED ✅
+  excel-ingestion-service:
+    build: ./ingestion-services/excel-service
+    container_name: agentic-excel-ingestion
+    depends_on:
+      ingestion-coordinator:
+        condition: service_healthy
+    environment:
+      - SERVICE_TYPE=excel
+      - COORDINATOR_HOST=ingestion-coordinator
+      - COORDINATOR_PORT=8080
+      - QUEUE_HOST=rabbitmq
+      - DB_HOST=postgresql_ingestion
+      - CACHE_HOST=redis_ingestion
+    volumes:
+      - ingestion_data:/app/data
+    networks:
+      - agentic-network
+    restart: unless-stopped
 
-  # JSON Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
-  # json-ingestion-service:
-  #   build: ./ingestion-services/json-service
-  #   container_name: agentic-json-ingestion
-  #   depends_on:
-  #     ingestion-coordinator:
-  #       condition: service_healthy
-  #   environment:
-  #     - SERVICE_TYPE=json
-  #     - COORDINATOR_HOST=ingestion-coordinator
-  #     - QUEUE_HOST=rabbitmq
-  #     - DB_HOST=postgresql_ingestion
-  #     - CACHE_HOST=redis_ingestion
-  #   volumes:
-  #     - ingestion_data:/app/data
-  #   networks:
-  #     - agentic-network
-  #   restart: unless-stopped
+  # JSON Ingestion Service - IMPLEMENTED ✅
+  json-ingestion-service:
+    build: ./ingestion-services/json-service
+    container_name: agentic-json-ingestion
+    depends_on:
+      ingestion-coordinator:
+        condition: service_healthy
+    environment:
+      - SERVICE_TYPE=json
+      - COORDINATOR_HOST=ingestion-coordinator
+      - COORDINATOR_PORT=8080
+      - QUEUE_HOST=rabbitmq
+      - DB_HOST=postgresql_ingestion
+      - CACHE_HOST=redis_ingestion
+    volumes:
+      - ingestion_data:/app/data
+    networks:
+      - agentic-network
+    restart: unless-stopped
 
-  # API Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
-  # api-ingestion-service:
-  #   build: ./ingestion-services/api-service
-  #   container_name: agentic-api-ingestion
-  #   depends_on:
-  #     ingestion-coordinator:
-  #       condition: service_healthy
-  #   environment:
-  #     - SERVICE_TYPE=api
-  #     - COORDINATOR_HOST=ingestion-coordinator
-  #     - QUEUE_HOST=rabbitmq
-  #     - DB_HOST=postgresql_ingestion
-  #     - CACHE_HOST=redis_ingestion
-  #   networks:
-  #     - agentic-network
-  #   restart: unless-stopped
+  # API Ingestion Service - Now Implemented ✅
+  api-ingestion-service:
+    build: ./ingestion-services/api-service
+    container_name: agentic-api-ingestion
+    depends_on:
+      ingestion-coordinator:
+        condition: service_healthy
+    environment:
+      - SERVICE_TYPE=api
+      - COORDINATOR_HOST=ingestion-coordinator
+      - COORDINATOR_PORT=8080
+      - QUEUE_HOST=rabbitmq
+      - DB_HOST=postgresql_ingestion
+      - CACHE_HOST=redis_ingestion
+    volumes:
+      - ingestion_data:/app/data
+    networks:
+      - agentic-network
+    restart: unless-stopped
 
-  # UI Scraper Service - DISABLED: Missing Dockerfile (Rule 1 violation)
-  # ui-scraper-service:
-  #   build: ./ingestion-services/ui-scraper-service
-  #   container_name: agentic-ui-scraper
-  #   depends_on:
-  #     ingestion-coordinator:
-  #     condition: service_healthy
-  #   environment:
-  #     - SERVICE_TYPE=ui-scraper
-  #     - COORDINATOR_HOST=ingestion-coordinator
-  #     - QUEUE_HOST=rabbitmq
-  #     - DB_HOST=postgresql_ingestion
-  #     - CACHE_HOST=redis_ingestion
-  #   networks:
-  #     - agentic-network
-  #   restart: unless-stopped
+  # UI Scraper Service - IMPLEMENTED ✅
+  ui-scraper-service:
+    build: ./ingestion-services/ui-scraper-service
+    container_name: agentic-ui-scraper
+    depends_on:
+      ingestion-coordinator:
+        condition: service_healthy
+    environment:
+      - SERVICE_TYPE=ui-scraper
+      - COORDINATOR_HOST=ingestion-coordinator
+      - COORDINATOR_PORT=8080
+      - QUEUE_HOST=rabbitmq
+      - DB_HOST=postgresql_ingestion
+      - CACHE_HOST=redis_ingestion
+    volumes:
+      - ingestion_data:/app/data
+    networks:
+      - agentic-network
+    restart: unless-stopped
 
   # === OUTPUT LAYER SERVICES ===
 
@@ -748,6 +757,113 @@ services:
       retries: 3
     restart: unless-stopped
 
+  # Elasticsearch Service
+  elasticsearch-service:
+    build: ./services/elasticsearch
+    container_name: agentic-elasticsearch-service
+    depends_on:
+      elasticsearch_output:
+        condition: service_healthy
+      postgresql_ingestion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch_output
+      - ELASTICSEARCH_PORT=9200
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=agentic_user
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+    ports:
+      - "${ELASTICSEARCH_SERVICE_PORT:-8110}:8100"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Grafana Service
+  grafana-service:
+    build: ./services/grafana
+    container_name: agentic-grafana-service
+    depends_on:
+      grafana:
+        condition: service_healthy
+      postgresql_ingestion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - GRAFANA_HOST=grafana
+      - GRAFANA_PORT=3000
+      - GRAFANA_USER=admin
+      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=agentic_user
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+    ports:
+      - "${GRAFANA_SERVICE_PORT:-8120}:8120"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8120/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Prometheus Service
+  prometheus-service:
+    build: ./services/prometheus
+    container_name: agentic-prometheus-service
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      postgresql_ingestion:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      - PROMETHEUS_HOST=prometheus
+      - PROMETHEUS_PORT=9090
+      - POSTGRES_HOST=postgresql_ingestion
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=agentic_ingestion
+      - POSTGRES_USER=agentic_user
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=agentic_user
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
+    ports:
+      - "${PROMETHEUS_SERVICE_PORT:-8130}:8130"
+    networks:
+      - agentic-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8130/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
   # Output Coordinator Service
   output-coordinator:
     build: ./services/output-coordinator
@@ -891,22 +1007,6 @@ services:
     restart: unless-stopped
 
   # === BACKUP & DISASTER RECOVERY ===
-
-  # Backup Orchestrator - DISABLED: Missing Dockerfile (Rule 1 violation)
-  # backup_orchestrator:
-  #   build: ./scripts/backup
-  #   container_name: agentic-backup-orchestrator
-  #   environment:
-  #     - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-"0 2 * * *"}
-  #     - RETENTION_POLICY=${RETENTION_POLICY:-30d}
-  #     - POSTGRES_HOST=postgresql_output
-  #     - QDRANT_HOST=qdrant_vector
-  #     - MONGODB_HOST=mongodb_output
-  #   volumes:
-  #     - backup_storage:/backup/output
-  #   networks:
-  #     - agentic-network
-  #   restart: unless-stopped
 
   # === DEVELOPMENT & TESTING ===
 

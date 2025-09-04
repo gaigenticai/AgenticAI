@@ -1,20 +1,13 @@
-# Backup Orchestration Service
-# Comprehensive backup and disaster recovery orchestration
+# Prometheus Service
+# Manages metrics collection, alerting, and monitoring
 
 FROM python:3.11-slim
 
-# Install system dependencies for backup tools
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
-    postgresql-client \
-    mariadb-client \
-    redis-tools \
+    libpq-dev \
     curl \
-    wget \
-    gnupg \
-    lsb-release \
-    openssh-client \
-    rsync \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -28,20 +21,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create non-root user
-RUN useradd --create-home --shell /bin/bash backup && \
-    chown -R backup:backup /app
-USER backup
+RUN useradd --create-home --shell /bin/bash prometheus && \
+    chown -R prometheus:prometheus /app
+USER prometheus
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8097/health || exit 1
+    CMD curl -f http://localhost:8130/health || exit 1
 
 # Expose port
-EXPOSE 8097
+EXPOSE 8130
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 # Run the application
-CMD ["python", "backup_orchestration_service.py"]
+CMD ["python", "prometheus_service.py"]

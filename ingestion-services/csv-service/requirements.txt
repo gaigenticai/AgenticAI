@@ -16,7 +16,6 @@ sqlalchemy==2.0.23
 
 # Data validation
 great-expectations==0.17.23
-pandas-validation==0.6.1
 
 # Monitoring
 prometheus-client==0.19.0

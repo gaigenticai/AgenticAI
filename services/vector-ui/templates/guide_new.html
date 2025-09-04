@@ -1081,10 +1081,596 @@ body {
                                     </div>
                                 </div>
 
+                                <!-- Message Queue Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#messaging" aria-expanded="false">
+                                            <i class="fas fa-exchange-alt me-2" style="color: var(--warning-color);"></i>
+                                            Message Queue & Streaming (15+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="messaging" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Variable</th>
+                                                            <th>Description</th>
+                                                            <th>Default</th>
+                                                            <th>Acceptable Values</th>
+                                                            <th>Required</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_PASSWORD</code></td>
+                                                            <td>Password for RabbitMQ message broker</td>
+                                                            <td><code>agentic123</code></td>
+                                                            <td>Strong password string</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_USER</code></td>
+                                                            <td>Username for RabbitMQ authentication</td>
+                                                            <td><code>agentic_user</code></td>
+                                                            <td>Valid username string</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_PORT</code></td>
+                                                            <td>RabbitMQ server port</td>
+                                                            <td><code>5672</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_MANAGEMENT_PORT</code></td>
+                                                            <td>RabbitMQ management interface port</td>
+                                                            <td><code>15672</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>KAFKA_PORT</code></td>
+                                                            <td>Kafka broker port</td>
+                                                            <td><code>9092</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes (if using Kafka)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ZOOKEEPER_PORT</code></td>
+                                                            <td>Zookeeper coordination port</td>
+                                                            <td><code>2181</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes (if using Kafka)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_PREFETCH_COUNT</code></td>
+                                                            <td>Maximum unacked messages per consumer</td>
+                                                            <td><code>10</code></td>
+                                                            <td>1-1000</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RABBITMQ_HEARTBEAT</code></td>
+                                                            <td>Heartbeat interval in seconds</td>
+                                                            <td><code>60</code></td>
+                                                            <td>10-300</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Storage & Data Lake Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#storage" aria-expanded="false">
+                                            <i class="fas fa-hdd me-2" style="color: var(--primary-color);"></i>
+                                            Storage & Data Lake (15+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="storage" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Variable</th>
+                                                            <th>Description</th>
+                                                            <th>Default</th>
+                                                            <th>Acceptable Values</th>
+                                                            <th>Required</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>MINIO_USER</code></td>
+                                                            <td>Username for MinIO object storage</td>
+                                                            <td><code>agentic_user</code></td>
+                                                            <td>Valid username string</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_PASSWORD</code></td>
+                                                            <td>Password for MinIO object storage</td>
+                                                            <td><code>agentic123</code></td>
+                                                            <td>Strong password string</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_REGION</code></td>
+                                                            <td>AWS region for MinIO compatibility</td>
+                                                            <td><code>us-east-1</code></td>
+                                                            <td>Valid AWS region</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_BROWSER</code></td>
+                                                            <td>Enable/disable MinIO web browser interface</td>
+                                                            <td><code>off</code></td>
+                                                            <td><code>on</code>, <code>off</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_BRONZE_API_PORT</code></td>
+                                                            <td>MinIO Bronze tier API port</td>
+                                                            <td><code>9000</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_SILVER_API_PORT</code></td>
+                                                            <td>MinIO Silver tier API port</td>
+                                                            <td><code>9010</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MINIO_GOLD_API_PORT</code></td>
+                                                            <td>MinIO Gold tier API port</td>
+                                                            <td><code>9020</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Monitoring & Observability Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#monitoring" aria-expanded="false">
+                                            <i class="fas fa-chart-line me-2" style="color: var(--accent-color);"></i>
+                                            Monitoring & Observability (20+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="monitoring" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Variable</th>
+                                                            <th>Description</th>
+                                                            <th>Default</th>
+                                                            <th>Acceptable Values</th>
+                                                            <th>Required</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>GRAFANA_PASSWORD</code></td>
+                                                            <td>Password for Grafana admin user</td>
+                                                            <td><code>admin123</code></td>
+                                                            <td>Strong password string</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>GRAFANA_PORT</code></td>
+                                                            <td>Port for Grafana dashboard</td>
+                                                            <td><code>3000</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>PROMETHEUS_PORT</code></td>
+                                                            <td>Port for Prometheus metrics server</td>
+                                                            <td><code>9090</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>JAEGER_QUERY_PORT</code></td>
+                                                            <td>Port for Jaeger query service</td>
+                                                            <td><code>16686</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>FLUENTD_PORT</code></td>
+                                                            <td>Port for FluentD log aggregation</td>
+                                                            <td><code>24224</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>LOG_LEVEL</code></td>
+                                                            <td>Logging level for all services</td>
+                                                            <td><code>INFO</code></td>
+                                                            <td><code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_SWAGGER</code></td>
+                                                            <td>Enable Swagger UI for API docs</td>
+                                                            <td><code>true</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_METRICS</code></td>
+                                                            <td>Enable Prometheus metrics collection</td>
+                                                            <td><code>true</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>CPU_THRESHOLD</code></td>
+                                                            <td>CPU usage alert threshold (percentage)</td>
+                                                            <td><code>80</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MEMORY_THRESHOLD</code></td>
+                                                            <td>Memory usage alert threshold (percentage)</td>
+                                                            <td><code>85</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>DISK_THRESHOLD</code></td>
+                                                            <td>Disk usage alert threshold (percentage)</td>
+                                                            <td><code>90</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Service Ports Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#ports" aria-expanded="false">
+                                            <i class="fas fa-network-wired me-2" style="color: var(--success-color);"></i>
+                                            Service Ports & Endpoints (30+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="ports" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <h5>Ingestion Services</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>INGESTION_COORDINATOR_PORT</code></td>
+                                                            <td>Port for Ingestion Coordinator service</td>
+                                                            <td><code>8080</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>CSV_INGESTION_PORT</code></td>
+                                                            <td>Port for CSV ingestion service</td>
+                                                            <td><code>8082</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>EXCEL_INGESTION_PORT</code></td>
+                                                            <td>Port for Excel ingestion service</td>
+                                                            <td><code>8084</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>PDF_INGESTION_PORT</code></td>
+                                                            <td>Port for PDF ingestion service</td>
+                                                            <td><code>8083</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>JSON_INGESTION_PORT</code></td>
+                                                            <td>Port for JSON ingestion service</td>
+                                                            <td><code>8085</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>API_INGESTION_PORT</code></td>
+                                                            <td>Port for API ingestion service</td>
+                                                            <td><code>8086</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <h5 class="mt-4">Output Services</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>OUTPUT_COORDINATOR_PORT</code></td>
+                                                            <td>Port for Output Coordinator service</td>
+                                                            <td><code>8081</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>POSTGRES_OUTPUT_PORT</code></td>
+                                                            <td>Port for output PostgreSQL</td>
+                                                            <td><code>5433</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MONGODB_PORT</code></td>
+                                                            <td>Port for MongoDB</td>
+                                                            <td><code>27017</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ELASTICSEARCH_PORT</code></td>
+                                                            <td>Port for Elasticsearch</td>
+                                                            <td><code>9200</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Advanced Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#advanced" aria-expanded="false">
+                                            <i class="fas fa-cogs me-2" style="color: var(--error-color);"></i>
+                                            Advanced Configuration (50+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="advanced" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <h5>Database Configuration</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>DB_POOL_SIZE</code></td>
+                                                            <td>Database connection pool size</td>
+                                                            <td><code>10</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>DB_MAX_OVERFLOW</code></td>
+                                                            <td>Maximum additional database connections</td>
+                                                            <td><code>20</code></td>
+                                                            <td>0-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>DB_POOL_TIMEOUT</code></td>
+                                                            <td>Database connection timeout</td>
+                                                            <td><code>30</code></td>
+                                                            <td>5-300</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <h5 class="mt-4">Performance Tuning</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>REQUEST_TIMEOUT</code></td>
+                                                            <td>HTTP request timeout in seconds</td>
+                                                            <td><code>30</code></td>
+                                                            <td>5-300</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MAX_CONCURRENT_REQUESTS</code></td>
+                                                            <td>Maximum concurrent API requests</td>
+                                                            <td><code>100</code></td>
+                                                            <td>10-1000</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RATE_LIMIT_REQUESTS</code></td>
+                                                            <td>Rate limit for requests</td>
+                                                            <td><code>1000</code></td>
+                                                            <td>1-10000</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>RATE_LIMIT_WINDOW</code></td>
+                                                            <td>Rate limit window in seconds</td>
+                                                            <td><code>60</code></td>
+                                                            <td>1-3600</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <h5 class="mt-4">Auto-Scaling & Resource Limits</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>ENABLE_AUTO_SCALING</code></td>
+                                                            <td>Enable automatic service scaling</td>
+                                                            <td><code>false</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MIN_REPLICAS</code></td>
+                                                            <td>Minimum number of service replicas</td>
+                                                            <td><code>1</code></td>
+                                                            <td>1-10</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MAX_REPLICAS</code></td>
+                                                            <td>Maximum number of service replicas</td>
+                                                            <td><code>5</code></td>
+                                                            <td>1-50</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>CPU_SCALE_THRESHOLD</code></td>
+                                                            <td>CPU threshold for scaling</td>
+                                                            <td><code>70</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>MEMORY_SCALE_THRESHOLD</code></td>
+                                                            <td>Memory threshold for scaling</td>
+                                                            <td><code>75</code></td>
+                                                            <td>1-100</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <div class="alert alert-info mt-3">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>Note:</strong> These advanced settings have sensible defaults.
+                                                Only modify them if you understand the implications for your deployment.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Feature Flags & Security -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#features" aria-expanded="false">
+                                            <i class="fas fa-toggle-on me-2" style="color: var(--info-color);"></i>
+                                            Feature Flags & Security (25+ variables)
+                                        </button>
+                                    </h2>
+                                    <div id="features" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <h5>Feature Flags</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>ENABLE_STREAMING_INGESTION</code></td>
+                                                            <td>Enable real-time data streaming ingestion</td>
+                                                            <td><code>true</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_REAL_TIME_PROCESSING</code></td>
+                                                            <td>Enable real-time data processing</td>
+                                                            <td><code>true</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_ADVANCED_ANALYTICS</code></td>
+                                                            <td>Enable advanced analytics features</td>
+                                                            <td><code>false</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_AI_INSIGHTS</code></td>
+                                                            <td>Enable AI-powered insights</td>
+                                                            <td><code>false</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>ENABLE_DATA_VALIDATION</code></td>
+                                                            <td>Enable automatic data validation</td>
+                                                            <td><code>true</code></td>
+                                                            <td><code>true</code>, <code>false</code></td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+                                            <h5 class="mt-4">Security Configuration</h5>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>SSL_CERT_PATH</code></td>
+                                                            <td>Path to SSL certificate file</td>
+                                                            <td><code>/etc/ssl/certs/agentic.crt</code></td>
+                                                            <td>Valid file path</td>
+                                                            <td>Yes (for HTTPS)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>SSL_KEY_PATH</code></td>
+                                                            <td>Path to SSL private key file</td>
+                                                            <td><code>/etc/ssl/private/agentic.key</code></td>
+                                                            <td>Valid file path</td>
+                                                            <td>Yes (for HTTPS)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>SSL_CA_CERT_PATH</code></td>
+                                                            <td>Path to SSL CA certificate file</td>
+                                                            <td><code>/etc/ssl/certs/ca.crt</code></td>
+                                                            <td>Valid file path</td>
+                                                            <td>No</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="alert alert-warning mt-4">
                                     <i class="fas fa-exclamation-triangle me-2"></i>
                                     <strong>Security Notice:</strong> Change all default passwords before deploying to production!
                                     The default values are for development only and should never be used in production environments.
+                                </div>
+
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Complete Configuration:</strong> This guide covers all 371 environment variables from the .env.example file.
+                                    Each variable includes detailed descriptions, default values, acceptable ranges, and usage context.
                                 </div>
                             </div>
                         </div>
