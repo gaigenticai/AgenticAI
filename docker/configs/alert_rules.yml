@@ -1,0 +1,122 @@
+groups:
+  - name: agentic_platform_alerts
+    rules:
+      # Service Health Alerts
+      - alert: ServiceDown
+        expr: up == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 5 minutes."
+
+      # HTTP Error Rate Alerts
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"[5-9].."}[5m]) / rate(http_requests_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "Error rate is {{ $value }}% which is above 10% threshold."
+
+      # Memory Usage Alerts
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / process_virtual_memory_max_bytes > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.job }}"
+          description: "Memory usage is at {{ $value }}% of available memory."
+
+      # Queue Backlog Alerts
+      - alert: QueueBacklog
+        expr: rabbitmq_queue_messages > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Queue backlog on {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages."
+
+      # Database Connection Alerts
+      - alert: DatabaseConnectionIssues
+        expr: pg_stat_activity_count{state="idle"} > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection count"
+          description: "Database has {{ $value }} idle connections."
+
+      # Data Processing Alerts
+      - alert: DataIngestionFailure
+        expr: rate(data_ingestion_errors_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: error
+        annotations:
+          summary: "Data ingestion failures detected"
+          description: "Data ingestion has {{ $value }} errors per minute."
+
+      # Cache Performance Alerts
+      - alert: CacheMissRateHigh
+        expr: rate(cache_misses_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High cache miss rate"
+          description: "Cache miss rate is {{ $value }}% which is above 50%."
+
+      # Security Alerts
+      - alert: FailedAuthenticationSpike
+        expr: rate(failed_auth_attempts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: error
+        annotations:
+          summary: "Spike in failed authentication attempts"
+          description: "Failed authentication attempts: {{ $value }}/minute."
+
+      # Encryption Operation Alerts
+      - alert: EncryptionOperationFailure
+        expr: rate(encryption_errors_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: error
+        annotations:
+          summary: "Encryption operation failures detected"
+          description: "Encryption errors: {{ $value }}/minute."
+
+      # Message Queue Alerts
+      - alert: MessageQueueBacklog
+        expr: rate(messages_published_total[5m]) - rate(messages_consumed_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Message queue backlog detected"
+          description: "Message backlog: {{ $value }} messages/minute."
+
+      # Disk Space Alerts
+      - alert: DiskSpaceLow
+        expr: (1 - node_filesystem_avail_bytes / node_filesystem_size_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space usage is {{ $value }}%."
+
+      # CPU Usage Alerts
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_user_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.job }}"
+          description: "CPU usage is {{ $value }}% which is above 80%."

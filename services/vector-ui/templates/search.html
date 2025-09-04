@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Vector Search - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-search me-3"></i>
+                    Semantic Vector Search
+                </h1>
+                <p class="lead text-muted">
+                    Find relevant content by meaning, not just keywords. Powered by advanced vector similarity.
+                </p>
+            </div>
+
+            <!-- Search Form -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-search me-2"></i>
+                        Search Query
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" action="/search-vectors">
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <label for="query" class="form-label fw-bold">
+                                    Search Query:
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control form-control-lg"
+                                    id="query"
+                                    name="query"
+                                    placeholder="Enter your search query..."
+                                    value="{{ query or '' }}"
+                                    required
+                                >
+                                <div class="form-text">
+                                    Describe what you're looking for in natural language
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="collection" class="form-label fw-bold">
+                                    Collection:
+                                </label>
+                                <select class="form-select form-select-lg" id="collection" name="collection">
+                                    <option value="documents" {{ 'selected' if collection == 'documents' else '' }}>Documents</option>
+                                    <option value="articles" {{ 'selected' if collection == 'articles' else '' }}>Articles</option>
+                                    <option value="knowledge" {{ 'selected' if collection == 'knowledge' else '' }}>Knowledge Base</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="limit" class="form-label fw-bold">
+                                    Maximum Results:
+                                </label>
+                                <select class="form-select" id="limit" name="limit">
+                                    <option value="5" {{ 'selected' if limit == 5 else '' }}>5 results</option>
+                                    <option value="10" {{ 'selected' if limit == 10 else '' }}>10 results</option>
+                                    <option value="20" {{ 'selected' if limit == 20 else '' }}>20 results</option>
+                                    <option value="50" {{ 'selected' if limit == 50 else '' }}>50 results</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="searchBtn">
+                                <i class="fas fa-search me-2"></i>
+                                Search Vectors
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            {% if result %}
+            <div class="card shadow-lg mt-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>
+                        Search Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-success mb-1">{{ result.results|length }}</div>
+                                <div class="text-muted">Results Found</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-primary mb-1">{{ "%.1f"|format(result.search_time * 1000) }}ms</div>
+                                <div class="text-muted">Search Time</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="h2 text-info mb-1">{{ result.total_found }}</div>
+                                <div class="text-muted">Total Matches</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results List -->
+                    <div class="results-list">
+                        {% for item in result.results %}
+                        <div class="result-card mb-3">
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <h6 class="fw-bold text-primary mb-2">
+                                        Document: {{ item.id }}
+                                    </h6>
+                                    <p class="mb-2">{{ item.text | truncate(200) }}</p>
+                                    {% if item.metadata %}
+                                    <div class="small text-muted">
+                                        <strong>Metadata:</strong>
+                                        {% for key, value in item.metadata.items() %}
+                                        <span class="badge bg-light text-dark me-1">{{ key }}: {{ value }}</span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 text-end">
+                                    <div class="score-badge">
+                                        <span class="badge bg-success fs-6 px-3 py-2">
+                                            <i class="fas fa-star me-1"></i>
+                                            {{ "%.3f"|format(item.score) }}
+                                        </span>
+                                        <div class="small text-muted mt-1">Similarity Score</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    {% if not result.results %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search text-muted" style="font-size: 4rem;"></i>
+                        <h4 class="text-muted mt-3">No results found</h4>
+                        <p class="text-muted">Try adjusting your search query or check if documents are indexed in the selected collection.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Error Section -->
+            {% if error %}
+            <div class="alert alert-danger mt-4" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Search Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Tips Section -->
+            <div class="card shadow-lg mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Search Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-success">✅ Effective Queries:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> "machine learning algorithms"</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> "natural language processing techniques"</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> "computer vision applications"</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-warning">⚠️ Search Best Practices:</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-info-circle text-warning me-2"></i> Use natural language descriptions</li>
+                                <li class="mb-2"><i class="fas fa-info-circle text-warning me-2"></i> Be specific but not too narrow</li>
+                                <li class="mb-2"><i class="fas fa-info-circle text-warning me-2"></i> Try synonyms for better results</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const searchBtn = document.getElementById('searchBtn');
+
+    form.addEventListener('submit', function() {
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+
+        // Re-enable after 8 seconds (in case of error)
+        setTimeout(() => {
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Vectors';
+        }, 8000);
+    });
+
+    // Auto-resize textarea if needed
+    const queryInput = document.getElementById('query');
+    queryInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+});
+</script>
+{% endblock %}

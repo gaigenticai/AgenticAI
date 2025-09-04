@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agentic-platform
+  labels:
+    name: agentic-platform
+    environment: production
+spec: {}

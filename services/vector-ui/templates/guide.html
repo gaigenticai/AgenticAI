@@ -1,0 +1,370 @@
+{% extends "base.html" %}
+
+{% block title %}Vector Operations User Guide - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-book me-3"></i>
+                    Vector Operations User Guide
+                </h1>
+                <p class="lead text-muted">
+                    Complete guide to using FastEmbed and Qdrant for vector search operations
+                </p>
+            </div>
+
+            <!-- Navigation -->
+            <div class="mb-4">
+                <nav aria-label="Guide navigation">
+                    <ul class="nav nav-pills justify-content-center" id="guideTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="pill"
+                                    data-bs-target="#overview" type="button" role="tab">
+                                <i class="fas fa-home me-1"></i>Overview
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="embeddings-tab" data-bs-toggle="pill"
+                                    data-bs-target="#embeddings" type="button" role="tab">
+                                <i class="fas fa-brain me-1"></i>Embeddings
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="indexing-tab" data-bs-toggle="pill"
+                                    data-bs-target="#indexing" type="button" role="tab">
+                                <i class="fas fa-database me-1"></i>Indexing
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="search-tab" data-bs-toggle="pill"
+                                    data-bs-target="#search" type="button" role="tab">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="api-tab" data-bs-toggle="pill"
+                                    data-bs-target="#api" type="button" role="tab">
+                                <i class="fas fa-code me-1"></i>API Reference
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="guideTabsContent">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Overview
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <h4>What are Vector Operations?</h4>
+                            <p>
+                                Vector operations enable semantic search by converting text into high-dimensional
+                                numerical representations (embeddings) that capture meaning and context.
+                            </p>
+
+                            <h4>Key Components:</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-primary">
+                                            <i class="fas fa-brain me-2"></i>FastEmbed
+                                        </h6>
+                                        <p class="small">Open-source embedding model for converting text to vectors</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="feature-card mb-3">
+                                        <h6 class="text-primary">
+                                            <i class="fas fa-search me-2"></i>Qdrant
+                                        </h6>
+                                        <p class="small">Vector database for storing and searching embeddings</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4>Benefits:</h4>
+                            <ul>
+                                <li><strong>Semantic Search:</strong> Find content by meaning, not keywords</li>
+                                <li><strong>Context Awareness:</strong> Understands relationships between concepts</li>
+                                <li><strong>Multilingual Support:</strong> Works across different languages</li>
+                                <li><strong>Scalable:</strong> Handles millions of documents efficiently</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Embeddings Tab -->
+                <div class="tab-pane fade" id="embeddings" role="tabpanel">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-success text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-brain me-2"></i>
+                                Generating Embeddings
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <h4>How Embeddings Work</h4>
+                            <p>
+                                Embeddings convert text into numerical vectors that capture semantic meaning.
+                                Similar texts produce similar vectors.
+                            </p>
+
+                            <h4>Step-by-Step Guide:</h4>
+                            <ol>
+                                <li>Navigate to the <strong>Embeddings</strong> page</li>
+                                <li>Enter text (one per line) in the input field</li>
+                                <li>Click <strong>"Generate Embeddings"</strong></li>
+                                <li>View the resulting vectors and metadata</li>
+                            </ol>
+
+                            <div class="alert alert-info">
+                                <h5><i class="fas fa-lightbulb me-2"></i>Tips for Better Embeddings:</h5>
+                                <ul class="mb-0">
+                                    <li>Use clear, descriptive text</li>
+                                    <li>Avoid very short texts (less than 10 words)</li>
+                                    <li>Include context for better semantic understanding</li>
+                                    <li>Consider domain-specific terminology</li>
+                                </ul>
+                            </div>
+
+                            <h4>Example Usage:</h4>
+                            <div class="code-block">
+curl -X POST http://localhost:8081/embeddings/generate \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "texts": [
+      "Machine learning is a subset of artificial intelligence",
+      "Natural language processing helps computers understand text"
+    ]
+  }'
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indexing Tab -->
+                <div class="tab-pane fade" id="indexing" role="tabpanel">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-warning text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-database me-2"></i>
+                                Document Indexing
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <h4>What is Document Indexing?</h4>
+                            <p>
+                                Document indexing stores your content with its vector representation in the
+                                vector database for fast retrieval during search operations.
+                            </p>
+
+                            <h4>Indexing Process:</h4>
+                            <ol>
+                                <li>Prepare documents with ID, text, and optional metadata</li>
+                                <li>Generate embeddings for each document</li>
+                                <li>Store vectors in Qdrant with document information</li>
+                                <li>Documents become searchable by semantic similarity</li>
+                            </ol>
+
+                            <h4>Document Format:</h4>
+                            <div class="code-block">
+{
+  "id": "unique-document-id",
+  "text": "Your document content here...",
+  "metadata": {
+    "category": "example",
+    "author": "user",
+    "tags": ["sample", "test"]
+  }
+}
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-exclamation-triangle me-2"></i>Important Notes:</h5>
+                                <ul class="mb-0">
+                                    <li>Document IDs must be unique within a collection</li>
+                                    <li>Metadata is optional but useful for filtering</li>
+                                    <li>Large documents may be truncated for embedding</li>
+                                    <li>Consider batch processing for many documents</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Tab -->
+                <div class="tab-pane fade" id="search" role="tabpanel">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-info text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-search me-2"></i>
+                                Vector Search
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <h4>Semantic Search Explained</h4>
+                            <p>
+                                Unlike keyword search, semantic search understands the meaning behind your query
+                                and finds relevant content based on conceptual similarity.
+                            </p>
+
+                            <h4>Search Features:</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Semantic Matching</h6>
+                                    <p>Finds content by meaning, not exact words</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Similarity Scores</h6>
+                                    <p>Each result includes a relevance score</p>
+                                </div>
+                            </div>
+
+                            <h4>Effective Search Queries:</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-success">✅ Good Examples:</h6>
+                                    <ul>
+                                        <li>"machine learning algorithms"</li>
+                                        <li>"natural language processing techniques"</li>
+                                        <li>"computer vision applications"</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-danger">❌ Less Effective:</h6>
+                                    <ul>
+                                        <li>Single words: "AI"</li>
+                                        <li>Very short: "ML"</li>
+                                        <li>Unclear context</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <h4>Search Results:</h4>
+                            <p>Results include:</p>
+                            <ul>
+                                <li>Document ID and content preview</li>
+                                <li>Similarity score (higher = more relevant)</li>
+                                <li>Associated metadata</li>
+                                <li>Search execution time</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Reference Tab -->
+                <div class="tab-pane fade" id="api" role="tabpanel">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-dark text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-code me-2"></i>
+                                API Reference
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <h4>Base URL:</h4>
+                            <p><code>http://localhost:8081</code> (Output Coordinator)</p>
+
+                            <h4>Endpoints:</h4>
+
+                            <div class="endpoint mb-4">
+                                <h5>POST /embeddings/generate</h5>
+                                <p>Generate embeddings for text</p>
+                                <div class="code-block">
+curl -X POST http://localhost:8081/embeddings/generate \\
+  -H "Content-Type: application/json" \\
+  -d '{"texts": ["Your text here"]}'
+                                </div>
+                            </div>
+
+                            <div class="endpoint mb-4">
+                                <h5>POST /vectors/index</h5>
+                                <p>Index documents with embeddings</p>
+                                <div class="code-block">
+curl -X POST http://localhost:8081/vectors/index \\
+  -H "Content-Type: application/json" \\
+  -d '[{"id": "doc1", "text": "Document content", "metadata": {}}]'
+                                </div>
+                            </div>
+
+                            <div class="endpoint mb-4">
+                                <h5>POST /vectors/search</h5>
+                                <p>Search for similar vectors</p>
+                                <div class="code-block">
+curl -X POST http://localhost:8081/vectors/search \\
+  -H "Content-Type: application/json" \\
+  -d '{"query": "search query", "limit": 10}'
+                                </div>
+                            </div>
+
+                            <div class="endpoint mb-4">
+                                <h5>GET /vectors/similarity/{doc_id}</h5>
+                                <p>Find similar documents</p>
+                                <div class="code-block">
+curl http://localhost:8081/vectors/similarity/doc1
+                                </div>
+                            </div>
+
+                            <h4>Authentication:</h4>
+                            <p>When REQUIRE_AUTH=true, include authentication headers in requests.</p>
+
+                            <h4>Error Codes:</h4>
+                            <ul>
+                                <li><code>401</code> - Authentication required</li>
+                                <li><code>404</code> - Document/collection not found</li>
+                                <li><code>500</code> - Internal server error</li>
+                                <li><code>503</code> - Service unavailable</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Tab navigation handling
+document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('#guideTabs .nav-link');
+    const tabContent = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Update URL hash
+            const target = this.getAttribute('data-bs-target').substring(1);
+            window.location.hash = target;
+
+            // Update active states
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContent.forEach(c => c.classList.remove('show', 'active'));
+
+            this.classList.add('active');
+            document.getElementById(target).classList.add('show', 'active');
+        });
+    });
+
+    // Handle URL hash on page load
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+        const targetTab = document.getElementById(hash + '-tab');
+        if (targetTab) {
+            targetTab.click();
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,2811 @@
+{% extends "base.html" %}
+
+{% block title %}Agentic Platform - Complete Guide{% endblock %}
+
+{% block head %}
+<style>
+/* Professional Enterprise Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Professional Color Palette */
+    --primary-color: #1e293b;
+    --primary-hover: #334155;
+    --secondary-color: #64748b;
+    --accent-color: #0f766e;
+    --accent-hover: #115e59;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --error-color: #dc2626;
+    --info-color: #2563eb;
+
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-dark: #0f172a;
+    --bg-accent: #ecfdf5;
+
+    /* Text Colors */
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --text-light: #f8fafc;
+
+    /* Border & Shadow */
+    --border-color: #e2e8f0;
+    --border-focus: #0f766e;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Border Radius */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+}
+
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Global Styles */
+body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    min-height: 100vh;
+}
+
+/* Professional Tabbed Interface */
+.tabs-container {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin: 2rem 0;
+}
+
+.nav-tabs-professional {
+    background: var(--bg-tertiary);
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-tabs-professional .nav-item {
+    margin-bottom: 0;
+}
+
+.nav-tabs-professional .nav-link {
+    border: none;
+    border-radius: 0;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-tabs-professional .nav-link:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.nav-tabs-professional .nav-link.active {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: 600;
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.nav-tabs-professional .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Tab Content */
+.tab-content-professional {
+    padding: 2rem;
+    background: var(--bg-primary);
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+h1 { font-size: 3rem; font-weight: 800; }
+h2 { font-size: 2.25rem; font-weight: 700; }
+h3 { font-size: 1.875rem; font-weight: 600; }
+h4 { font-size: 1.5rem; font-weight: 600; }
+h5 { font-size: 1.25rem; font-weight: 600; }
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+/* Professional Cards */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border: none;
+    padding: 1.5rem;
+    color: white;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* Modern Navigation */
+.nav-modern {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+}
+
+.nav-link-modern {
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    margin: 0 0.25rem;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.nav-link-modern:hover,
+.nav-link-modern.active {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-1px);
+}
+
+/* Professional Buttons */
+.btn-modern {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    color: white;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    color: white;
+}
+
+/* Code Blocks */
+.code-block {
+    background: var(--dark-bg);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.code-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(90deg, #ff5f56, #ffbd2e, #27ca3f);
+    border-radius: 8px 8px 0 0;
+    opacity: 0.7;
+}
+
+/* Architecture Diagrams */
+.architecture-diagram {
+    background: white;
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    margin: 2rem 0;
+}
+
+.flow-step {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.flow-step:hover {
+    border-color: var(--primary-color);
+    transform: translateX(8px);
+}
+
+.flow-step::before {
+    content: attr(data-step);
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-color);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Feature Grid */
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.feature-card {
+    background: white;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+}
+
+/* Status Indicators */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-healthy {
+    background: rgba(5, 150, 105, 0.1);
+    color: var(--success-color);
+}
+
+.status-warning {
+    background: rgba(217, 119, 6, 0.1);
+    color: var(--warning-color);
+}
+
+.status-error {
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--error-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+    .card-body { padding: 1.5rem; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .nav-link-modern { padding: 0.5rem 1rem; margin: 0.125rem; }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Table Styling */
+.table-modern {
+    background: white;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.table-modern th {
+    background: var(--dark-bg);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 1rem;
+}
+
+.table-modern td {
+    border: none;
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.table-modern tbody tr:hover {
+    background: rgba(37, 99, 235, 0.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <span class="badge bg-primary px-4 py-2 fs-6 fw-semibold">Complete Platform Guide</span>
+                </div>
+                <h1 class="display-4 fw-bold mb-4" style="color: var(--primary-color);">
+                    <i class="fas fa-brain me-3"></i>
+                    Agentic Platform
+                </h1>
+                <p class="lead fs-5 mb-4" style="color: var(--text-secondary); max-width: 800px; margin: 0 auto;">
+                    Your comprehensive guide to mastering data processing, AI operations, and enterprise workflows
+                </p>
+                <div class="row justify-content-center mb-4">
+                    <div class="col-auto">
+                        <div class="d-flex gap-4 flex-wrap justify-content-center">
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">15+</div>
+                                <div class="small" style="color: var(--text-muted);">Services</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">100%</div>
+                                <div class="small" style="color: var(--text-muted);">Docker</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">AI</div>
+                                <div class="small" style="color: var(--text-muted);">Powered</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info border-0 shadow-sm" style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border-left: 4px solid var(--info-color);">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Navigation:</strong> Use the tabs below to explore different sections of the platform
+                </div>
+            </div>
+
+            <!-- Tabbed Interface -->
+            <div class="tabs-container">
+                <ul class="nav nav-tabs nav-tabs-professional" id="platformTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                            <i class="fas fa-home"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="architecture-tab" data-bs-toggle="tab" data-bs-target="#architecture" type="button" role="tab" aria-controls="architecture" aria-selected="false">
+                            <i class="fas fa-sitemap"></i> Architecture
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">
+                            <i class="fas fa-star"></i> Features
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" type="button" role="tab" aria-controls="vector" aria-selected="false">
+                            <i class="fas fa-brain"></i> Vector Ops
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab" aria-controls="services" aria-selected="false">
+                            <i class="fas fa-server"></i> Services
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="apis-tab" data-bs-toggle="tab" data-bs-target="#apis" type="button" role="tab" aria-controls="apis" aria-selected="false">
+                            <i class="fas fa-code"></i> APIs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="config" aria-selected="false">
+                            <i class="fas fa-sliders-h"></i> Config
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="getting-started-tab" data-bs-toggle="tab" data-bs-target="#getting-started" type="button" role="tab" aria-controls="getting-started" aria-selected="false">
+                            <i class="fas fa-rocket"></i> Getting Started
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="troubleshooting-tab" data-bs-toggle="tab" data-bs-target="#troubleshooting" type="button" role="tab" aria-controls="troubleshooting" aria-selected="false">
+                            <i class="fas fa-tools"></i> Troubleshooting
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content tab-content-professional" id="platformTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-globe me-2"></i>
+                            Platform Overview
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h3>What is Agentic Platform?</h3>
+                                <p class="lead mb-4">
+                                    Agentic Platform is a comprehensive, containerized data processing platform
+                                    designed for intelligent data ingestion, transformation, storage, and output
+                                    across multiple formats and destinations. Built for enterprises that need
+                                    scalable, secure, and AI-powered data processing capabilities.
+                                </p>
+
+                                <h4>🏗️ Three-Tier Architecture</h4>
+                                <div class="row text-center mb-4">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--info-color);">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </div>
+                                            <h5>Input Layer</h5>
+                                            <p class="text-muted small">Multi-source data ingestion with intelligent processing</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--accent-color);">
+                                                <i class="fas fa-brain"></i>
+                                            </div>
+                                            <h5>Agentic Brain</h5>
+                                            <p class="text-muted small">AI-powered processing, vector operations, and orchestration</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--success-color);">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </div>
+                                            <h5>Output Layer</h5>
+                                            <p class="text-muted small">Multi-format data output with routing intelligence</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <h5>Key Capabilities</h5>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Multi-source data ingestion</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>AI-powered vector operations</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Enterprise-grade security</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Real-time monitoring</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>Supported Technologies</h5>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><i class="fas fa-database me-2" style="color: var(--info-color);"></i>PostgreSQL, MongoDB, Qdrant</li>
+                                            <li class="mb-2"><i class="fas fa-brain me-2" style="color: var(--accent-color);"></i>FastEmbed, OpenAI integration</li>
+                                            <li class="mb-2"><i class="fab fa-docker me-2" style="color: var(--info-color);"></i>100% Docker containerized</li>
+                                            <li class="mb-2"><i class="fas fa-chart-line me-2" style="color: var(--success-color);"></i>Prometheus, Grafana monitoring</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Architecture Tab -->
+                    <div class="tab-pane fade" id="architecture" role="tabpanel" aria-labelledby="architecture-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-sitemap me-2"></i>
+                            System Architecture
+                        </h2>
+                        <div class="architecture-diagram mb-5">
+                            <h4 class="mb-4">Complete Platform Architecture</h4>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <h5>Input Layer Services</h5>
+                                    <div class="bg-light p-3 rounded mb-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Ingestion Services:</strong>
+                                                <ul class="list-unstyled small mt-2">
+                                                    <li>• CSV Ingestion</li>
+                                                    <li>• Excel Ingestion</li>
+                                                    <li>• PDF Ingestion</li>
+                                                    <li>• JSON Ingestion</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Data Processing:</strong>
+                                                <ul class="list-unstyled small mt-2">
+                                                    <li>• API Ingestion</li>
+                                                    <li>• UI Scraper</li>
+                                                    <li>• Streaming Data</li>
+                                                    <li>• Data Validation</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h5>Output Layer Services</h5>
+                                    <div class="bg-light p-3 rounded mb-3">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <strong>Databases:</strong>
+                                                <ul class="list-unstyled small mt-2">
+                                                    <li>• PostgreSQL</li>
+                                                    <li>• MongoDB</li>
+                                                    <li>• Elasticsearch</li>
+                                                    <li>• TimescaleDB</li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-6">
+                                                <strong>Storage:</strong>
+                                                <ul class="list-unstyled small mt-2">
+                                                    <li>• MinIO (S3)</li>
+                                                    <li>• Qdrant (Vectors)</li>
+                                                    <li>• Neo4j (Graph)</li>
+                                                    <li>• Redis (Cache)</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+<!-- Platform Overview Section -->
+<section id="overview" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-globe me-2"></i>
+                            Platform Overview
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h3>What is Agentic Platform?</h3>
+                                <p class="lead mb-4">
+                                    Agentic Platform is a comprehensive, containerized data processing platform
+                                    designed for intelligent data ingestion, transformation, storage, and output
+                                    across multiple formats and destinations. Built for enterprises that need
+                                    scalable, secure, and AI-powered data processing capabilities.
+                                </p>
+
+                                <h4>🏗️ Three-Tier Architecture</h4>
+                                <div class="architecture-diagram mb-4">
+                                    <div class="row text-center">
+                                        <div class="col-md-4">
+                                            <div class="feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="fas fa-arrow-down"></i>
+                                                </div>
+                                                <h5>Input Layer</h5>
+                                                <p class="text-muted small">Multi-source data ingestion with intelligent processing</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="fas fa-brain"></i>
+                                                </div>
+                                                <h5>Agentic Brain</h5>
+                                                <p class="text-muted small">AI-powered processing, vector operations, and orchestration</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="feature-card">
+                                                <div class="feature-icon">
+                                                    <i class="fas fa-arrow-up"></i>
+                                                </div>
+                                                <h5>Output Layer</h5>
+                                                <p class="text-muted small">Multi-format delivery to various destinations</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h4>🚀 Key Capabilities</h4>
+                                <div class="feature-grid">
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-database"></i>
+                                        </div>
+                                        <h6>Multi-Source Ingestion</h6>
+                                        <p class="small">CSV, Excel, PDF, JSON, APIs, Web Scraping with automatic schema detection</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-search-plus"></i>
+                                        </div>
+                                        <h6>AI Vector Search</h6>
+                                        <p class="small">FastEmbed-powered semantic similarity search with Qdrant vector database</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-exchange-alt"></i>
+                                        </div>
+                                        <h6>Smart Transformation</h6>
+                                        <p class="small">Intelligent data format conversion, validation, and quality assurance</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h6>Enterprise Security</h6>
+                                        <p class="small">OAuth2/OIDC, JWT, TLS encryption, field-level security, audit logging</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h6>Full Monitoring</h6>
+                                        <p class="small">Prometheus, Grafana, Jaeger tracing, health checks, performance metrics</p>
+                                    </div>
+                                    <div class="feature-card">
+                                        <div class="feature-icon">
+                                            <i class="fas fa-cogs"></i>
+                                        </div>
+                                        <h6>Microservices</h6>
+                                        <p class="small">15+ containerized services with automatic scaling and health management</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-rocket me-2"></i>
+                                            Quick Start Guide
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h6 class="text-primary">🚀 One-Click Start</h6>
+                                            <div class="code-block small mb-3">
+./start-platform.sh
+                                            </div>
+                                            <small class="text-muted">Starts all 15+ services automatically</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <h6 class="text-success">📊 Access Points</h6>
+                                            <ul class="small mb-0">
+                                                <li><strong>Web UI:</strong> http://localhost:8082</li>
+                                                <li><strong>Grafana:</strong> http://localhost:3000</li>
+                                                <li><strong>API Docs:</strong> http://localhost:8081/docs</li>
+                                            </ul>
+                                        </div>
+
+                                        <div class="alert alert-success alert-modern">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>Zero Configuration Required!</strong><br>
+                                            <small>All services start with sensible defaults</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-server me-2"></i>
+                                            System Requirements
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <span class="status-indicator status-healthy">
+                                                <i class="fas fa-check"></i> Docker & Docker Compose
+                                            </span>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>RAM</span>
+                                                <span>8GB+ recommended</span>
+                                            </div>
+                                            <div class="progress-modern">
+                                                <div class="progress-bar-modern" style="width: 80%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>CPU</span>
+                                                <span>4+ cores</span>
+                                            </div>
+                                            <div class="progress-modern">
+                                                <div class="progress-bar-modern" style="width: 60%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-0">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Storage</span>
+                                                <span>50GB+ free</span>
+                                            </div>
+                                            <div class="progress-modern">
+                                                <div class="progress-bar-modern" style="width: 70%"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 small text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Works on Linux, Windows, and macOS
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- API Documentation Section -->
+<section id="apis" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-code me-2"></i>
+                            API Documentation
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-modern alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Interactive API Documentation:</strong> Test all platform APIs directly from your browser
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-swift me-2"></i>
+                                            Swagger UI
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Interactive API documentation with testing capabilities</p>
+                                        <a href="/docs" class="btn-modern" target="_blank">
+                                            <i class="fas fa-external-link-alt me-2"></i>
+                                            Open Swagger UI
+                                        </a>
+                                        <div class="mt-3">
+                                            <h6>Features:</h6>
+                                            <ul class="small">
+                                                <li>Interactive API testing</li>
+                                                <li>Request/response examples</li>
+                                                <li>Authentication support</li>
+                                                <li>Real-time validation</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-book me-2"></i>
+                                            ReDoc
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Clean, responsive API documentation</p>
+                                        <a href="/redoc" class="btn-modern" target="_blank">
+                                            <i class="fas fa-external-link-alt me-2"></i>
+                                            Open ReDoc
+                                        </a>
+                                        <div class="mt-3">
+                                            <h6>Features:</h6>
+                                            <ul class="small">
+                                                <li>Clean documentation layout</li>
+                                                <li>Mobile-friendly design</li>
+                                                <li>Schema visualization</li>
+                                                <li>Search functionality</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-primary mb-4">🔧 Platform API Endpoints</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Configuration Section -->
+<section id="configuration" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-sliders-h me-2"></i>
+                            Configuration Guide - Environment Variables
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-modern alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Complete Configuration Reference:</strong> Every environment variable explained with usage examples and acceptable values
+                        </div>
+
+                        <h4 class="text-primary mb-4">🔐 Authentication & Security Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>REQUIRE_AUTH</code></td>
+                                        <td>Controls whether authentication is required for the application</td>
+                                        <td><code>false</code></td>
+                                        <td><code>true</code> / <code>false</code></td>
+                                        <td><code>REQUIRE_AUTH=true</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>JWT_SECRET</code></td>
+                                        <td>Secret key used for JWT token signing and verification</td>
+                                        <td>N/A</td>
+                                        <td>Any secure string (32+ chars recommended)</td>
+                                        <td><code>JWT_SECRET=your-super-secret-jwt-key-change-in-production</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>JWT_EXPIRATION_HOURS</code></td>
+                                        <td>How long JWT tokens remain valid</td>
+                                        <td><code>24</code></td>
+                                        <td>1-168 (hours)</td>
+                                        <td><code>JWT_EXPIRATION_HOURS=8</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>OAUTH_CLIENT_ID</code></td>
+                                        <td>OAuth2 client identifier for external authentication</td>
+                                        <td>N/A</td>
+                                        <td>OAuth provider client ID</td>
+                                        <td><code>OAUTH_CLIENT_ID=abc123def456</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>OAUTH_CLIENT_SECRET</code></td>
+                                        <td>OAuth2 client secret for authentication</td>
+                                        <td>N/A</td>
+                                        <td>OAuth provider client secret</td>
+                                        <td><code>OAUTH_CLIENT_SECRET=secret123</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>OIDC_ISSUER_URL</code></td>
+                                        <td>OpenID Connect identity provider URL</td>
+                                        <td>N/A</td>
+                                        <td>Valid HTTPS URL</td>
+                                        <td><code>OIDC_ISSUER_URL=https://auth.example.com</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-success mb-4">🗄️ Database Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>POSTGRES_INGESTION_PASSWORD</code></td>
+                                        <td>Password for ingestion PostgreSQL database</td>
+                                        <td><code>agentic123</code></td>
+                                        <td>Secure password (12+ chars)</td>
+                                        <td><code>POSTGRES_INGESTION_PASSWORD=securePass123!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>POSTGRES_OUTPUT_PASSWORD</code></td>
+                                        <td>Password for output PostgreSQL database</td>
+                                        <td><code>agentic123</code></td>
+                                        <td>Secure password (12+ chars)</td>
+                                        <td><code>POSTGRES_OUTPUT_PASSWORD=outputPass456!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MONGODB_PASSWORD</code></td>
+                                        <td>Password for MongoDB database</td>
+                                        <td><code>agentic123</code></td>
+                                        <td>Secure password</td>
+                                        <td><code>MONGODB_PASSWORD=mongoSecure789!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>ELASTICSEARCH_PASSWORD</code></td>
+                                        <td>Password for Elasticsearch</td>
+                                        <td>N/A</td>
+                                        <td>Secure password</td>
+                                        <td><code>ELASTICSEARCH_PASSWORD=elasticPass101!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>REDIS_PASSWORD</code></td>
+                                        <td>Password for Redis cache</td>
+                                        <td>N/A</td>
+                                        <td>Secure password</td>
+                                        <td><code>REDIS_PASSWORD=redisPass202!</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-info mb-4">🔄 Message Queue Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>RABBITMQ_PASSWORD</code></td>
+                                        <td>Password for RabbitMQ message broker</td>
+                                        <td><code>agentic123</code></td>
+                                        <td>Secure password</td>
+                                        <td><code>RABBITMQ_PASSWORD=rabbitSecure303!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RABBITMQ_PREFETCH_COUNT</code></td>
+                                        <td>Number of messages to prefetch per consumer</td>
+                                        <td><code>10</code></td>
+                                        <td>1-100</td>
+                                        <td><code>RABBITMQ_PREFETCH_COUNT=25</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RABBITMQ_HEARTBEAT</code></td>
+                                        <td>Heartbeat interval for RabbitMQ connections</td>
+                                        <td><code>60</code></td>
+                                        <td>30-300 (seconds)</td>
+                                        <td><code>RABBITMQ_HEARTBEAT=120</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-warning mb-4">🗂️ Storage & Data Lake Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>MINIO_USER</code></td>
+                                        <td>Username for MinIO object storage</td>
+                                        <td><code>agentic_user</code></td>
+                                        <td>Valid username</td>
+                                        <td><code>MINIO_USER=admin</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MINIO_PASSWORD</code></td>
+                                        <td>Password for MinIO object storage</td>
+                                        <td><code>agentic123</code></td>
+                                        <td>Secure password (8+ chars)</td>
+                                        <td><code>MINIO_PASSWORD=minioSecure404!</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MINIO_REGION</code></td>
+                                        <td>AWS region for MinIO</td>
+                                        <td><code>us-east-1</code></td>
+                                        <td>AWS region codes</td>
+                                        <td><code>MINIO_REGION=us-west-2</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MINIO_BROWSER</code></td>
+                                        <td>Enable/disable MinIO web browser</td>
+                                        <td><code>off</code></td>
+                                        <td><code>on</code> / <code>off</code></td>
+                                        <td><code>MINIO_BROWSER=on</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-danger mb-4">🧠 Vector & AI Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>EMBEDDING_MODEL</code></td>
+                                        <td>FastEmbed model for text embeddings</td>
+                                        <td><code>sentence-transformers/all-MiniLM-L6-v2</code></td>
+                                        <td>Valid FastEmbed model name</td>
+                                        <td><code>EMBEDDING_MODEL=text-embedding-ada-002</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>VECTOR_DIMENSIONS</code></td>
+                                        <td>Dimensions of embedding vectors</td>
+                                        <td><code>384</code></td>
+                                        <td>128-1024</td>
+                                        <td><code>VECTOR_DIMENSIONS=768</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>QDRANT_HTTP_PORT</code></td>
+                                        <td>HTTP port for Qdrant vector database</td>
+                                        <td><code>6333</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>QDRANT_HTTP_PORT=6333</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>QDRANT_GRPC_PORT</code></td>
+                                        <td>GRPC port for Qdrant vector database</td>
+                                        <td><code>6334</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>QDRANT_GRPC_PORT=6334</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>QDRANT_HOST</code></td>
+                                        <td>Hostname for Qdrant service</td>
+                                        <td><code>qdrant_vector</code></td>
+                                        <td>Valid hostname</td>
+                                        <td><code>QDRANT_HOST=localhost</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-secondary mb-4">📊 Monitoring & Logging Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>LOG_LEVEL</code></td>
+                                        <td>Logging verbosity level</td>
+                                        <td><code>INFO</code></td>
+                                        <td><code>DEBUG</code> / <code>INFO</code> / <code>WARNING</code> / <code>ERROR</code></td>
+                                        <td><code>LOG_LEVEL=DEBUG</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>LOG_FORMAT</code></td>
+                                        <td>Format for log output</td>
+                                        <td><code>json</code></td>
+                                        <td><code>json</code> / <code>text</code></td>
+                                        <td><code>LOG_FORMAT=text</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>METRICS_INTERVAL</code></td>
+                                        <td>How often to collect metrics</td>
+                                        <td><code>15s</code></td>
+                                        <td>Time duration (e.g., 10s, 1m, 5m)</td>
+                                        <td><code>METRICS_INTERVAL=30s</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>HEALTH_CHECK_INTERVAL</code></td>
+                                        <td>How often to run health checks</td>
+                                        <td><code>30s</code></td>
+                                        <td>Time duration</td>
+                                        <td><code>HEALTH_CHECK_INTERVAL=60s</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>GRAFANA_PASSWORD</code></td>
+                                        <td>Password for Grafana admin user</td>
+                                        <td><code>admin123</code></td>
+                                        <td>Secure password</td>
+                                        <td><code>GRAFANA_PASSWORD=secureGrafanaPass!</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-primary mb-4">⚙️ Performance & Resource Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>CONNECTION_POOL_SIZE</code></td>
+                                        <td>Number of database connections to maintain</td>
+                                        <td><code>20</code></td>
+                                        <td>5-100</td>
+                                        <td><code>CONNECTION_POOL_SIZE=50</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>REQUEST_TIMEOUT</code></td>
+                                        <td>Maximum time for HTTP requests</td>
+                                        <td><code>30</code></td>
+                                        <td>10-300 (seconds)</td>
+                                        <td><code>REQUEST_TIMEOUT=60</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MAX_CONCURRENT_REQUESTS</code></td>
+                                        <td>Maximum simultaneous requests</td>
+                                        <td><code>100</code></td>
+                                        <td>10-1000</td>
+                                        <td><code>MAX_CONCURRENT_REQUESTS=200</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RATE_LIMIT_REQUESTS</code></td>
+                                        <td>Number of requests allowed per window</td>
+                                        <td><code>1000</code></td>
+                                        <td>100-10000</td>
+                                        <td><code>RATE_LIMIT_REQUESTS=5000</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RATE_LIMIT_WINDOW</code></td>
+                                        <td>Time window for rate limiting (seconds)</td>
+                                        <td><code>60</code></td>
+                                        <td>30-3600</td>
+                                        <td><code>RATE_LIMIT_WINDOW=300</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4 class="text-success mb-4">🔧 Service Port Configuration</h4>
+
+                        <div class="table-responsive mb-5">
+                            <table class="table table-modern">
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Default</th>
+                                        <th>Acceptable Values</th>
+                                        <th>Example Usage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>VECTOR_UI_PORT</code></td>
+                                        <td>Port for Vector UI web interface</td>
+                                        <td><code>8082</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>VECTOR_UI_PORT=8082</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>INGESTION_COORDINATOR_PORT</code></td>
+                                        <td>Port for ingestion coordinator service</td>
+                                        <td><code>8080</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>INGESTION_COORDINATOR_PORT=8080</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>OUTPUT_COORDINATOR_PORT</code></td>
+                                        <td>Port for output coordinator service</td>
+                                        <td><code>8081</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>OUTPUT_COORDINATOR_PORT=8081</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>POSTGRES_INGESTION_PORT</code></td>
+                                        <td>Port for ingestion PostgreSQL</td>
+                                        <td><code>5432</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>POSTGRES_INGESTION_PORT=5432</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>MONGODB_PORT</code></td>
+                                        <td>Port for MongoDB</td>
+                                        <td><code>27017</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>MONGODB_PORT=27017</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>REDIS_INGESTION_PORT</code></td>
+                                        <td>Port for Redis cache</td>
+                                        <td><code>6379</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>REDIS_INGESTION_PORT=6379</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RABBITMQ_PORT</code></td>
+                                        <td>Port for RabbitMQ</td>
+                                        <td><code>5672</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>RABBITMQ_PORT=5672</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>RABBITMQ_MANAGEMENT_PORT</code></td>
+                                        <td>Port for RabbitMQ management UI</td>
+                                        <td><code>15672</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>RABBITMQ_MANAGEMENT_PORT=15672</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>GRAFANA_PORT</code></td>
+                                        <td>Port for Grafana dashboard</td>
+                                        <td><code>3000</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>GRAFANA_PORT=3000</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>PROMETHEUS_PORT</code></td>
+                                        <td>Port for Prometheus metrics</td>
+                                        <td><code>9090</code></td>
+                                        <td>1024-65535</td>
+                                        <td><code>PROMETHEUS_PORT=9090</code></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="alert alert-modern alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important Notes:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Always use strong, unique passwords for production deployments</li>
+                                <li>JWT secrets should be at least 32 characters long</li>
+                                <li>Port conflicts are automatically resolved by the port manager service</li>
+                                <li>Environment variables are loaded at container startup</li>
+                                <li>Changes require service restart to take effect</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-star me-2"></i>
+                            Complete Feature Map - Every System Capability
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-modern alert-info mb-4">
+                            <i class="fas fa-map-marked-alt me-2"></i>
+                            <strong>Comprehensive Feature Inventory:</strong> Every single feature explained with navigation and usage examples
+                        </div>
+
+                        <h4 class="text-primary mb-4">📥 Data Ingestion Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-file-csv"></i>
+                                </div>
+                                <h6>CSV File Processing</h6>
+                                <ul class="small">
+                                    <li>Automatic schema detection</li>
+                                    <li>Data type inference</li>
+                                    <li>Header row detection</li>
+                                    <li>Delimiter auto-detection</li>
+                                    <li>Large file chunking</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">Port: 8082</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-file-excel"></i>
+                                </div>
+                                <h6>Excel File Processing</h6>
+                                <ul class="small">
+                                    <li>Multi-sheet support</li>
+                                    <li>Formula evaluation</li>
+                                    <li>Date format parsing</li>
+                                    <li>Cell validation</li>
+                                    <li>Complex data structures</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">Port: 8084</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <h6>PDF Document Processing</h6>
+                                <ul class="small">
+                                    <li>OCR for scanned documents</li>
+                                    <li>Text extraction from digital PDFs</li>
+                                    <li>Table structure recognition</li>
+                                    <li>Multi-column layout handling</li>
+                                    <li>Language detection</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">Port: 8083</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <h6>JSON Document Processing</h6>
+                                <ul class="small">
+                                    <li>Schema validation</li>
+                                    <li>Nested object flattening</li>
+                                    <li>Array processing</li>
+                                    <li>Data type conversion</li>
+                                    <li>Custom field mapping</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">Port: 8085</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <h6>API Data Ingestion</h6>
+                                <ul class="small">
+                                    <li>REST API integration</li>
+                                    <li>OAuth2 authentication</li>
+                                    <li>Rate limiting handling</li>
+                                    <li>Pagination support</li>
+                                    <li>Error retry logic</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-danger">Port: 8086</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-spider"></i>
+                                </div>
+                                <h6>Web Scraping</h6>
+                                <ul class="small">
+                                    <li>JavaScript rendering</li>
+                                    <li>Anti-bot detection</li>
+                                    <li>Dynamic content handling</li>
+                                    <li>Structured data extraction</li>
+                                    <li>Crawler management</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-secondary">Port: 8087</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-success mb-4 mt-5">🤖 AI & Vector Processing Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h6>Text Embedding Generation</h6>
+                                <ul class="small">
+                                    <li>FastEmbed integration</li>
+                                    <li>Multiple model support</li>
+                                    <li>Batch processing</li>
+                                    <li>Vector dimension optimization</li>
+                                    <li>GPU acceleration support</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">FastEmbed</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-search-plus"></i>
+                                </div>
+                                <h6>Semantic Search</h6>
+                                <ul class="small">
+                                    <li>Cosine similarity matching</li>
+                                    <li>Multi-vector search</li>
+                                    <li>Metadata filtering</li>
+                                    <li>Score thresholding</li>
+                                    <li>Real-time indexing</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">Qdrant</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-project-diagram"></i>
+                                </div>
+                                <h6>Vector Similarity</h6>
+                                <ul class="small">
+                                    <li>Document similarity matching</li>
+                                    <li>Recommendation systems</li>
+                                    <li>Duplicate detection</li>
+                                    <li>Cluster analysis</li>
+                                    <li>Distance metrics</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">Cosine/Euclidean</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-magic"></i>
+                                </div>
+                                <h6>Intelligent Routing</h6>
+                                <ul class="small">
+                                    <li>Data type classification</li>
+                                    <li>Destination optimization</li>
+                                    <li>Load balancing</li>
+                                    <li>Format conversion</li>
+                                    <li>Quality validation</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">AI-Powered</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-info mb-4 mt-5">📤 Data Output & Storage Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <h6>PostgreSQL Integration</h6>
+                                <ul class="small">
+                                    <li>Schema management</li>
+                                    <li>Connection pooling</li>
+                                    <li>Transaction support</li>
+                                    <li>Index optimization</li>
+                                    <li>Backup automation</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">Port: 5432/5433</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-leaf"></i>
+                                </div>
+                                <h6>MongoDB Integration</h6>
+                                <ul class="small">
+                                    <li>Document storage</li>
+                                    <li>Flexible schemas</li>
+                                    <li>Aggregation pipelines</li>
+                                    <li>Geospatial queries</li>
+                                    <li>Text search</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">Port: 27017</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h6>Elasticsearch Integration</h6>
+                                <ul class="small">
+                                    <li>Full-text search</li>
+                                    <li>Analytics aggregation</li>
+                                    <li>Real-time indexing</li>
+                                    <li>Custom analyzers</li>
+                                    <li>Log aggregation</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">Port: 9200</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-archive"></i>
+                                </div>
+                                <h6>Data Lake Storage</h6>
+                                <ul class="small">
+                                    <li>Bronze/Silver/Gold layers</li>
+                                    <li>S3-compatible API</li>
+                                    <li>Versioning support</li>
+                                    <li>Replication</li>
+                                    <li>Access control</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">MinIO</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-download"></i>
+                                </div>
+                                <h6>File Export</h6>
+                                <ul class="small">
+                                    <li>Multiple format support</li>
+                                    <li>Compression options</li>
+                                    <li>Batch processing</li>
+                                    <li>Progress tracking</li>
+                                    <li>Error recovery</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-danger">CSV/JSON/Parquet</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-warning mb-4 mt-5">🔄 Processing & Workflow Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <h6>Data Validation</h6>
+                                <ul class="small">
+                                    <li>Schema validation</li>
+                                    <li>Data type checking</li>
+                                    <li>Range validation</li>
+                                    <li>Custom rules</li>
+                                    <li>Error reporting</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">Pydantic</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-filter"></i>
+                                </div>
+                                <h6>Data Transformation</h6>
+                                <ul class="small">
+                                    <li>Field mapping</li>
+                                    <li>Data normalization</li>
+                                    <li>Type conversion</li>
+                                    <li>Custom functions</li>
+                                    <li>Pipeline processing</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">Modular</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-copy"></i>
+                                </div>
+                                <h6>Deduplication</h6>
+                                <ul class="small">
+                                    <li>Exact matching</li>
+                                    <li>Fuzzy matching</li>
+                                    <li>Hash-based detection</li>
+                                    <li>Rule-based logic</li>
+                                    <li>Conflict resolution</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">AI-Powered</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                                <h6>Data Quality Monitoring</h6>
+                                <ul class="small">
+                                    <li>Quality scoring</li>
+                                    <li>Completeness checks</li>
+                                    <li>Accuracy validation</li>
+                                    <li>Consistency analysis</li>
+                                    <li>Trend monitoring</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">Real-time</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-danger mb-4 mt-5">🛡️ Security & Compliance Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h6>Authentication & Authorization</h6>
+                                <ul class="small">
+                                    <li>JWT token validation</li>
+                                    <li>OAuth2 integration</li>
+                                    <li>Role-based access</li>
+                                    <li>Session management</li>
+                                    <li>Secure token storage</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">Enterprise</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <h6>Data Encryption</h6>
+                                <ul class="small">
+                                    <li>Field-level encryption</li>
+                                    <li>TLS/SSL transport</li>
+                                    <li>Key management</li>
+                                    <li>Secure key storage</li>
+                                    <li>Encryption at rest</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">AES-256</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-eye"></i>
+                                </div>
+                                <h6>Audit Logging</h6>
+                                <ul class="small">
+                                    <li>Access logging</li>
+                                    <li>Data modification tracking</li>
+                                    <li>Security event logging</li>
+                                    <li>Compliance reporting</li>
+                                    <li>Log retention policies</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">SOX/HIPAA</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-user-secret"></i>
+                                </div>
+                                <h6>PII Detection</h6>
+                                <ul class="small">
+                                    <li>Pattern matching</li>
+                                    <li>Data classification</li>
+                                    <li>Privacy compliance</li>
+                                    <li>Automated masking</li>
+                                    <li>GDPR compliance</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">AI-Powered</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-secondary mb-4 mt-5">📊 Monitoring & Observability Features</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6>Real-time Metrics</h6>
+                                <ul class="small">
+                                    <li>Performance monitoring</li>
+                                    <li>Resource utilization</li>
+                                    <li>Throughput tracking</li>
+                                    <li>Error rate monitoring</li>
+                                    <li>Custom dashboards</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-primary">Prometheus</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-route"></i>
+                                </div>
+                                <h6>Distributed Tracing</h6>
+                                <ul class="small">
+                                    <li>Request tracing</li>
+                                    <li>Service dependency mapping</li>
+                                    <li>Performance bottleneck detection</li>
+                                    <li>Error correlation</li>
+                                    <li>Latency analysis</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-success">Jaeger</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-heartbeat"></i>
+                                </div>
+                                <h6>Health Monitoring</h6>
+                                <ul class="small">
+                                    <li>Service health checks</li>
+                                    <li>Dependency monitoring</li>
+                                    <li>Automated recovery</li>
+                                    <li>Alert notifications</li>
+                                    <li>SLA monitoring</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-info">Kubernetes-style</code>
+                                </div>
+                            </div>
+
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h6>Alert Management</h6>
+                                <ul class="small">
+                                    <li>Threshold-based alerts</li>
+                                    <li>Multi-channel notifications</li>
+                                    <li>Escalation policies</li>
+                                    <li>Alert correlation</li>
+                                    <li>Auto-remediation</li>
+                                </ul>
+                                <div class="mt-2">
+                                    <code class="badge bg-warning">Intelligent</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Troubleshooting Section -->
+<section id="troubleshooting" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-tools me-2"></i>
+                            Troubleshooting Guide - Common Issues & Solutions
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-modern alert-warning mb-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Quick Diagnosis:</strong> Use the navigation below to jump to specific issues
+                        </div>
+
+                        <h4 class="text-primary mb-4">🚀 Startup & Initialization Issues</h4>
+
+                        <div class="accordion" id="troubleshootingAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="dockerHeading">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#dockerCollapse">
+                                        <i class="fas fa-docker me-2 text-primary"></i>Docker Issues
+                                    </button>
+                                </h2>
+                                <div id="dockerCollapse" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Docker is not running</h6>
+                                        <div class="code-block mb-3">
+# Check Docker status
+docker info
+
+# Start Docker (macOS)
+# Open Docker Desktop
+
+# Start Docker (Linux)
+sudo systemctl start docker
+                                        </div>
+
+                                        <h6>Problem: Port conflicts</h6>
+                                        <div class="code-block mb-3">
+# Check what's using ports
+lsof -i :8080
+lsof -i :8081
+lsof -i :8082
+
+# Kill process using port
+sudo kill -9 <PID>
+                                        </div>
+
+                                        <h6>Problem: Insufficient resources</h6>
+                                        <div class="code-block mb-3">
+# Check available memory
+free -h
+
+# Check Docker resource limits
+docker system df
+
+# Clean up Docker
+docker system prune -a
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="serviceHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#serviceCollapse">
+                                        <i class="fas fa-server me-2 text-success"></i>Service Startup Issues
+                                    </button>
+                                </h2>
+                                <div id="serviceCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Services fail to start</h6>
+                                        <div class="code-block mb-3">
+# Check service logs
+docker-compose logs ingestion-coordinator
+docker-compose logs output-coordinator
+
+# Restart specific service
+docker-compose restart ingestion-coordinator
+
+# Check service health
+curl http://localhost:8080/health
+                                        </div>
+
+                                        <h6>Problem: Database connection failures</h6>
+                                        <div class="code-block mb-3">
+# Check database logs
+docker-compose logs postgresql_ingestion
+
+# Test database connection
+docker-compose exec postgresql_ingestion psql -U agentic_user -d agentic_ingestion
+
+# Reset database
+docker-compose down -v
+docker-compose up -d
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="vectorHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vectorCollapse">
+                                        <i class="fas fa-brain me-2 text-info"></i>Vector Operations Issues
+                                    </button>
+                                </h2>
+                                <div id="vectorCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Embedding generation fails</h6>
+                                        <div class="code-block mb-3">
+# Check Qdrant status
+curl http://localhost:6333/health
+
+# Test embedding endpoint
+curl -X POST http://localhost:8082/api/embeddings/generate \
+  -H "Content-Type: application/json" \
+  -d '{"texts": ["test text"]}'
+
+# Check logs
+docker-compose logs vector-ui
+                                        </div>
+
+                                        <h6>Problem: Vector search returns no results</h6>
+                                        <div class="code-block mb-3">
+# Check collection exists
+curl http://localhost:6333/collections
+
+# Index test document
+curl -X POST http://localhost:8081/vectors/index \
+  -H "Content-Type: application/json" \
+  -d '{"documents": [{"document_id": "test", "text": "test content"}]}'
+
+# Search
+curl -X POST http://localhost:8081/vectors/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "test", "collection": "documents"}'
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="performanceHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#performanceCollapse">
+                                        <i class="fas fa-tachometer-alt me-2 text-warning"></i>Performance Issues
+                                    </button>
+                                </h2>
+                                <div id="performanceCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Slow processing</h6>
+                                        <div class="code-block mb-3">
+# Check resource usage
+docker stats
+
+# View Prometheus metrics
+curl http://localhost:9090/api/v1/query?query=up
+
+# Adjust batch size
+export BATCH_SIZE=500
+docker-compose restart ingestion-coordinator
+                                        </div>
+
+                                        <h6>Problem: Memory issues</h6>
+                                        <div class="code-block mb-3">
+{% raw %}
+# Check memory usage
+docker stats --format "table {{.Container}}\t{{.CPUMem}}"
+
+# Increase memory limits
+# Edit docker-compose.yml
+# Add memory limits to services
+{% endraw %}
+                                        </div>
+
+                                        <h6>Problem: High CPU usage</h6>
+                                        <div class="code-block mb-3">
+{% raw %}
+# Check CPU usage
+docker stats --format "table {{.Container}}\t{{.CPUPerc}}"
+
+# Adjust worker count
+export MAX_WORKERS=2
+docker-compose restart
+{% endraw %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="networkHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#networkCollapse">
+                                        <i class="fas fa-network-wired me-2 text-danger"></i>Network & Connectivity Issues
+                                    </button>
+                                </h2>
+                                <div id="networkCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Service communication failures</h6>
+                                        <div class="code-block mb-3">
+# Check network connectivity
+docker network ls
+docker network inspect agenticai_agentic-network
+
+# Test service connectivity
+docker-compose exec ingestion-coordinator curl output-coordinator:8081/health
+
+# Restart network
+docker-compose down
+docker network prune -f
+docker-compose up -d
+                                        </div>
+
+                                        <h6>Problem: External API failures</h6>
+                                        <div class="code-block mb-3">
+# Check internet connectivity
+curl https://httpbin.org/get
+
+# Test DNS resolution
+nslookup google.com
+
+# Check proxy settings
+env | grep -i proxy
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="dataHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#dataCollapse">
+                                        <i class="fas fa-database me-2 text-secondary"></i>Data Processing Issues
+                                    </button>
+                                </h2>
+                                <div id="dataCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: File processing failures</h6>
+                                        <div class="code-block mb-3">
+# Check file permissions
+ls -la /path/to/files
+
+# Validate file format
+head -10 file.csv
+file file.pdf
+
+# Check service logs
+docker-compose logs csv-ingestion
+                                        </div>
+
+                                        <h6>Problem: Data validation errors</h6>
+                                        <div class="code-block mb-3">
+# Check validation rules
+curl http://localhost:8080/validation/rules
+
+# Test data validation
+curl -X POST http://localhost:8080/validate \
+  -H "Content-Type: application/json" \
+  -d '{"data": "test"}'
+
+# View error logs
+docker-compose logs | grep -i validation
+                                        </div>
+
+                                        <h6>Problem: Duplicate data issues</h6>
+                                        <div class="code-block mb-3">
+# Check deduplication settings
+curl http://localhost:8080/deduplication/status
+
+# Reset deduplication cache
+curl -X POST http://localhost:8080/deduplication/reset
+
+# View deduplication logs
+docker-compose logs | grep -i duplicate
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="securityHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#securityCollapse">
+                                        <i class="fas fa-shield-alt me-2 text-dark"></i>Security & Authentication Issues
+                                    </button>
+                                </h2>
+                                <div id="securityCollapse" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                    <div class="accordion-body">
+                                        <h6>Problem: Authentication failures</h6>
+                                        <div class="code-block mb-3">
+# Check REQUIRE_AUTH setting
+echo $REQUIRE_AUTH
+
+# Validate JWT secret
+echo $JWT_SECRET | wc -c
+
+# Test authentication endpoint
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test", "password": "test"}'
+                                        </div>
+
+                                        <h6>Problem: SSL/TLS certificate issues</h6>
+                                        <div class="code-block mb-3">
+# Check certificate files
+ls -la /etc/ssl/certs/
+ls -la /etc/ssl/private/
+
+# Validate certificate
+openssl x509 -in /etc/ssl/certs/agentic.crt -text -noout
+
+# Test SSL connection
+curl -v https://localhost:8443/health
+                                        </div>
+
+                                        <h6>Problem: Permission denied errors</h6>
+                                        <div class="code-block mb-3">
+# Check file permissions
+ls -la /app/data/
+ls -la /app/logs/
+
+# Fix permissions
+chmod 755 /app/data
+chmod 644 /app/logs/*.log
+
+# Check user permissions
+id
+groups
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-success mb-4 mt-5">🔍 Diagnostic Tools</h4>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-stethoscope me-2"></i>
+                                            Health Check Commands
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="code-block">
+# Quick health check
+curl http://localhost:8080/health
+curl http://localhost:8081/health
+curl http://localhost:8082/health
+
+# Database health
+curl http://localhost:6333/health
+
+# Service status
+docker-compose ps
+
+# Resource usage
+docker stats --no-stream
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-info text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-search me-2"></i>
+                                            Log Analysis Commands
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="code-block">
+# View all logs
+docker-compose logs
+
+# Follow logs in real-time
+docker-compose logs -f
+
+# Service-specific logs
+docker-compose logs ingestion-coordinator
+
+# Filter logs by time
+docker-compose logs --since 1h
+
+# Search for errors
+docker-compose logs | grep -i error
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-tools me-2"></i>
+                                            Common Recovery Commands
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="code-block">
+# Restart all services
+docker-compose restart
+
+# Restart specific service
+docker-compose restart vector-ui
+
+# Clean restart (remove volumes)
+docker-compose down -v
+docker-compose up -d
+
+# Emergency cleanup
+docker system prune -f
+docker volume prune -f
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="card">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-bug me-2"></i>
+                                            Debug Commands
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="code-block">
+# Enter service container
+docker-compose exec ingestion-coordinator bash
+
+# Check environment variables
+docker-compose exec vector-ui env
+
+# Test network connectivity
+docker-compose exec ingestion-coordinator ping output-coordinator
+
+# Check disk space
+df -h
+
+# Monitor processes
+top -b -n 1
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-modern alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Pro Tips:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Always check logs first when troubleshooting</li>
+                                <li>Use <code>docker-compose logs -f</code> to monitor services in real-time</li>
+                                <li>Restart individual services with <code>docker-compose restart service-name</code></li>
+                                <li>Check resource usage with <code>docker stats</code></li>
+                                <li>Use <code>docker system prune</code> to clean up disk space</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="table-responsive">
+                                    <table class="table table-modern">
+                                        <thead>
+                                            <tr>
+                                                <th>Service</th>
+                                                <th>Base URL</th>
+                                                <th>Key Endpoints</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><strong>Vector UI</strong></td>
+                                                <td><code>http://localhost:8082</code></td>
+                                                <td><code>/api/embeddings/generate</code><br><code>/api/vectors/search</code></td>
+                                                <td>Vector operations and web interface</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Ingestion Coordinator</strong></td>
+                                                <td><code>http://localhost:8080</code></td>
+                                                <td><code>/sources</code><br><code>/jobs</code></td>
+                                                <td>Data ingestion orchestration</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Output Coordinator</strong></td>
+                                                <td><code>http://localhost:8081</code></td>
+                                                <td><code>/jobs</code><br><code>/vectors/*</code></td>
+                                                <td>Data output and vector operations</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>GraphQL API</strong></td>
+                                                <td><code>http://localhost:8100</code></td>
+                                                <td><code>/graphql</code></td>
+                                                <td>Flexible data querying</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Getting Started Section -->
+<section id="getting-started" class="content-section">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card fade-in-up">
+                    <div class="card-header">
+                        <h2 class="mb-0">
+                            <i class="fas fa-rocket me-2"></i>
+                            Getting Started - Quick Start Guide
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-modern alert-success mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Zero Configuration Required!</strong> The platform starts with sensible defaults
+                        </div>
+
+                        <h4 class="text-primary mb-4">🗺️ Complete Platform Navigation Map</h4>
+
+                        <div class="alert alert-modern alert-success mb-4">
+                            <i class="fas fa-map-marked-alt me-2"></i>
+                            <strong>Navigation Guide:</strong> Follow this map to understand the complete platform flow and find exactly what you need
+                        </div>
+
+                        <!-- Navigation Map -->
+                        <div class="architecture-diagram mb-5">
+                            <div class="text-center mb-4">
+                                <h5>🗺️ Agentic Platform - Complete User Journey Map</h5>
+                            </div>
+
+                            <!-- Getting Started Path -->
+                            <div class="flow-step" data-step="1">
+                                <h6 class="text-primary">
+                                    <i class="fas fa-rocket me-2"></i>
+                                    NEW USERS: Getting Started Path
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>Step 1: Launch</h6>
+                                        <p class="small">Run the automated start script</p>
+                                        <div class="code-block small">
+./start-platform.sh
+                                        </div>
+                                        <p class="small text-muted">Starts all 15+ services automatically</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Step 2: Explore</h6>
+                                        <p class="small">Visit the main interface</p>
+                                        <a href="http://localhost:8082" target="_blank" class="btn-modern">
+                                            <i class="fas fa-external-link-alt me-2"></i>
+                                            Open Platform UI
+                                        </a>
+                                        <p class="small text-muted">Complete web interface for all features</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>Step 3: Learn</h6>
+                                        <p class="small">Read this comprehensive guide</p>
+                                        <a href="#overview" class="nav-link-modern">
+                                            <i class="fas fa-book me-2"></i>
+                                            Start Reading Guide
+                                        </a>
+                                        <p class="small text-muted">Everything explained for beginners</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Feature Discovery Path -->
+                            <div class="flow-step" data-step="2">
+                                <h6 class="text-success">
+                                    <i class="fas fa-compass me-2"></i>
+                                    FEATURE DISCOVERY: What Can You Do?
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <h6>Data Processing</h6>
+                                        <ul class="small">
+                                            <li><strong>Upload Files:</strong> CSV, Excel, PDF, JSON</li>
+                                            <li><strong>Auto Processing:</strong> Schema detection</li>
+                                            <li><strong>AI Enhancement:</strong> Smart validation</li>
+                                        </ul>
+                                        <code class="badge bg-primary">Section: Features</code>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6>Vector Search</h6>
+                                        <ul class="small">
+                                            <li><strong>Semantic Search:</strong> AI-powered queries</li>
+                                            <li><strong>Document Indexing:</strong> FastEmbed integration</li>
+                                            <li><strong>Similarity Matching:</strong> Qdrant database</li>
+                                        </ul>
+                                        <code class="badge bg-success">Section: Vector Ops</code>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6>API Integration</h6>
+                                        <ul class="small">
+                                            <li><strong>Interactive Docs:</strong> Swagger UI testing</li>
+                                            <li><strong>REST APIs:</strong> All services accessible</li>
+                                            <li><strong>Real-time Testing:</strong> Direct API calls</li>
+                                        </ul>
+                                        <code class="badge bg-info">Section: API Docs</code>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <h6>Monitoring</h6>
+                                        <ul class="small">
+                                            <li><strong>Real-time Metrics:</strong> Prometheus</li>
+                                            <li><strong>Visual Dashboards:</strong> Grafana</li>
+                                            <li><strong>System Health:</strong> Auto-monitoring</li>
+                                        </ul>
+                                        <code class="badge bg-warning">Section: Overview</code>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Usage Path -->
+                            <div class="flow-step" data-step="3">
+                                <h6 class="text-info">
+                                    <i class="fas fa-cogs me-2"></i>
+                                    ADVANCED USERS: Deep Dive Areas
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>🔧 Configuration & Customization</h6>
+                                        <ul class="small">
+                                            <li><strong>Environment Variables:</strong> All settings explained</li>
+                                            <li><strong>Service Ports:</strong> Port conflict resolution</li>
+                                            <li><strong>Performance Tuning:</strong> Optimization guides</li>
+                                            <li><strong>Security Settings:</strong> Authentication options</li>
+                                        </ul>
+                                        <code class="badge bg-primary">Section: Configuration</code>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>🛠️ Troubleshooting & Maintenance</h6>
+                                        <ul class="small">
+                                            <li><strong>Common Issues:</strong> Quick problem solving</li>
+                                            <li><strong>Diagnostic Tools:</strong> Health check commands</li>
+                                            <li><strong>Log Analysis:</strong> Debugging techniques</li>
+                                            <li><strong>Performance Issues:</strong> Optimization tips</li>
+                                        </ul>
+                                        <code class="badge bg-danger">Section: Troubleshooting</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-success mb-4">🚀 One-Click Platform Start</h4>
+
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="flow-step" data-step="4">
+                                    <h6 class="text-success">
+                                        <i class="fas fa-terminal me-2"></i>
+                                        Start the Platform
+                                    </h6>
+                                    <p>Simply run the start script - everything is automated:</p>
+                                    <div class="code-block mb-3">
+./start-platform.sh
+                                    </div>
+                                    <div class="alert alert-modern alert-info">
+                                        <strong>What happens automatically:</strong>
+                                        <ul class="small mb-0 mt-2">
+                                            <li>✅ Docker environment check</li>
+                                            <li>✅ System resource validation</li>
+                                            <li>✅ All 15+ services startup</li>
+                                            <li>✅ Health checks and monitoring</li>
+                                            <li>✅ Service dependency management</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                <div class="flow-step" data-step="2">
+                                    <h6 class="text-success">
+                                        <i class="fas fa-globe me-2"></i>
+                                        Access Your Platform
+                                    </h6>
+                                    <p>Once started, access all services through these URLs:</p>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>🌐 Web Interfaces</h6>
+                                            <ul class="small">
+                                                <li><strong>Main UI:</strong> <a href="http://localhost:8082" target="_blank">localhost:8082</a></li>
+                                                <li><strong>Grafana:</strong> <a href="http://localhost:3000" target="_blank">localhost:3000</a></li>
+                                                <li><strong>API Docs:</strong> <a href="/docs" target="_blank">localhost:8082/docs</a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>🔌 Service Endpoints</h6>
+                                            <ul class="small">
+                                                <li><strong>Ingestion API:</strong> localhost:8080</li>
+                                                <li><strong>Output API:</strong> localhost:8081</li>
+                                                <li><strong>RabbitMQ:</strong> localhost:15672</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flow-step" data-step="3">
+                                    <h6 class="text-info">
+                                        <i class="fas fa-play me-2"></i>
+                                        Test Vector Operations
+                                    </h6>
+                                    <p>Test the AI-powered vector search capabilities:</p>
+                                    <div class="code-block mb-3">
+# Generate embeddings for sample text
+curl -X POST http://localhost:8082/api/embeddings/generate \
+  -H "Content-Type: application/json" \
+  -d '{"texts": ["machine learning is powerful", "AI transforms data"]}'
+
+# Search for similar content
+curl -X POST http://localhost:8081/vectors/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "artificial intelligence", "collection": "documents"}'
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-tools me-2"></i>
+                                            Management Scripts
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h6>Start Platform:</h6>
+                                            <div class="code-block small">
+./start-platform.sh
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <h6>Stop Platform:</h6>
+                                            <div class="code-block small">
+./stop-platform.sh
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <h6>View Logs:</h6>
+                                            <div class="code-block small">
+docker-compose logs -f
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <h6>Check Status:</h6>
+                                            <div class="code-block small">
+docker-compose ps
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-3">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">
+                                            <i class="fas fa-shield-alt me-2"></i>
+                                            Security Note
+                                        </h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="small">By default, authentication is disabled for easy testing.</p>
+                                        <p class="small">To enable security:</p>
+                                        <div class="code-block small">
+# Set in your environment
+export REQUIRE_AUTH=true
+export JWT_SECRET=your-secret-key
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="text-success mb-4 mt-5">🎯 What You Can Do Right Away</h4>
+
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-file-upload"></i>
+                                </div>
+                                <h6>Upload Data</h6>
+                                <p class="small">Upload CSV, Excel, PDF, or JSON files through the web interface</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h6>Vector Search</h6>
+                                <p class="small">Perform AI-powered semantic search across your documents</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h6>Generate Embeddings</h6>
+                                <p class="small">Convert text to vector embeddings using FastEmbed</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h6>Monitor Performance</h6>
+                                <p class="small">View real-time metrics and system performance</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <h6>Test APIs</h6>
+                                <p class="small">Use Swagger UI to test all platform APIs interactively</p>
+                            </div>
+                            <div class="feature-card">
+                                <div class="feature-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <h6>Explore Data</h6>
+                                <p class="small">Query data across PostgreSQL, MongoDB, and vector collections</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5><i class="fas fa-brain me-2"></i>Agentic Platform</h5>
+                <p>Advanced AI-powered data processing platform</p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0">
+                    <i class="fas fa-code me-1"></i>
+                    Built with FastAPI & Docker
+                </p>
+                <p class="mb-0">
+                    <i class="fas fa-clock me-1"></i>
+                    Real-time data processing
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+// Smooth scrolling navigation
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.nav-link-modern');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetSection = document.getElementById(targetId);
+
+            if (targetSection) {
+                // Update active state
+                navLinks.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                // Smooth scroll
+                targetSection.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Add copy-to-clipboard functionality for code blocks
+    document.querySelectorAll('.code-block').forEach(block => {
+        const button = document.createElement('button');
+        button.className = 'btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2';
+        button.innerHTML = '<i class="fas fa-copy"></i>';
+        button.style.cssText = 'z-index: 10;';
+
+        button.addEventListener('click', function() {
+            navigator.clipboard.writeText(block.textContent).then(() => {
+                const originalIcon = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check text-success"></i>';
+                setTimeout(() => {
+                    this.innerHTML = originalIcon;
+                }, 1000);
+            });
+        });
+
+        block.style.position = 'relative';
+        block.appendChild(button);
+    });
+});
+</script>
+{% endblock %}

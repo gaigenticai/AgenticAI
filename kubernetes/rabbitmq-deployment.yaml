@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: agentic-platform
+  labels:
+    app: rabbitmq
+    component: message-queue
+    version: "3.12"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+      component: message-queue
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+        component: message-queue
+        version: "3.12"
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3.12-management-alpine
+        ports:
+        - containerPort: 5672
+          name: amqp
+        - containerPort: 15672
+          name: management
+        - containerPort: 15692
+          name: prometheus
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: RABBITMQ_DEFAULT_USER
+        - name: RABBITMQ_DEFAULT_PASS
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: RABBITMQ_DEFAULT_PASS
+        - name: RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS
+          value: "-rabbit log_levels [{connection,error}]"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - ping
+          initialDelaySeconds: 60
+          periodSeconds: 60
+          timeoutSeconds: 15
+        readinessProbe:
+          exec:
+            command:
+            - rabbitmq-diagnostics
+            - ping
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: agentic-platform
+  labels:
+    app: rabbitmq
+    component: message-queue
+spec:
+  selector:
+    app: rabbitmq
+    component: message-queue
+  ports:
+  - port: 5672
+    targetPort: 5672
+    name: amqp
+  - port: 15672
+    targetPort: 15672
+    name: management
+  - port: 15692
+    targetPort: 15692
+    name: prometheus
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-management
+  namespace: agentic-platform
+  labels:
+    app: rabbitmq
+    component: management
+spec:
+  selector:
+    app: rabbitmq
+    component: message-queue
+  ports:
+  - port: 15672
+    targetPort: 15672
+    name: http
+  type: ClusterIP

@@ -1,0 +1,1004 @@
+{% extends "base.html" %}
+
+{% block title %}Agentic Platform - Complete Guide{% endblock %}
+
+{% block head %}
+<style>
+/* Professional Enterprise Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Professional Color Palette */
+    --primary-color: #1e293b;
+    --primary-hover: #334155;
+    --secondary-color: #64748b;
+    --accent-color: #0f766e;
+    --accent-hover: #115e59;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --error-color: #dc2626;
+    --info-color: #2563eb;
+
+    /* Background Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --bg-dark: #0f172a;
+    --bg-accent: #ecfdf5;
+
+    /* Text Colors */
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --text-light: #f8fafc;
+
+    /* Border & Shadow */
+    --border-color: #e2e8f0;
+    --border-focus: #0f766e;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    /* Border Radius */
+    --border-radius: 8px;
+    --border-radius-lg: 12px;
+    --border-radius-xl: 16px;
+}
+
+/* Global Styles */
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    min-height: 100vh;
+}
+
+/* Professional Tabbed Interface */
+.tabs-container {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin: 2rem 0;
+}
+
+.nav-tabs-professional {
+    background: var(--bg-tertiary);
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-tabs-professional .nav-item {
+    margin-bottom: 0;
+}
+
+.nav-tabs-professional .nav-link {
+    border: none;
+    border-radius: 0;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    background: transparent;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.nav-tabs-professional .nav-link:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.nav-tabs-professional .nav-link.active {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: 600;
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.nav-tabs-professional .nav-link i {
+    margin-right: 0.5rem;
+}
+
+/* Tab Content */
+.tab-content-professional {
+    padding: 2rem;
+    background: var(--bg-primary);
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Professional Components */
+.card {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn {
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow);
+}
+
+.table {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.alert {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    border-left: 4px solid var(--info-color);
+}
+
+.code-block {
+    background: var(--bg-dark);
+    color: #e2e8f0;
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    font-family: 'JetBrains Mono', 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-tabs-professional .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .tab-content-professional {
+        padding: 1rem;
+    }
+
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.75rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <div class="mb-4">
+                    <span class="badge bg-primary px-4 py-2 fs-6 fw-semibold">Complete Platform Guide</span>
+                </div>
+                <h1 class="display-4 fw-bold mb-4" style="color: var(--primary-color);">
+                    <i class="fas fa-brain me-3"></i>
+                    Agentic Platform
+                </h1>
+                <p class="lead fs-5 mb-4" style="color: var(--text-secondary); max-width: 800px; margin: 0 auto;">
+                    Your comprehensive guide to mastering data processing, AI operations, and enterprise workflows
+                </p>
+                <div class="row justify-content-center mb-4">
+                    <div class="col-auto">
+                        <div class="d-flex gap-4 flex-wrap justify-content-center">
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">15+</div>
+                                <div class="small" style="color: var(--text-muted);">Services</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">100%</div>
+                                <div class="small" style="color: var(--text-muted);">Docker</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="fw-bold fs-3" style="color: var(--accent-color);">AI</div>
+                                <div class="small" style="color: var(--text-muted);">Powered</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info border-0 shadow-sm" style="background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%); border-left: 4px solid var(--info-color);">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Navigation:</strong> Use the tabs below to explore different sections of the platform
+                </div>
+            </div>
+
+            <!-- Tabbed Interface -->
+            <div class="tabs-container">
+                <ul class="nav nav-tabs nav-tabs-professional" id="platformTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                            <i class="fas fa-home"></i> Overview
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="architecture-tab" data-bs-toggle="tab" data-bs-target="#architecture" type="button" role="tab" aria-controls="architecture" aria-selected="false">
+                            <i class="fas fa-sitemap"></i> Architecture
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">
+                            <i class="fas fa-star"></i> Features
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="vector-tab" data-bs-toggle="tab" data-bs-target="#vector" type="button" role="tab" aria-controls="vector" aria-selected="false">
+                            <i class="fas fa-brain"></i> Vector Ops
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab" aria-controls="services" aria-selected="false">
+                            <i class="fas fa-server"></i> Services
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="apis-tab" data-bs-toggle="tab" data-bs-target="#apis" type="button" role="tab" aria-controls="apis" aria-selected="false">
+                            <i class="fas fa-code"></i> APIs
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="config-tab" data-bs-toggle="tab" data-bs-target="#config" type="button" role="tab" aria-controls="config" aria-selected="false">
+                            <i class="fas fa-sliders-h"></i> Config
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="getting-started-tab" data-bs-toggle="tab" data-bs-target="#getting-started" type="button" role="tab" aria-controls="getting-started" aria-selected="false">
+                            <i class="fas fa-rocket"></i> Getting Started
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="troubleshooting-tab" data-bs-toggle="tab" data-bs-target="#troubleshooting" type="button" role="tab" aria-controls="troubleshooting" aria-selected="false">
+                            <i class="fas fa-tools"></i> Troubleshooting
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content tab-content-professional" id="platformTabsContent">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-globe me-2"></i>
+                            Platform Overview
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h3>What is Agentic Platform?</h3>
+                                <p class="lead mb-4">
+                                    Agentic Platform is a comprehensive, containerized data processing platform
+                                    designed for intelligent data ingestion, transformation, storage, and output
+                                    across multiple formats and destinations. Built for enterprises that need
+                                    scalable, secure, and AI-powered data processing capabilities.
+                                </p>
+
+                                <h4>🏗️ Three-Tier Architecture</h4>
+                                <div class="row text-center mb-4">
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--info-color);">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </div>
+                                            <h5>Input Layer</h5>
+                                            <p class="text-muted small">Multi-source data ingestion with intelligent processing</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--accent-color);">
+                                                <i class="fas fa-brain"></i>
+                                            </div>
+                                            <h5>Agentic Brain</h5>
+                                            <p class="text-muted small">AI-powered processing, vector operations, and orchestration</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <div class="p-4 border rounded shadow-sm" style="background: var(--bg-accent);">
+                                            <div class="fs-2 mb-3" style="color: var(--success-color);">
+                                                <i class="fas fa-arrow-up"></i>
+                                            </div>
+                                            <h5>Output Layer</h5>
+                                            <p class="text-muted small">Multi-format data output with routing intelligence</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <h5>Key Capabilities</h5>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Multi-source data ingestion</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>AI-powered vector operations</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Enterprise-grade security</li>
+                                            <li class="mb-2"><i class="fas fa-check-circle me-2" style="color: var(--success-color);"></i>Real-time monitoring</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5>Supported Technologies</h5>
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><i class="fas fa-database me-2" style="color: var(--info-color);"></i>PostgreSQL, MongoDB, Qdrant</li>
+                                            <li class="mb-2"><i class="fas fa-brain me-2" style="color: var(--accent-color);"></i>FastEmbed, OpenAI integration</li>
+                                            <li class="mb-2"><i class="fab fa-docker me-2" style="color: var(--info-color);"></i>100% Docker containerized</li>
+                                            <li class="mb-2"><i class="fas fa-chart-line me-2" style="color: var(--success-color);"></i>Prometheus, Grafana monitoring</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Architecture Tab -->
+                    <div class="tab-pane fade" id="architecture" role="tabpanel" aria-labelledby="architecture-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-sitemap me-2"></i>
+                            System Architecture
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h4>Complete Platform Architecture</h4>
+                                <p class="lead mb-4">Detailed overview of the Agentic Platform's microservices architecture</p>
+
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <h5>Input Layer Services</h5>
+                                        <div class="bg-light p-3 rounded mb-3">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <strong>Ingestion Services:</strong>
+                                                    <ul class="list-unstyled small mt-2">
+                                                        <li>• CSV Ingestion</li>
+                                                        <li>• Excel Ingestion</li>
+                                                        <li>• PDF Ingestion</li>
+                                                        <li>• JSON Ingestion</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-6">
+                                                    <strong>Data Processing:</strong>
+                                                    <ul class="list-unstyled small mt-2">
+                                                        <li>• API Ingestion</li>
+                                                        <li>• UI Scraper</li>
+                                                        <li>• Streaming Data</li>
+                                                        <li>• Data Validation</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <h5>Output Layer Services</h5>
+                                        <div class="bg-light p-3 rounded mb-3">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <strong>Databases:</strong>
+                                                    <ul class="list-unstyled small mt-2">
+                                                        <li>• PostgreSQL</li>
+                                                        <li>• MongoDB</li>
+                                                        <li>• Elasticsearch</li>
+                                                        <li>• TimescaleDB</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="col-6">
+                                                    <strong>Storage:</strong>
+                                                    <ul class="list-unstyled small mt-2">
+                                                        <li>• MinIO (S3)</li>
+                                                        <li>• Qdrant (Vectors)</li>
+                                                        <li>• Neo4j (Graph)</li>
+                                                        <li>• Redis (Cache)</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Tab -->
+                    <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-star me-2"></i>
+                            All Features
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4>Data Ingestion</h4>
+                                <div class="mb-4">
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-file-csv me-2" style="color: var(--success-color);"></i>CSV Processing</h6>
+                                        <p class="small text-muted">Automated CSV ingestion with schema validation and data quality checks</p>
+                                    </div>
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-file-excel me-2" style="color: var(--success-color);"></i>Excel Processing</h6>
+                                        <p class="small text-muted">Multi-sheet Excel file processing with formula evaluation</p>
+                                    </div>
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-file-pdf me-2" style="color: var(--warning-color);"></i>PDF Processing</h6>
+                                        <p class="small text-muted">OCR-enabled PDF text extraction and processing</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <h4>AI & Vector Operations</h4>
+                                <div class="mb-4">
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-brain me-2" style="color: var(--accent-color);"></i>Vector Embeddings</h6>
+                                        <p class="small text-muted">FastEmbed-powered text-to-vector conversion</p>
+                                    </div>
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-search me-2" style="color: var(--accent-color);"></i>Semantic Search</h6>
+                                        <p class="small text-muted">Qdrant-based similarity search with filtering</p>
+                                    </div>
+                                    <div class="feature-item p-3 border rounded mb-2">
+                                        <h6><i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>Real-time Analytics</h6>
+                                        <p class="small text-muted">Live processing metrics and performance monitoring</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vector Operations Tab -->
+                    <div class="tab-pane fade" id="vector" role="tabpanel" aria-labelledby="vector-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-brain me-2"></i>
+                            Vector Operations
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h4>AI-Powered Vector Processing</h4>
+                                <p class="lead mb-4">Advanced vector operations using FastEmbed and Qdrant for semantic search and similarity matching.</p>
+
+                                <h5>Key Features</h5>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="feature-card p-3 mb-3" style="background: var(--bg-accent); border-radius: 8px;">
+                                            <h6><i class="fas fa-magic me-2" style="color: var(--accent-color);"></i>Embeddings Generation</h6>
+                                            <p class="small">Convert text to high-dimensional vectors using state-of-the-art models</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="feature-card p-3 mb-3" style="background: var(--bg-accent); border-radius: 8px;">
+                                            <h6><i class="fas fa-search-plus me-2" style="color: var(--accent-color);"></i>Similarity Search</h6>
+                                            <p class="small">Find semantically similar content with advanced filtering options</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5>Supported Models</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Model</th>
+                                                <th>Dimensions</th>
+                                                <th>Use Case</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>text-embedding-3-small</td>
+                                                <td>1536</td>
+                                                <td>General purpose, fast</td>
+                                            </tr>
+                                            <tr>
+                                                <td>text-embedding-3-large</td>
+                                                <td>3072</td>
+                                                <td>High accuracy, slower</td>
+                                            </tr>
+                                            <tr>
+                                                <td>text-embedding-ada-002</td>
+                                                <td>1536</td>
+                                                <td>Legacy support</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-cog me-2"></i>Quick Actions</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <a href="/embeddings" class="btn btn-outline-primary">
+                                                <i class="fas fa-plus me-2"></i>Generate Embeddings
+                                            </a>
+                                            <a href="/search" class="btn btn-outline-primary">
+                                                <i class="fas fa-search me-2"></i>Vector Search
+                                            </a>
+                                            <a href="/collections" class="btn btn-outline-primary">
+                                                <i class="fas fa-database me-2"></i>Manage Collections
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Services Tab -->
+                    <div class="tab-pane fade" id="services" role="tabpanel" aria-labelledby="services-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-server me-2"></i>
+                            Services Guide
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h4>Complete Service Catalog</h4>
+                                <p class="lead mb-4">All 15+ microservices that power the Agentic Platform</p>
+
+                                <div class="accordion" id="servicesAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#ingestion" aria-expanded="true">
+                                                <i class="fas fa-arrow-down me-2" style="color: var(--info-color);"></i>
+                                                Data Ingestion Services
+                                            </button>
+                                        </h2>
+                                        <div id="ingestion" class="accordion-collapse collapse show" data-bs-parent="#servicesAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-3 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--success-color);">
+                                                                <i class="fas fa-file-csv"></i>
+                                                            </div>
+                                                            <h6>CSV Service</h6>
+                                                            <small class="text-muted">Port 8082</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--success-color);">
+                                                                <i class="fas fa-file-excel"></i>
+                                                            </div>
+                                                            <h6>Excel Service</h6>
+                                                            <small class="text-muted">Port 8084</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--warning-color);">
+                                                                <i class="fas fa-file-pdf"></i>
+                                                            </div>
+                                                            <h6>PDF Service</h6>
+                                                            <small class="text-muted">Port 8083</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--info-color);">
+                                                                <i class="fas fa-code"></i>
+                                                            </div>
+                                                            <h6>JSON Service</h6>
+                                                            <small class="text-muted">Port 8085</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#processing" aria-expanded="false">
+                                                <i class="fas fa-brain me-2" style="color: var(--accent-color);"></i>
+                                                Processing & AI Services
+                                            </button>
+                                        </h2>
+                                        <div id="processing" class="accordion-collapse collapse" data-bs-parent="#servicesAccordion">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-4 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--accent-color);">
+                                                                <i class="fas fa-vector-square"></i>
+                                                            </div>
+                                                            <h6>Vector Service</h6>
+                                                            <small class="text-muted">Port 8082</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--primary-color);">
+                                                                <i class="fas fa-cogs"></i>
+                                                            </div>
+                                                            <h6>Ingestion Coordinator</h6>
+                                                            <small class="text-muted">Port 8080</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4 mb-3">
+                                                        <div class="service-card p-3 border rounded text-center">
+                                                            <div class="fs-2 mb-2" style="color: var(--primary-color);">
+                                                                <i class="fas fa-share-alt"></i>
+                                                            </div>
+                                                            <h6>Output Coordinator</h6>
+                                                            <small class="text-muted">Port 8081</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- APIs Tab -->
+                    <div class="tab-pane fade" id="apis" role="tabpanel" aria-labelledby="apis-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-code me-2"></i>
+                            API Documentation
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header bg-info text-white">
+                                        <h6 class="mb-0"><i class="fas fa-external-link-alt me-2"></i>Interactive Documentation</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p>Explore and test all platform APIs interactively:</p>
+                                        <div class="d-grid gap-2">
+                                            <a href="/docs" class="btn btn-outline-primary" target="_blank">
+                                                <i class="fas fa-swagger me-2"></i>Swagger UI
+                                            </a>
+                                            <a href="/redoc" class="btn btn-outline-primary" target="_blank">
+                                                <i class="fas fa-book me-2"></i>ReDoc
+                                            </a>
+                                            <a href="/openapi.json" class="btn btn-outline-secondary" target="_blank">
+                                                <i class="fas fa-download me-2"></i>OpenAPI Schema
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-list me-2"></i>API Endpoints</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <h6>Vector Operations</h6>
+                                        <ul class="list-unstyled small mb-3">
+                                            <li><code>POST /api/embeddings/generate</code> - Generate embeddings</li>
+                                            <li><code>POST /api/vectors/index</code> - Index documents</li>
+                                            <li><code>POST /api/vectors/search</code> - Semantic search</li>
+                                            <li><code>GET /api/vectors/collections</code> - List collections</li>
+                                        </ul>
+                                        <h6>Data Ingestion</h6>
+                                        <ul class="list-unstyled small">
+                                            <li><code>POST /api/ingest/csv</code> - Upload CSV files</li>
+                                            <li><code>POST /api/ingest/json</code> - Upload JSON data</li>
+                                            <li><code>GET /api/jobs/{job_id}</code> - Check job status</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Config Tab -->
+                    <div class="tab-pane fade" id="config" role="tabpanel" aria-labelledby="config-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-sliders-h me-2"></i>
+                            Configuration
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h4>Environment Variables</h4>
+                                <p class="lead mb-4">Complete configuration reference for all platform services</p>
+
+                                <div class="accordion" id="configAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#auth" aria-expanded="true">
+                                                <i class="fas fa-shield-alt me-2" style="color: var(--success-color);"></i>
+                                                Authentication & Security
+                                            </button>
+                                        </h2>
+                                        <div id="auth" class="accordion-collapse collapse show" data-bs-parent="#configAccordion">
+                                            <div class="accordion-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead class="table-dark">
+                                                            <tr>
+                                                                <th>Variable</th>
+                                                                <th>Description</th>
+                                                                <th>Default</th>
+                                                                <th>Required</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><code>REQUIRE_AUTH</code></td>
+                                                                <td>Enable/disable authentication</td>
+                                                                <td><code>false</code></td>
+                                                                <td>No</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>AUTH_TOKEN</code></td>
+                                                                <td>Authentication token when REQUIRE_AUTH=true</td>
+                                                                <td>-</td>
+                                                                <td>Yes (if REQUIRE_AUTH=true)</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#database" aria-expanded="false">
+                                                <i class="fas fa-database me-2" style="color: var(--info-color);"></i>
+                                                Database Configuration
+                                            </button>
+                                        </h2>
+                                        <div id="database" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                            <div class="accordion-body">
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped">
+                                                        <thead class="table-dark">
+                                                            <tr>
+                                                                <th>Variable</th>
+                                                                <th>Description</th>
+                                                                <th>Default</th>
+                                                                <th>Required</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><code>POSTGRES_HOST</code></td>
+                                                                <td>PostgreSQL server host</td>
+                                                                <td><code>postgres</code></td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>POSTGRES_PORT</code></td>
+                                                                <td>PostgreSQL server port</td>
+                                                                <td><code>5432</code></td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>POSTGRES_DB</code></td>
+                                                                <td>PostgreSQL database name</td>
+                                                                <td><code>agentic</code></td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Getting Started Tab -->
+                    <div class="tab-pane fade" id="getting-started" role="tabpanel" aria-labelledby="getting-started-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-rocket me-2"></i>
+                            Getting Started
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <h4>Quick Start Guide</h4>
+                                <p class="lead mb-4">Get the Agentic Platform up and running in minutes</p>
+
+                                <h5>Prerequisites</h5>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Requirements:</strong> Docker, Docker Compose, 8GB RAM, 20GB disk space
+                                </div>
+
+                                <h5>Step 1: Start All Services</h5>
+                                <div class="code-block mb-4">
+                                    <pre><code># Clone the repository
+git clone [repository-url]
+cd agentic-platform
+
+# Start all services
+./start-platform.sh</code></pre>
+                                </div>
+
+                                <h5>Step 2: Access the Platform</h5>
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body text-center">
+                                                <div class="fs-2 mb-2" style="color: var(--accent-color);">
+                                                    <i class="fas fa-brain"></i>
+                                                </div>
+                                                <h6>Vector UI</h6>
+                                                <a href="http://localhost:8082" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                    http://localhost:8082
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card shadow-sm">
+                                            <div class="card-body text-center">
+                                                <div class="fs-2 mb-2" style="color: var(--primary-color);">
+                                                    <i class="fas fa-code"></i>
+                                                </div>
+                                                <h6>API Docs</h6>
+                                                <a href="http://localhost:8082/docs" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                    http://localhost:8082/docs
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h5>Step 3: Test Vector Operations</h5>
+                                <ol>
+                                    <li>Navigate to <strong>Vector UI</strong> at <code>http://localhost:8082</code></li>
+                                    <li>Go to <strong>Embeddings</strong> section</li>
+                                    <li>Enter sample text and generate embeddings</li>
+                                    <li>Use <strong>Search</strong> to find similar content</li>
+                                </ol>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Quick Health Check</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-outline-success" onclick="checkHealth()">
+                                                <i class="fas fa-heartbeat me-2"></i>Check Services
+                                            </button>
+                                            <button class="btn btn-outline-primary" onclick="viewLogs()">
+                                                <i class="fas fa-terminal me-2"></i>View Logs
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled small">
+                                            <li><i class="fas fa-book me-2"></i>Troubleshooting Guide</li>
+                                            <li><i class="fas fa-code me-2"></i>API Documentation</li>
+                                            <li><i class="fas fa-cog me-2"></i>Configuration Help</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Troubleshooting Tab -->
+                    <div class="tab-pane fade" id="troubleshooting" role="tabpanel" aria-labelledby="troubleshooting-tab">
+                        <h2 class="mb-4" style="color: var(--primary-color);">
+                            <i class="fas fa-tools me-2"></i>
+                            Troubleshooting
+                        </h2>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <h4>Common Issues & Solutions</h4>
+                                <p class="lead mb-4">Resolve common platform issues quickly</p>
+
+                                <div class="accordion" id="troubleshootingAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#docker-issues" aria-expanded="true">
+                                                <i class="fab fa-docker me-2" style="color: var(--info-color);"></i>
+                                                Docker Issues
+                                            </button>
+                                        </h2>
+                                        <div id="docker-issues" class="accordion-collapse collapse show" data-bs-parent="#troubleshootingAccordion">
+                                            <div class="accordion-body">
+                                                <div class="alert alert-warning">
+                                                    <h6>Service Won't Start</h6>
+                                                    <p>Check if ports are available:</p>
+                                                    <code>netstat -tulpn | grep :8080</code>
+                                                    <br><br>
+                                                    <p>Stop conflicting services or change ports in <code>.env</code></p>
+                                                </div>
+
+                                                <div class="alert alert-info">
+                                                    <h6>Memory Issues</h6>
+                                                    <p>Increase Docker memory limit to 8GB+ in Docker Desktop settings</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#database-issues" aria-expanded="false">
+                                                <i class="fas fa-database me-2" style="color: var(--primary-color);"></i>
+                                                Database Connection Issues
+                                            </button>
+                                        </h2>
+                                        <div id="database-issues" class="accordion-collapse collapse" data-bs-parent="#troubleshootingAccordion">
+                                            <div class="accordion-body">
+                                                <div class="alert alert-danger">
+                                                    <h6>Connection Refused</h6>
+                                                    <p>Wait for PostgreSQL to fully start (may take 30-60 seconds)</p>
+                                                    <code>docker-compose logs postgres</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Initialize Bootstrap tabs
+document.addEventListener('DOMContentLoaded', function() {
+    var triggerTabList = [].slice.call(document.querySelectorAll('#platformTabs button'))
+    triggerTabList.forEach(function (triggerEl) {
+        var tabTrigger = new bootstrap.Tab(triggerEl)
+
+        triggerEl.addEventListener('click', function (event) {
+            event.preventDefault()
+            tabTrigger.show()
+        })
+    })
+
+    // Health check function
+    window.checkHealth = function() {
+        fetch('/health')
+            .then(response => response.json())
+            .then(data => {
+                alert('Services are healthy! Status: ' + data.status)
+            })
+            .catch(error => {
+                alert('Health check failed: ' + error.message)
+            })
+    }
+
+    // View logs function
+    window.viewLogs = function() {
+        alert('Use: docker-compose logs -f [service-name]')
+    }
+})
+</script>
+{% endblock %}
+{% endblock %}

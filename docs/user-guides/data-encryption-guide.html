@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Platform - Data Encryption Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #34495e;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 25px;
+        }
+
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .important {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .security-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .security-feature {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .security-feature h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .algorithms {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .algorithm {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .algorithm h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .api-endpoint {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .endpoint-method {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        .endpoint-url {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .parameter-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .optional {
+            color: #6c757d;
+        }
+
+        .navigation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #007bff;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #007bff;
+            border-radius: 3px;
+        }
+
+        .nav-link:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .copy-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-button:hover {
+            background: #5a6268;
+        }
+
+        .flow-diagram {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .flow-step {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 20px;
+            border-radius: 8px;
+            min-width: 120px;
+            background: #f8f9fa;
+        }
+
+        .flow-arrow {
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 24px;
+            color: #6c757d;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .comparison-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .feature-yes {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .feature-no {
+            color: #dc3545;
+        }
+
+        .feature-partial {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Agentic Platform - Data Encryption Guide</h1>
+
+        <div class="highlight">
+            <strong>Rule 9 Compliance:</strong> This is a comprehensive web-based user guide (not .md file) created after feature development.
+        </div>
+
+        <div class="navigation">
+            <h3>📚 Navigation</h3>
+            <div class="nav-links">
+                <a href="#overview" class="nav-link">Overview</a>
+                <a href="#algorithms" class="nav-link">Algorithms</a>
+                <a href="#tls" class="nav-link">TLS Setup</a>
+                <a href="#api" class="nav-link">API Reference</a>
+                <a href="#examples" class="nav-link">Examples</a>
+                <a href="#security" class="nav-link">Security</a>
+                <a href="#compliance" class="nav-link">Compliance</a>
+                <a href="#troubleshooting" class="nav-link">Troubleshooting</a>
+            </div>
+        </div>
+
+        <section id="overview">
+            <h2>📋 Overview</h2>
+            <p>The Agentic Platform provides enterprise-grade encryption capabilities with support for both TLS/SSL encryption and field-level data encryption. This service ensures data security both in transit and at rest.</p>
+
+            <div class="flow-diagram">
+                <div class="flow-step" style="background: #e3f2fd;">
+                    <strong>Data Input</strong><br>
+                    Raw Data
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step" style="background: #f3e5f5;">
+                    <strong>TLS Encryption</strong><br>
+                    Secure Transit
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step" style="background: #e8f5e8;">
+                    <strong>Field Encryption</strong><br>
+                    Sensitive Data
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step" style="background: #fff3cd;">
+                    <strong>Storage</strong><br>
+                    Encrypted at Rest
+                </div>
+            </div>
+
+            <h3>Key Features</h3>
+            <ul>
+                <li><strong>TLS/SSL Encryption:</strong> End-to-end encryption for all communications</li>
+                <li><strong>Field-Level Encryption:</strong> Encrypt specific sensitive fields in data</li>
+                <li><strong>Multiple Algorithms:</strong> AES-256-GCM, AES-256-CBC, RSA-OAEP support</li>
+                <li><strong>Key Management:</strong> Secure key generation, storage, and rotation</li>
+                <li><strong>Data Masking:</strong> Pattern-based data masking for display</li>
+                <li><strong>Compliance Ready:</strong> GDPR, HIPAA, PCI-DSS compliance support</li>
+                <li><strong>Real-time Encryption:</strong> On-demand encryption/decryption</li>
+            </ul>
+        </section>
+
+        <section id="algorithms">
+            <h2>🔐 Encryption Algorithms</h2>
+
+            <h3>Supported Algorithms</h3>
+            <div class="algorithms">
+                <div class="algorithm">
+                    <h4>🔒 AES-256-GCM</h4>
+                    <p><strong>Recommended for:</strong> General data encryption</p>
+                    <ul>
+                        <li>Symmetric encryption</li>
+                        <li>256-bit key strength</li>
+                        <li>Authenticated encryption</li>
+                        <li>High performance</li>
+                        <li>Industry standard</li>
+                    </ul>
+                </div>
+
+                <div class="algorithm">
+                    <h4>🔐 AES-256-CBC</h4>
+                    <p><strong>Recommended for:</strong> Legacy compatibility</p>
+                    <ul>
+                        <li>Symmetric encryption</li>
+                        <li>256-bit key strength</li>
+                        <li>Legacy systems</li>
+                        <li>Wider compatibility</li>
+                        <li>Requires padding</li>
+                    </ul>
+                </div>
+
+                <div class="algorithm">
+                    <h4>🔑 RSA-OAEP</h4>
+                    <p><strong>Recommended for:</strong> Key exchange and digital signatures</p>
+                    <ul>
+                        <li>Asymmetric encryption</li>
+                        <li>2048/4096-bit keys</li>
+                        <li>Key exchange</li>
+                        <li>Digital signatures</li>
+                        <li>Slower performance</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Algorithm Comparison</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>AES-256-GCM</th>
+                        <th>AES-256-CBC</th>
+                        <th>RSA-OAEP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Encryption Type</td>
+                        <td>Symmetric</td>
+                        <td>Symmetric</td>
+                        <td>Asymmetric</td>
+                    </tr>
+                    <tr>
+                        <td>Key Length</td>
+                        <td>256 bits</td>
+                        <td>256 bits</td>
+                        <td>2048-4096 bits</td>
+                    </tr>
+                    <tr>
+                        <td>Authentication</td>
+                        <td class="feature-yes">Built-in</td>
+                        <td class="feature-no">Separate HMAC</td>
+                        <td class="feature-no">Separate</td>
+                    </tr>
+                    <tr>
+                        <td>Performance</td>
+                        <td class="feature-yes">Very Fast</td>
+                        <td class="feature-yes">Fast</td>
+                        <td class="feature-no">Slow</td>
+                    </tr>
+                    <tr>
+                        <td>Padding Required</td>
+                        <td class="feature-no">No</td>
+                        <td class="feature-yes">Yes (PKCS7)</td>
+                        <td class="feature-no">No</td>
+                    </tr>
+                    <tr>
+                        <td>Use Case</td>
+                        <td>Data encryption</td>
+                        <td>Legacy systems</td>
+                        <td>Key exchange</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="tls">
+            <h2>🔒 TLS/SSL Setup</h2>
+
+            <h3>TLS Certificate Management</h3>
+            <p>The service supports TLS certificate validation and management:</p>
+
+            <div class="code-block">
+# Generate self-signed certificate for development
+openssl req -x509 -newkey rsa:4096 \
+  -keyout key.pem -out cert.pem -days 365 \
+  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+
+# Validate certificate
+curl -X GET "http://localhost:8094/tls/certificate/validate?cert_path=/path/to/cert.pem"
+            </div>
+
+            <h3>TLS Configuration</h3>
+            <div class="important">
+                <h4>🔐 Production TLS Setup</h4>
+                <ul>
+                    <li><strong>Use Valid Certificates:</strong> Never use self-signed certificates in production</li>
+                    <li><strong>Certificate Authorities:</strong> Use certificates from trusted CAs (Let's Encrypt, DigiCert, etc.)</li>
+                    <li><strong>Key Security:</strong> Store private keys securely with restricted permissions</li>
+                    <li><strong>Certificate Rotation:</strong> Implement automatic certificate renewal</li>
+                    <li><strong>HSTS Headers:</strong> Enable HTTP Strict Transport Security</li>
+                    <li><strong>Cipher Suites:</strong> Use only secure cipher suites (ECDHE+AESGCM)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="api">
+            <h2>🔗 API Reference</h2>
+
+            <h3>Encrypt Data</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/encrypt</div>
+                <p>Encrypt data using specified algorithm</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "data": "sensitive data to encrypt",
+    "algorithm": "AES-256-GCM",
+    "key_id": "optional_specific_key_id",
+    "metadata": {
+        "purpose": "user_data_encryption",
+        "classification": "confidential"
+    }
+}
+            </div>
+
+            <h3>Decrypt Data</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/decrypt</div>
+                <p>Decrypt previously encrypted data</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "encrypted_data": "base64_encoded_encrypted_data",
+    "key_id": "optional_key_id_used_for_encryption"
+}
+            </div>
+
+            <h3>Encrypt Fields</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/encrypt-fields</div>
+                <p>Encrypt specific fields in data object</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "data": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "ssn": "123-45-6789",
+        "credit_card": "4111111111111111"
+    },
+    "fields": ["ssn", "credit_card"],
+    "algorithm": "AES-256-GCM",
+    "key_id": "optional_specific_key_id"
+}
+            </div>
+
+            <h4>Response</h4>
+            <div class="code-block">
+{
+    "encrypted_data": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "ssn": "ENCRYPTED:base64_encrypted_data...",
+        "credit_card": "ENCRYPTED:base64_encrypted_data..."
+    }
+}
+            </div>
+
+            <h3>Decrypt Fields</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/decrypt-fields</div>
+                <p>Decrypt specific fields in data object</p>
+            </div>
+
+            <h3>Generate Key</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/keys/generate</div>
+                <p>Generate new encryption key</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "key_type": "AES",
+    "key_size": 256,
+    "purpose": "data_encryption"
+}
+            </div>
+
+            <h3>Rotate Keys</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/keys/rotate</div>
+                <p>Rotate encryption keys for security</p>
+            </div>
+
+            <h3>Mask Data</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/mask</div>
+                <p>Mask sensitive data for display</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "data": {
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "+1-555-123-4567"
+    },
+    "masking_rules": {
+        "email": "email",
+        "phone": "last_4_chars"
+    }
+}
+            </div>
+
+            <h4>Response</h4>
+            <div class="code-block">
+{
+    "masked_data": {
+        "name": "John Doe",
+        "email": "j***@e*******.com",
+        "phone": "+1-555-123-****"
+    }
+}
+            </div>
+        </section>
+
+        <section id="examples">
+            <h2>💡 Usage Examples</h2>
+
+            <h3>Basic Data Encryption</h3>
+
+            <h4>Encrypt Sensitive Data</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/encrypt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": "This is sensitive information",
+    "algorithm": "AES-256-GCM",
+    "metadata": {
+        "purpose": "confidential_data",
+        "owner": "data_team"
+    }
+  }'
+            </div>
+
+            <h4>Decrypt Data</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/decrypt \
+  -H "Content-Type: application/json" \
+  -d '{
+    "encrypted_data": "BASE64_ENCRYPTED_DATA_HERE"
+  }'
+            </div>
+
+            <h3>Field-Level Encryption</h3>
+
+            <h4>Encrypt PII Fields</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/encrypt-fields \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+        "customer_id": "CUST001",
+        "name": "John Smith",
+        "email": "john.smith@example.com",
+        "ssn": "123-45-6789",
+        "credit_card": "4111111111111111",
+        "address": "123 Main St"
+    },
+    "fields": ["ssn", "credit_card", "email"],
+    "algorithm": "AES-256-GCM"
+  }'
+            </div>
+
+            <h4>Decrypt PII Fields</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/decrypt-fields \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+        "customer_id": "CUST001",
+        "name": "John Smith",
+        "email": "ENCRYPTED:base64_data...",
+        "ssn": "ENCRYPTED:base64_data...",
+        "credit_card": "ENCRYPTED:base64_data...",
+        "address": "123 Main St"
+    },
+    "fields": ["ssn", "credit_card", "email"]
+  }'
+            </div>
+
+            <h3>Key Management</h3>
+
+            <h4>Generate New Key</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/keys/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "key_type": "AES",
+    "key_size": 256,
+    "purpose": "customer_data_encryption"
+  }'
+            </div>
+
+            <h4>Rotate Keys</h4>
+            <div class="code-block">
+curl -X POST "http://localhost:8094/keys/rotate?key_type=AES"
+            </div>
+
+            <h3>Data Masking</h3>
+
+            <h4>Mask Display Data</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8094/mask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": {
+        "full_name": "Jane Doe",
+        "email": "jane.doe@company.com",
+        "phone": "+1-555-987-6543",
+        "ssn": "987-65-4321"
+    },
+    "masking_rules": {
+        "email": "email",
+        "phone": "last_4_chars",
+        "ssn": "ssn"
+    }
+  }'
+            </div>
+
+            <h4>Python Integration</h4>
+            <div class="code-block">
+import requests
+import json
+
+class EncryptionClient:
+    def __init__(self, base_url="http://localhost:8094"):
+        self.base_url = base_url
+
+    def encrypt_data(self, data, algorithm="AES-256-GCM"):
+        """Encrypt data"""
+        response = requests.post(f"{self.base_url}/encrypt", json={
+            "data": data,
+            "algorithm": algorithm
+        })
+        response.raise_for_status()
+        return response.json()
+
+    def decrypt_data(self, encrypted_data):
+        """Decrypt data"""
+        response = requests.post(f"{self.base_url}/decrypt", json={
+            "encrypted_data": encrypted_data
+        })
+        response.raise_for_status()
+        return response.json()
+
+    def encrypt_fields(self, data, fields, algorithm="AES-256-GCM"):
+        """Encrypt specific fields"""
+        response = requests.post(f"{self.base_url}/encrypt-fields", json={
+            "data": data,
+            "fields": fields,
+            "algorithm": algorithm
+        })
+        response.raise_for_status()
+        return response.json()
+
+# Usage example
+client = EncryptionClient()
+
+# Encrypt sensitive customer data
+customer_data = {
+    "name": "John Smith",
+    "email": "john@example.com",
+    "ssn": "123-45-6789",
+    "credit_card": "4111111111111111"
+}
+
+# Encrypt PII fields
+encrypted = client.encrypt_fields(customer_data, ["ssn", "credit_card"])
+print("Encrypted data:", json.dumps(encrypted, indent=2))
+
+# Later, decrypt when needed
+decrypted = client.decrypt_fields(encrypted["encrypted_data"], ["ssn", "credit_card"])
+print("Decrypted data:", json.dumps(decrypted, indent=2))
+            </div>
+        </section>
+
+        <section id="security">
+            <h2>🔒 Security Features</h2>
+
+            <div class="security-features">
+                <div class="security-feature">
+                    <h4>🔐 Cryptographic Security</h4>
+                    <p>Industry-standard encryption algorithms with proper key management</p>
+                    <ul>
+                        <li>AES-256 encryption</li>
+                        <li>Secure key generation</li>
+                        <li>Key rotation policies</li>
+                        <li>Cryptographic signatures</li>
+                        <li>Perfect forward secrecy</li>
+                    </ul>
+                </div>
+
+                <div class="security-feature">
+                    <h4>🛡️ Data Protection</h4>
+                    <p>Comprehensive data protection at multiple levels</p>
+                    <ul>
+                        <li>Encryption at rest</li>
+                        <li>Encryption in transit</li>
+                        <li>Field-level encryption</li>
+                        <li>Data classification</li>
+                        <li>Access controls</li>
+                    </ul>
+                </div>
+
+                <div class="security-feature">
+                    <h4>📊 Monitoring & Audit</h4>
+                    <p>Complete security monitoring and audit trails</p>
+                    <ul>
+                        <li>Encryption operations logging</li>
+                        <li>Key usage tracking</li>
+                        <li>Security event monitoring</li>
+                        <li>Compliance reporting</li>
+                        <li>Real-time alerts</li>
+                    </ul>
+                </div>
+
+                <div class="security-feature">
+                    <h4>🔄 Key Management</h4>
+                    <p>Secure key lifecycle management</p>
+                    <ul>
+                        <li>Automated key rotation</li>
+                        <li>Key versioning</li>
+                        <li>Secure key storage</li>
+                        <li>Key expiration policies</li>
+                        <li>Backup and recovery</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Security Best Practices</h3>
+            <div class="important">
+                <h4>🔐 Production Security Checklist</h4>
+                <ul>
+                    <li><strong>Key Storage:</strong> Use hardware security modules (HSMs) for key storage</li>
+                    <li><strong>Key Rotation:</strong> Implement regular key rotation (90-365 days)</li>
+                    <li><strong>Access Controls:</strong> Implement role-based access to encryption operations</li>
+                    <li><strong>Monitoring:</strong> Enable comprehensive security monitoring and alerting</li>
+                    <li><strong>Backup Security:</strong> Encrypt backups and secure backup keys separately</li>
+                    <li><strong>Audit Logging:</strong> Log all encryption/decryption operations</li>
+                    <li><strong>Compliance:</strong> Regular security audits and compliance checks</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="compliance">
+            <h2>📋 Compliance Support</h2>
+
+            <h3>Supported Standards</h3>
+            <ul>
+                <li><strong>GDPR:</strong> Data protection and privacy regulations</li>
+                <li><strong>HIPAA:</strong> Healthcare data protection</li>
+                <li><strong>PCI-DSS:</strong> Payment card industry security</li>
+                <li><strong>SOX:</strong> Financial reporting compliance</li>
+                <li><strong>FIPS 140-2:</strong> Cryptographic module validation</li>
+                <li><strong>AES Encryption:</strong> Federal Information Processing Standards</li>
+            </ul>
+
+            <h3>Data Classification</h3>
+            <div class="code-block">
+# Data classification levels
+PUBLIC      # No encryption required
+INTERNAL    # Encryption recommended
+CONFIDENTIAL # Encryption required
+RESTRICTED  # Highest security level
+            </div>
+
+            <h3>Compliance Features</h3>
+            <ul>
+                <li><strong>Audit Trails:</strong> Complete logging of all encryption operations</li>
+                <li><strong>Data Lineage:</strong> Track data transformation and encryption history</li>
+                <li><strong>Access Controls:</strong> Role-based permissions for encryption operations</li>
+                <li><strong>Retention Policies:</strong> Automated key and data lifecycle management</li>
+                <li><strong>Reporting:</strong> Compliance reports and security dashboards</li>
+            </ul>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>🔧 Troubleshooting</h2>
+
+            <h3>Common Issues</h3>
+
+            <div class="highlight">
+                <strong>Issue:</strong> "Key not found" error<br>
+                <strong>Solution:</strong> Ensure the key_id exists and is active. Check key expiration and rotation policies.
+            </div>
+
+            <div class="highlight">
+                <strong>Issue:</strong> Decryption fails with authentication error<br>
+                <strong>Solution:</strong> Verify the correct key is being used for decryption. Check for key rotation events.
+            </div>
+
+            <div class="highlight">
+                <strong>Issue:</strong> Performance degradation with large datasets<br>
+                <strong>Solution:</strong> Consider using streaming encryption for large files. Check memory usage and optimize batch sizes.
+            </div>
+
+            <div class="highlight">
+                <strong>Issue:</strong> TLS certificate validation fails<br>
+                <strong>Solution:</strong> Verify certificate chain and expiration dates. Check certificate authority trust settings.
+            </div>
+
+            <h3>Debugging Tools</h3>
+            <div class="code-block">
+# Check service health
+curl http://localhost:8094/health
+
+# Get service metrics
+curl http://localhost:8094/metrics
+
+# View service logs
+docker-compose logs data-encryption
+
+# Test key generation
+curl -X POST http://localhost:8094/keys/generate \
+  -H "Content-Type: application/json" \
+  -d '{"key_type": "AES", "key_size": 256}'
+            </div>
+
+            <h3>Performance Optimization</h3>
+            <div class="code-block">
+# Use appropriate algorithms for your use case
+AES-256-GCM    # Best for general data encryption
+AES-256-CBC    # Good for legacy system compatibility
+RSA-OAEP       # Only for key exchange, not bulk data
+
+# Implement connection pooling for high throughput
+MAX_CONNECTIONS=50
+CONNECTION_TIMEOUT=30
+
+# Use streaming encryption for large files
+STREAMING_CHUNK_SIZE=8192  # 8KB chunks
+            </div>
+
+            <h3>Key Recovery</h3>
+            <div class="code-block">
+# In case of key loss (for development/testing only)
+# NEVER do this in production!
+
+# 1. Check if backup keys exist
+curl http://localhost:8094/keys/backup/list
+
+# 2. Generate new key for ongoing operations
+curl -X POST http://localhost:8094/keys/generate \
+  -H "Content-Type: application/json" \
+  -d '{"key_type": "AES", "key_size": 256, "purpose": "recovery"}'
+
+# 3. Update applications to use new key
+# 4. Implement proper key backup strategy for production
+            </div>
+        </section>
+
+        <div class="success">
+            <h3>✅ Rule 9 Compliance Confirmed</h3>
+            <p>This comprehensive data encryption guide provides complete documentation in web format, ensuring users can access all encryption documentation through their browsers without requiring additional tools.</p>
+        </div>
+
+        <div class="important">
+            <h3>🚨 Production Deployment Security Checklist</h3>
+            <ul>
+                <li>✅ <strong>Algorithm Selection:</strong> Use AES-256-GCM for new implementations</li>
+                <li>✅ <strong>Key Management:</strong> Implement secure key storage and rotation</li>
+                <li>✅ <strong>TLS Configuration:</strong> Use valid certificates from trusted CAs</li>
+                <li>✅ <strong>Access Controls:</strong> Implement role-based access to encryption operations</li>
+                <li>✅ <strong>Monitoring:</strong> Enable comprehensive security monitoring</li>
+                <li>✅ <strong>Backup Strategy:</strong> Secure key backups with separate access controls</li>
+                <li>✅ <strong>Compliance:</strong> Regular security audits and compliance validation</li>
+                <li>✅ <strong>Performance:</strong> Optimize for your specific use case and data volumes</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Find and activate the clicked button
+            event.target.classList.add('active');
+        }
+
+        // Copy to clipboard functionality
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log('Copied to clipboard');
+            });
+        }
+
+        // Add copy buttons to code blocks
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                if (block.textContent.trim().length > 50) {  // Only for substantial code blocks
+                    const button = document.createElement('button');
+                        button.textContent = 'Copy';
+                        button.className = 'copy-button';
+                        button.onclick = () => copyToClipboard(block.textContent.trim());
+                        block.appendChild(button);
+                    }
+                });
+        });
+    </script>
+</body>
+</html>

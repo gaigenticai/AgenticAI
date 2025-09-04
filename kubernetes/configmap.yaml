@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-platform-config
+  namespace: agentic-platform
+  labels:
+    app: agentic-platform
+    component: config
+data:
+  # Database Configuration
+  POSTGRES_HOST: "postgresql-ingestion"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "agentic_ingestion"
+
+  # Redis Configuration
+  REDIS_HOST: "redis-ingestion"
+  REDIS_PORT: "6379"
+
+  # RabbitMQ Configuration
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+
+  # MinIO Configuration
+  MINIO_ENDPOINT_BRONZE: "http://minio-bronze:9000"
+  MINIO_ENDPOINT_SILVER: "http://minio-silver:9010"
+  MINIO_ENDPOINT_GOLD: "http://minio-gold:9020"
+
+  # Jaeger Configuration
+  JAEGER_ENDPOINT: "http://jaeger:16686"
+  JAEGER_AGENT_HOST: "jaeger"
+  JAEGER_AGENT_PORT: "6831"
+
+  # Logging Configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+
+  # Monitoring Configuration
+  METRICS_INTERVAL: "15s"
+
+  # Service Discovery
+  SERVICE_DISCOVERY_ENABLED: "true"
+  KUBERNETES_SERVICE_DISCOVERY: "true"

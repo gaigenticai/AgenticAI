@@ -1,0 +1,79 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: agentic-platform-ingress
+  namespace: agentic-platform
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.agentic-platform.com
+    - dashboard.agentic-platform.com
+    - grafana.agentic-platform.com
+    - jaeger.agentic-platform.com
+    secretName: agentic-platform-tls
+  rules:
+  - host: api.agentic-platform.com
+    http:
+      paths:
+      - path: /graphql
+        pathType: Prefix
+        backend:
+          service:
+            name: graphql-api
+            port:
+              number: 8100
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: oauth2-oidc
+            port:
+              number: 8093
+      - path: /api/v1
+        pathType: Prefix
+        backend:
+          service:
+            name: ingestion-coordinator
+            port:
+              number: 8080
+
+  - host: dashboard.agentic-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: data-lake-minio
+            port:
+              number: 8090
+
+  - host: grafana.agentic-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
+
+  - host: jaeger.agentic-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jaeger
+            port:
+              number: 16686

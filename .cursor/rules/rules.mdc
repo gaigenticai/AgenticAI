@@ -1,0 +1,26 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+0. YOU WILL NEVER DEVIATE FROM RULES. YOU WILL NOT LIE ABOUT FOLLOWING THE RULES I.E SAY YOU FOLLOWED THE RULES BUT IN REALITY YOU DID NOT. 
+1. No stubbs - which means you code will have no placeholder code, no fake code, no dummy code, no hardcoded values.
+2. Code you write must be modular, which means in the future if we need to extended to add features, it must be easy to add without breaking existing functionality.
+3. All services except for actual apis must reside in docker.
+4. Before you start building any feature, you must ensure you 100% understand exsiting features so that you do not make errors in the new features.
+5. After every feature is developed, you will ensure required variables are in .env.example, all tables required for that features are updated at the very end of the schema.sql file.
+6. After every feature is developed, you will 100% ensure that there is way to test that feature via a proper UI component.
+7. The UI component must be professional and pleasing. UI/UX are of top priority.
+8. Docker must have automatic port conflicts resolution so that development does not stop.
+9. Absolutely all userguides must be in a webform, no .md files. You will create these user guides after every feature development.
+10. This app will have an .env variable REQUIRE_AUTH which will have true or false,default false. If only true will the login process kick in, if REQUIRE_AUTH=false, no login/signup will be required for the app.
+11. After every feature implementation, you will update teh action_list.md. Once you create it, you will not change or remove or delete the items in action_list.md without my explicit permission, This action_list.md will have ALL the items required to finish the techspec.md items.
+12. After every feature development, you will perform automated testing of the UI and every code to ensure they are functional before moving on to the next feature item.
+13. UNDER NO CIRCUMSTANCE WILL YOU CREATE A MAKE SHIFT OR WORKAROUND OR SIMPLIED VERSION OF ANY CODE JUST TO PASS TESTS OR MAKE THINGS WORK. THINGS MUST BE PRODUCTION GRADE.
+14. YOU WILL NOT PROVIDE LONG SUMMARIES AFTER EACH TASK, TASK/PHASE COMPLETION SUMMARIES MUST BE SHORT AND CRISP.
+15. YOU WILL ABSOLUTELY NO PROCEED TO SUBSEQUENT PHASES UNLESS ALL ISSUES IN CURRENT PHASE ARE COMPLETED NO MATTER NOW SMALL OR NON-CRITICAL THEY ARE.
+16. You will not create a make shift or workaround or simplified version of any code just to pass tests or make things work. Things must be production grade.
+17. Every code must have comments about what the code is for and comments acorss the code which will enable the otherdevelopers to understand what the code is for.
+18. Absolutely no VENV and everything should be docker tested, unless you cannot use docker you must let me know and then get approval before using VENV.
+19. Always and always you first priority should be to use OPEN SOURCE TOOLS as against paid options, it should always be in a modular way that the client can switch out to other vendoes, NO VENDOR LOCK IN.

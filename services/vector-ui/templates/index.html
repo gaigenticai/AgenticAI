@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Vector Operations Dashboard - {{ title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-search me-3"></i>
+                    Vector Operations Dashboard
+                </h1>
+                <p class="lead mb-4">
+                    Professional vector search interface powered by FastEmbed and Qdrant.
+                    Generate embeddings, index documents, and perform semantic search with ease.
+                </p>
+                <a href="/embeddings" class="btn btn-light btn-lg me-3">
+                    <i class="fas fa-brain me-2"></i>Get Started
+                </a>
+                <a href="/guide" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-book me-2"></i>View Guide
+                </a>
+            </div>
+            <div class="col-lg-4 text-center">
+                <i class="fas fa-search display-1 text-white-50"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h5 class="card-title">Generate Embeddings</h5>
+                    <p class="card-text text-muted">
+                        Convert text to high-dimensional vectors using FastEmbed's optimized models.
+                    </p>
+                    <a href="/embeddings" class="btn btn-primary mt-auto">
+                        Try Embeddings
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h5 class="card-title">Index Documents</h5>
+                    <p class="card-text text-muted">
+                        Store and organize documents with their vector representations in Qdrant.
+                    </p>
+                    <a href="/indexing" class="btn btn-primary mt-auto">
+                        Start Indexing
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5 class="card-title">Semantic Search</h5>
+                    <p class="card-text text-muted">
+                        Find relevant content by meaning, not just keywords.
+                    </p>
+                    <a href="/search" class="btn btn-primary mt-auto">
+                        Search Now
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="card-title">Manage Collections</h5>
+                    <p class="card-text text-muted">
+                        Monitor and manage your vector collections and performance metrics.
+                    </p>
+                    <a href="/collections" class="btn btn-primary mt-auto">
+                        View Collections
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold">Real-time Statistics</h2>
+                <p class="text-muted">Monitor your vector operations performance</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalCollections">-</div>
+                    <div class="metric-label">Collections</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalDocuments">-</div>
+                    <div class="metric-label">Documents</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="avgSearchTime">-</div>
+                    <div class="metric-label">Avg Search Time</div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="uptime">-</div>
+                    <div class="metric-label">Uptime</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Activity Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="fw-bold mb-4">Recent Activity</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Latest Operations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Vector Search Performed</h6>
+                                    <small class="text-muted">Query: "machine learning"</small>
+                                </div>
+                                <small class="text-success">
+                                    <i class="fas fa-check me-1"></i>Success
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="activity-item mb-3 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Documents Indexed</h6>
+                                    <small class="text-muted">3 documents added to collection</small>
+                                </div>
+                                <small class="text-success">
+                                    <i class="fas fa-check me-1"></i>Success
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="activity-item p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Embeddings Generated</h6>
+                                    <small class="text-muted">Processed 5 text samples</small>
+                                </div>
+                                <small class="text-success">
+                                    <i class="fas fa-check me-1"></i>Success
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Quick Tips
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Use semantic queries for better results
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Index documents in batches for efficiency
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Monitor collection size for optimal performance
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Use metadata for filtered searches
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load statistics
+    loadStatistics();
+
+    // Refresh stats every 30 seconds
+    setInterval(loadStatistics, 30000);
+});
+
+async function loadStatistics() {
+    try {
+        // Get collections data
+        const collectionsResponse = await fetch('/api/vectors/collections');
+        const collectionsData = await collectionsResponse.json();
+
+        document.getElementById('totalCollections').textContent = collectionsData.count || 0;
+
+        // Simulate other stats (in real implementation, get from backend)
+        document.getElementById('totalDocuments').textContent = '12';
+        document.getElementById('avgSearchTime').textContent = '45ms';
+        document.getElementById('uptime').textContent = '99.9%';
+
+    } catch (error) {
+        console.error('Failed to load statistics:', error);
+    }
+}
+</script>
+{% endblock %}

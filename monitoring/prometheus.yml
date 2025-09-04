@@ -1,0 +1,169 @@
+# Prometheus configuration for Agentic Platform Monitoring
+# This file defines monitoring targets and scraping rules for all services
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+rule_files:
+  - "alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # Add alertmanager if needed
+          # - alertmanager:9093
+
+scrape_configs:
+  # === INPUT LAYER MONITORING ===
+
+  # Ingestion Coordinator
+  - job_name: 'ingestion-coordinator'
+    static_configs:
+      - targets: ['ingestion-coordinator:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Data Ingestion Services
+  - job_name: 'csv-ingestion-service'
+    static_configs:
+      - targets: ['csv-ingestion-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'pdf-ingestion-service'
+    static_configs:
+      - targets: ['pdf-ingestion-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'excel-ingestion-service'
+    static_configs:
+      - targets: ['excel-ingestion-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'json-ingestion-service'
+    static_configs:
+      - targets: ['json-ingestion-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'api-ingestion-service'
+    static_configs:
+      - targets: ['api-ingestion-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  - job_name: 'ui-scraper-service'
+    static_configs:
+      - targets: ['ui-scraper-service:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # === OUTPUT LAYER MONITORING ===
+
+  # Output Coordinator
+  - job_name: 'output-coordinator'
+    static_configs:
+      - targets: ['output-coordinator:8081']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Database Services
+  - job_name: 'postgresql_ingestion'
+    static_configs:
+      - targets: ['postgresql_ingestion:9187']
+    scrape_interval: 30s
+
+  - job_name: 'postgresql_output'
+    static_configs:
+      - targets: ['postgresql_output:9187']
+    scrape_interval: 30s
+
+  - job_name: 'mongodb_output'
+    static_configs:
+      - targets: ['mongodb_output:9216']
+    scrape_interval: 30s
+
+  - job_name: 'elasticsearch_output'
+    static_configs:
+      - targets: ['elasticsearch_output:9114']
+    scrape_interval: 30s
+
+  - job_name: 'timescaledb_output'
+    static_configs:
+      - targets: ['timescaledb_output:9187']
+    scrape_interval: 30s
+
+  # Vector Database
+  - job_name: 'qdrant_vector'
+    static_configs:
+      - targets: ['qdrant_vector:6333']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # === INFRASTRUCTURE MONITORING ===
+
+  # Message Queue
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    scrape_interval: 30s
+
+  # Caching
+  - job_name: 'redis_ingestion'
+    static_configs:
+      - targets: ['redis_ingestion:9121']
+    scrape_interval: 30s
+
+  # Kafka
+  - job_name: 'kafka'
+    static_configs:
+      - targets: ['kafka:9094']
+    scrape_interval: 30s
+
+  # MinIO (Data Lake)
+  - job_name: 'minio_bronze'
+    static_configs:
+      - targets: ['minio_bronze:9000']
+    metrics_path: '/minio/v2/metrics/cluster'
+    scrape_interval: 30s
+
+  - job_name: 'minio_silver'
+    static_configs:
+      - targets: ['minio_silver:9010']
+    metrics_path: '/minio/v2/metrics/cluster'
+    scrape_interval: 30s
+
+  - job_name: 'minio_gold'
+    static_configs:
+      - targets: ['minio_gold:9020']
+    metrics_path: '/minio/v2/metrics/cluster'
+    scrape_interval: 30s
+
+  # === SYSTEM MONITORING ===
+
+  # Docker Host Metrics
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['host.docker.internal:9323']
+    scrape_interval: 30s
+
+  # Node Exporter (if running on host)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['host.docker.internal:9100']
+    scrape_interval: 30s
+
+# Remote write configuration (for long-term storage)
+remote_write:
+  - url: "http://cortex:9009/api/v1/push"  # Optional: for Cortex/Mimir
+
+# Remote read configuration
+remote_read:
+  - url: "http://cortex:9009/api/v1/read"  # Optional: for Cortex/Mimir

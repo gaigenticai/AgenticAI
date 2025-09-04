@@ -1,0 +1,18 @@
+# Port Manager Service Requirements
+# Automatic port conflict resolution
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Docker API
+docker==7.0.0
+
+# Environment Management
+python-dotenv==1.0.0
+
+# Logging
+structlog==23.2.0
+
+# HTTP Client
+httpx==0.25.2

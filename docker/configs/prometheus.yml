@@ -1,0 +1,74 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "/etc/prometheus/alert_rules.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'ingestion-coordinator'
+    static_configs:
+      - targets: ['ingestion-coordinator:8080']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  - job_name: 'output-coordinator'
+    static_configs:
+      - targets: ['output-coordinator:8081']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  - job_name: 'data-lake-minio'
+    static_configs:
+      - targets: ['data-lake-minio:8090']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  - job_name: 'message-queue'
+    static_configs:
+      - targets: ['message-queue:8091']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  - job_name: 'redis-caching'
+    static_configs:
+      - targets: ['redis-caching:8092']
+    scrape_interval: 10s
+    metrics_path: '/metrics'
+
+  - job_name: 'oauth2-oidc'
+    static_configs:
+      - targets: ['oauth2-oidc:8093']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  - job_name: 'data-encryption'
+    static_configs:
+      - targets: ['data-encryption:8094']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    scrape_interval: 30s
+
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgresql_ingestion:5432']
+    scrape_interval: 30s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis_ingestion:6379']
+    scrape_interval: 15s

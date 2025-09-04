@@ -1,0 +1,37 @@
+# Core web framework and API
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# OAuth2 and OIDC
+authlib==1.2.1
+python-jose[cryptography]==3.3.0
+PyJWT==2.8.0
+
+# Security and cryptography
+cryptography==41.0.7
+bcrypt==4.1.2
+passlib[bcrypt]==1.7.4
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+
+# HTTP client
+httpx==0.25.2
+aiohttp==3.9.1
+
+# Monitoring and observability
+prometheus-client==0.19.0
+structlog==23.2.0
+
+# Utilities
+python-dotenv==1.0.0
+click==8.1.7
+rich==13.7.0
+tenacity==8.2.3
+python-json-logger==2.0.7
+
+# Additional security
+pyOpenSSL==23.3.0
+certifi==2023.11.17

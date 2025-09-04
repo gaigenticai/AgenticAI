@@ -1,0 +1,79 @@
+{
+  "timestamp": 1756956827.770755,
+  "summary": {
+    "total_tests": 9,
+    "passed": 1,
+    "failed": 8,
+    "skipped": 0,
+    "warnings": 0
+  },
+  "services_status": {
+    "ingestion_coordinator": "unreachable",
+    "csv_ingestion": "unreachable"
+  },
+  "detailed_results": [
+    {
+      "test_name": "docker_services",
+      "status": "FAIL",
+      "message": "Docker command failed",
+      "duration": 0,
+      "timestamp": 1756956827.750647
+    },
+    {
+      "test_name": "database_connectivity",
+      "status": "FAIL",
+      "message": "Database connection failed: connection to server at \"localhost\" (::1), port 5432 failed: Connection refused\n\tIs the server running on that host and accepting TCP/IP connections?\nconnection to server at \"localhost\" (127.0.0.1), port 5432 failed: Connection refused\n\tIs the server running on that host and accepting TCP/IP connections?\n",
+      "duration": 0,
+      "timestamp": 1756956827.761614
+    },
+    {
+      "test_name": "message_queue",
+      "status": "FAIL",
+      "message": "RabbitMQ connection failed: No module named 'pika'",
+      "duration": 0,
+      "timestamp": 1756956827.7617111
+    },
+    {
+      "test_name": "ingestion_coordinator_health",
+      "status": "FAIL",
+      "message": "Service unreachable: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11e51a280>: Failed to establish a new connection: [Errno 61] Connection refused'))",
+      "duration": 0,
+      "timestamp": 1756956827.7658958
+    },
+    {
+      "test_name": "coordinator_metrics",
+      "status": "FAIL",
+      "message": "Metrics test failed: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /metrics (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11e51ad90>: Failed to establish a new connection: [Errno 61] Connection refused'))",
+      "duration": 0,
+      "timestamp": 1756956827.7667809
+    },
+    {
+      "test_name": "coordinator_jobs_api",
+      "status": "FAIL",
+      "message": "Jobs API test failed: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /ingestion/jobs (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11e65e850>: Failed to establish a new connection: [Errno 61] Connection refused'))",
+      "duration": 0,
+      "timestamp": 1756956827.7677708
+    },
+    {
+      "test_name": "csv_ingestion_health",
+      "status": "FAIL",
+      "message": "Service unreachable: HTTPConnectionPool(host='localhost', port=8082): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11e669250>: Failed to establish a new connection: [Errno 61] Connection refused'))",
+      "duration": 0,
+      "timestamp": 1756956827.7687879
+    },
+    {
+      "test_name": "file_upload_integration",
+      "status": "FAIL",
+      "message": "Integration test failed: HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded with url: /ingestion/upload (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x11e351640>: Failed to establish a new connection: [Errno 61] Connection refused'))",
+      "duration": 0,
+      "timestamp": 1756956827.770486
+    },
+    {
+      "test_name": "ui_components",
+      "status": "PASS",
+      "message": "UI HTML file is valid",
+      "duration": 0,
+      "timestamp": 1756956827.770677
+    }
+  ]
+}

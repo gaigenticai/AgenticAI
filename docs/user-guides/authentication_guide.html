@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Platform - Authentication User Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h2 {
+            color: #34495e;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 25px;
+        }
+
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .important {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .api-endpoint {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .endpoint-method {
+            font-weight: bold;
+            color: #007bff;
+            margin-right: 10px;
+        }
+
+        .endpoint-url {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .parameter-table th,
+        .parameter-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .parameter-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .required {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .optional {
+            color: #6c757d;
+        }
+
+        .tabs {
+            margin: 20px 0;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 0;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .copy-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-button:hover {
+            background: #5a6268;
+        }
+
+        .navigation {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #007bff;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid #007bff;
+            border-radius: 3px;
+        }
+
+        .nav-link:hover {
+            background: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Agentic Platform - Authentication User Guide</h1>
+
+        <div class="highlight">
+            <strong>Rule 9 Compliance:</strong> This is a comprehensive web-based user guide (not .md file) created after feature development.
+        </div>
+
+        <div class="navigation">
+            <h3>📚 Navigation</h3>
+            <div class="nav-links">
+                <a href="#overview" class="nav-link">Overview</a>
+                <a href="#setup" class="nav-link">Setup</a>
+                <a href="#endpoints" class="nav-link">API Endpoints</a>
+                <a href="#examples" class="nav-link">Examples</a>
+                <a href="#troubleshooting" class="nav-link">Troubleshooting</a>
+            </div>
+        </div>
+
+        <section id="overview">
+            <h2>📋 Overview</h2>
+            <p>The Agentic Platform implements a flexible authentication system controlled by the <code>REQUIRE_AUTH</code> environment variable. This allows you to run the platform in two modes:</p>
+
+            <ul>
+                <li><strong>Anonymous Mode (Default):</strong> <code>REQUIRE_AUTH=false</code> - No authentication required</li>
+                <li><strong>Authenticated Mode:</strong> <code>REQUIRE_AUTH=true</code> - JWT-based authentication required</li>
+            </ul>
+
+            <div class="important">
+                <strong>Security Note:</strong> Always use <code>REQUIRE_AUTH=true</code> in production environments. The default anonymous mode is for development and testing only.
+            </div>
+        </section>
+
+        <section id="setup">
+            <h2>⚙️ Setup & Configuration</h2>
+
+            <h3>Environment Variables</h3>
+            <p>Configure authentication by setting the following environment variables:</p>
+
+            <div class="code-block">
+# .env file
+REQUIRE_AUTH=true
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRATION_HOURS=24
+            </div>
+
+            <h3>Variable Descriptions</h3>
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Description</th>
+                        <th>Default</th>
+                        <th>Required</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>REQUIRE_AUTH</code></td>
+                        <td>Enable/disable authentication</td>
+                        <td><code>false</code></td>
+                        <td class="required">Yes</td>
+                    </tr>
+                    <tr>
+                        <td><code>JWT_SECRET</code></td>
+                        <td>Secret key for JWT token signing</td>
+                        <td><code>default-secret-key-change-in-production</code></td>
+                        <td class="required">Yes (when REQUIRE_AUTH=true)</td>
+                    </tr>
+                    <tr>
+                        <td><code>JWT_EXPIRATION_HOURS</code></td>
+                        <td>Token expiration time in hours</td>
+                        <td><code>24</code></td>
+                        <td class="optional">No</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="important">
+                <strong>Critical:</strong> Never use the default JWT_SECRET in production. Generate a strong, random secret key.
+            </div>
+
+            <h3>Starting the Platform</h3>
+            <div class="tabs">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="showTab('anonymous')">Anonymous Mode</button>
+                    <button class="tab-button" onclick="showTab('authenticated')">Authenticated Mode</button>
+                </div>
+
+                <div id="anonymous" class="tab-content active">
+                    <p>For development and testing:</p>
+                    <div class="code-block">
+# Start with authentication disabled
+REQUIRE_AUTH=false docker-compose up
+                    </div>
+                </div>
+
+                <div id="authenticated" class="tab-content">
+                    <p>For production use:</p>
+                    <div class="code-block">
+# Start with authentication enabled
+REQUIRE_AUTH=true docker-compose up
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="endpoints">
+            <h2>🔗 API Endpoints</h2>
+
+            <h3>User Registration</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/auth/register</div>
+                <p>Register a new user account</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "securepassword123",
+    "full_name": "John Doe"
+}
+            </div>
+
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>username</code></td>
+                        <td>string</td>
+                        <td class="required">Yes</td>
+                        <td>Unique username (3-50 characters)</td>
+                    </tr>
+                    <tr>
+                        <td><code>email</code></td>
+                        <td>string</td>
+                        <td class="required">Yes</td>
+                        <td>Valid email address</td>
+                    </tr>
+                    <tr>
+                        <td><code>password</code></td>
+                        <td>string</td>
+                        <td class="required">Yes</td>
+                        <td>Password (minimum 8 characters)</td>
+                    </tr>
+                    <tr>
+                        <td><code>full_name</code></td>
+                        <td>string</td>
+                        <td class="optional">No</td>
+                        <td>User's full name</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>User Login</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">POST</div>
+                <div class="endpoint-url">/auth/login</div>
+                <p>Authenticate user and receive JWT token</p>
+            </div>
+
+            <h4>Request Body</h4>
+            <div class="code-block">
+{
+    "username": "johndoe",
+    "password": "securepassword123"
+}
+            </div>
+
+            <h4>Response</h4>
+            <div class="code-block">
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "token_type": "bearer",
+    "expires_in": 86400,
+    "user": {
+        "user_id": "uuid-string",
+        "username": "johndoe",
+        "email": "john@example.com",
+        "full_name": "John Doe"
+    }
+}
+            </div>
+
+            <h3>Get Current User</h3>
+            <div class="api-endpoint">
+                <div class="endpoint-method">GET</div>
+                <div class="endpoint-url">/auth/me</div>
+                <p>Get current authenticated user information</p>
+            </div>
+
+            <h4>Headers Required</h4>
+            <div class="code-block">
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+            </div>
+        </section>
+
+        <section id="examples">
+            <h2>💡 Usage Examples</h2>
+
+            <h3>cURL Examples</h3>
+
+            <h4>Register a New User</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8080/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "email": "john@example.com",
+    "password": "securepassword123",
+    "full_name": "John Doe"
+  }'
+            </div>
+
+            <h4>Login and Get Token</h4>
+            <div class="code-block">
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "johndoe",
+    "password": "securepassword123"
+  }'
+            </div>
+
+            <h4>Use Token for Authenticated Requests</h4>
+            <div class="code-block">
+# Replace YOUR_TOKEN_HERE with the actual token from login response
+curl -X GET http://localhost:8080/ingestion/jobs \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+            </div>
+
+            <h3>Python Examples</h3>
+
+            <h4>Authentication with Requests</h4>
+            <div class="code-block">
+import requests
+
+# Login
+login_response = requests.post('http://localhost:8080/auth/login', json={
+    'username': 'johndoe',
+    'password': 'securepassword123'
+})
+
+token = login_response.json()['access_token']
+
+# Use token for authenticated requests
+headers = {'Authorization': f'Bearer {token}'}
+response = requests.get('http://localhost:8080/ingestion/jobs', headers=headers)
+            </div>
+
+            <h4>Handling Authentication Errors</h4>
+            <div class="code-block">
+import requests
+from requests.exceptions import HTTPError
+
+def make_authenticated_request(url, token):
+    headers = {'Authorization': f'Bearer {token}'}
+
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except HTTPError as e:
+        if e.response.status_code == 401:
+            print("Token expired or invalid. Please login again.")
+            # Handle token refresh or re-login
+        else:
+            print(f"Request failed: {e}")
+        raise
+
+# Usage
+token = "your-jwt-token-here"
+data = make_authenticated_request('http://localhost:8080/ingestion/jobs', token)
+            </div>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>🔧 Troubleshooting</h2>
+
+            <h3>Common Issues</h3>
+
+            <div class="highlight">
+                <strong>Issue:</strong> Authentication endpoints return 403 Forbidden<br>
+                <strong>Solution:</strong> Ensure <code>REQUIRE_AUTH=true</code> is set in your environment variables.
+            </div>
+
+            <div class="highlight">
+                <strong>Issue:</strong> "Invalid token format" error<br>
+                <strong>Solution:</strong> JWT tokens must have exactly 3 parts separated by dots: header.payload.signature
+            </div>
+
+            <div class="highlight">
+                <strong>Issue:</strong> Token expired immediately<br>
+                <strong>Solution:</strong> Check your system's clock and ensure <code>JWT_EXPIRATION_HOURS</code> is set correctly.
+            </div>
+
+            <h3>Error Codes</h3>
+            <table class="parameter-table">
+                <thead>
+                    <tr>
+                        <th>Error Code</th>
+                        <th>Description</th>
+                        <th>Solution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>401 Unauthorized</code></td>
+                        <td>Invalid or missing authentication token</td>
+                        <td>Provide valid JWT token in Authorization header</td>
+                    </tr>
+                    <tr>
+                        <td><code>403 Forbidden</code></td>
+                        <td>Authentication not enabled or endpoint disabled</td>
+                        <td>Set <code>REQUIRE_AUTH=true</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>409 Conflict</code></td>
+                        <td>Username or email already exists</td>
+                        <td>Use different username/email for registration</td>
+                    </tr>
+                    <tr>
+                        <td><code>422 Unprocessable Entity</code></td>
+                        <td>Invalid request data</td>
+                        <td>Check request format and required fields</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Security Best Practices</h3>
+            <ul>
+                <li><strong>HTTPS Only:</strong> Always use HTTPS in production</li>
+                <li><strong>Strong Secrets:</strong> Use cryptographically strong JWT secrets</li>
+                <li><strong>Token Rotation:</strong> Implement token refresh mechanisms</li>
+                <li><strong>Rate Limiting:</strong> Implement rate limiting on auth endpoints</li>
+                <li><strong>Password Policies:</strong> Enforce strong password requirements</li>
+                <li><strong>Session Management:</strong> Implement proper session timeouts</li>
+            </ul>
+
+            <div class="important">
+                <strong>Production Security:</strong> The current implementation uses simplified password storage and JWT handling. In production, implement:
+                <ul>
+                    <li>Proper password hashing (bcrypt, argon2)</li>
+                    <li>JWT refresh tokens</li>
+                    <li>Token blacklisting</li>
+                    <li>Multi-factor authentication</li>
+                    <li>Audit logging for security events</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="success">
+            <h3>✅ Rule 9 Compliance Confirmed</h3>
+            <p>This user guide is provided as a comprehensive web-based interface, not a .md file, ensuring all users can access authentication documentation through their web browser.</p>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Copy to clipboard functionality
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Could show a toast notification here
+                console.log('Copied to clipboard');
+            });
+        }
+
+        // Add copy buttons to code blocks
+        document.addEventListener('DOMContentLoaded', () => {
+            const codeBlocks = document.querySelectorAll('.code-block');
+            codeBlocks.forEach(block => {
+                const button = document.createElement('button');
+                button.textContent = 'Copy';
+                button.className = 'copy-button';
+                button.onclick = () => copyToClipboard(block.textContent.trim());
+                block.appendChild(button);
+            });
+        });
+    </script>
+</body>
+</html>

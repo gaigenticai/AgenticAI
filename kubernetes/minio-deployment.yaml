@@ -1,0 +1,253 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-bronze
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: bronze
+    component: object-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+      layer: bronze
+  template:
+    metadata:
+      labels:
+        app: minio
+        layer: bronze
+        component: object-storage
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        command:
+        - server
+        - /data/bronze
+        - --console-address
+        - :9001
+        ports:
+        - containerPort: 9000
+          name: api
+        - containerPort: 9001
+          name: console
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_ACCESS_KEY
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_SECRET_KEY
+        volumeMounts:
+        - name: minio-bronze-data
+          mountPath: /data/bronze
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 5
+      volumes:
+      - name: minio-bronze-data
+        persistentVolumeClaim:
+          claimName: minio-bronze-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-silver
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: silver
+    component: object-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+      layer: silver
+  template:
+    metadata:
+      labels:
+        app: minio
+        layer: silver
+        component: object-storage
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        command:
+        - server
+        - /data/silver
+        - --console-address
+        - :9002
+        ports:
+        - containerPort: 9000
+          name: api
+        - containerPort: 9002
+          name: console
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_ACCESS_KEY
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_SECRET_KEY
+        volumeMounts:
+        - name: minio-silver-data
+          mountPath: /data/silver
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+      volumes:
+      - name: minio-silver-data
+        persistentVolumeClaim:
+          claimName: minio-silver-data
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-gold
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: gold
+    component: object-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+      layer: gold
+  template:
+    metadata:
+      labels:
+        app: minio
+        layer: gold
+        component: object-storage
+    spec:
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        command:
+        - server
+        - /data/gold
+        - --console-address
+        - :9003
+        ports:
+        - containerPort: 9000
+          name: api
+        - containerPort: 9003
+          name: console
+        env:
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_ACCESS_KEY
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: agentic-platform-secrets
+              key: MINIO_SECRET_KEY
+        volumeMounts:
+        - name: minio-gold-data
+          mountPath: /data/gold
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+      volumes:
+      - name: minio-gold-data
+        persistentVolumeClaim:
+          claimName: minio-gold-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-bronze
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: bronze
+spec:
+  selector:
+    app: minio
+    layer: bronze
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: api
+  - port: 9001
+    targetPort: 9001
+    name: console
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-silver
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: silver
+spec:
+  selector:
+    app: minio
+    layer: silver
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: api
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-gold
+  namespace: agentic-platform
+  labels:
+    app: minio
+    layer: gold
+spec:
+  selector:
+    app: minio
+    layer: gold
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: api
+  type: ClusterIP
