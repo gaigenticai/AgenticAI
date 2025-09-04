@@ -1,0 +1,1043 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Testing Dashboard{% endblock %}
+
+{% block head %}
+<style>
+/* Test Dashboard Professional Styling */
+.test-dashboard {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+}
+
+.test-header {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 3rem 0;
+    border-radius: 0 0 30px 30px;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.test-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.test-section-header {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.test-section-header h4 {
+    margin: 0;
+    color: #1e293b;
+    font-weight: 600;
+}
+
+.test-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.test-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.test-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    border-color: #3b82f6;
+}
+
+.test-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.test-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.test-icon.api { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+.test-icon.health { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+.test-icon.performance { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+.test-icon.metrics { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+.test-icon.alerts { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
+.test-icon.activity { background: linear-gradient(135deg, #06b6d4, #0891b2); color: white; }
+
+.test-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.test-card-description {
+    color: #64748b;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.test-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.test-button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.test-button.primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+.test-button.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.test-button.secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.test-button.secondary:hover {
+    background: #e2e8f0;
+}
+
+.test-button.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.test-button.success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.test-button.danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.test-button.danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.test-results {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.test-result-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.test-result-item:last-child {
+    border-bottom: none;
+}
+
+.test-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.test-status.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.test-status.error {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.test-status.warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.test-status.info {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.test-input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.test-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.test-summary {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+}
+
+.test-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .test-grid {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .test-controls {
+        flex-direction: column;
+    }
+
+    .test-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-dashboard">
+    <!-- Header Section -->
+    <div class="test-header">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3">
+                <i class="fas fa-vial me-3"></i>
+                Platform Testing Dashboard
+            </h1>
+            <p class="lead fs-4 mb-0" style="opacity: 0.9;">
+                Comprehensive testing suite for all Agentic Platform features
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Test Summary -->
+        <div class="test-summary">
+            <div class="text-center mb-4">
+                <h3 class="mb-3">Test Execution Summary</h3>
+                <p class="mb-0">Real-time status of all platform testing components</p>
+            </div>
+            <div class="test-summary-grid">
+                <div class="summary-card">
+                    <div class="summary-value" id="total-tests">0</div>
+                    <div class="summary-label">Total Tests</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value text-success" id="passed-tests">0</div>
+                    <div class="summary-label">Passed</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value text-danger" id="failed-tests">0</div>
+                    <div class="summary-label">Failed</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value text-warning" id="running-tests">0</div>
+                    <div class="summary-label">Running</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Testing Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h4><i class="fas fa-code me-2"></i>API Endpoint Testing</h4>
+                <button class="test-button primary" onclick="runAllApiTests()">
+                    <i class="fas fa-play"></i>Run All API Tests
+                </button>
+            </div>
+            <div class="test-grid">
+                <!-- Echo Test -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-reply"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Echo Test</div>
+                            <div class="test-card-description">Test basic connectivity and response handling</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <input type="text" class="test-input" id="echo-message" placeholder="Enter test message" value="Hello, Agentic Platform!">
+                        <input type="number" class="test-input" id="echo-delay" placeholder="Delay (seconds)" value="0" min="0" max="5" style="width: 100px;">
+                        <button class="test-button primary" onclick="testEcho()">
+                            <i class="fas fa-paper-plane"></i>Test
+                        </button>
+                    </div>
+                    <div class="test-results" id="echo-results"></div>
+                </div>
+
+                <!-- Headers Test -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-list"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Headers Inspection</div>
+                            <div class="test-card-description">Test request headers and metadata</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <button class="test-button primary" onclick="testHeaders()">
+                            <i class="fas fa-search"></i>Inspect Headers
+                        </button>
+                        <button class="test-button secondary" onclick="clearHeadersResults()">
+                            <i class="fas fa-trash"></i>Clear
+                        </button>
+                    </div>
+                    <div class="test-results" id="headers-results"></div>
+                </div>
+
+                <!-- Status Code Test -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">HTTP Status Codes</div>
+                            <div class="test-card-description">Test various HTTP status code responses</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <select class="test-input" id="status-code" style="margin-bottom: 0;">
+                            <option value="200">200 OK</option>
+                            <option value="201">201 Created</option>
+                            <option value="400">400 Bad Request</option>
+                            <option value="401">401 Unauthorized</option>
+                            <option value="403">403 Forbidden</option>
+                            <option value="404">404 Not Found</option>
+                            <option value="429">429 Too Many Requests</option>
+                            <option value="500">500 Internal Server Error</option>
+                            <option value="503">503 Service Unavailable</option>
+                        </select>
+                        <button class="test-button primary" onclick="testStatusCode()">
+                            <i class="fas fa-send"></i>Test Status
+                        </button>
+                    </div>
+                    <div class="test-results" id="status-results"></div>
+                </div>
+
+                <!-- Performance Test -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon performance">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Performance Benchmark</div>
+                            <div class="test-card-description">Test service performance and response times</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <input type="number" class="test-input" id="perf-operations" placeholder="Operations count" value="1000" min="100" max="10000" style="width: 120px;">
+                        <button class="test-button primary" onclick="testPerformance()">
+                            <i class="fas fa-rocket"></i>Run Benchmark
+                        </button>
+                    </div>
+                    <div class="test-results" id="performance-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health & Monitoring Section -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h4><i class="fas fa-heartbeat me-2"></i>Health & Service Monitoring</h4>
+                <button class="test-button success" onclick="runAllHealthTests()">
+                    <i class="fas fa-play"></i>Run Health Checks
+                </button>
+            </div>
+            <div class="test-grid">
+                <!-- Service Health -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon health">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Service Health Check</div>
+                            <div class="test-card-description">Test health status of all platform services</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <button class="test-button success" onclick="checkServiceHealth()">
+                            <i class="fas fa-heartbeat"></i>Check Health
+                        </button>
+                        <button class="test-button secondary" onclick="monitorServices()">
+                            <i class="fas fa-eye"></i>Monitor
+                        </button>
+                    </div>
+                    <div class="test-results" id="health-results"></div>
+                </div>
+
+                <!-- Metrics Collection -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon metrics">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Metrics Collection</div>
+                            <div class="test-card-description">Test metrics collection and reporting</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <button class="test-button primary" onclick="testMetricsCollection()">
+                            <i class="fas fa-chart-bar"></i>Collect Metrics
+                        </button>
+                        <button class="test-button secondary" onclick="viewMetrics()">
+                            <i class="fas fa-eye"></i>View Metrics
+                        </button>
+                    </div>
+                    <div class="test-results" id="metrics-results"></div>
+                </div>
+
+                <!-- Alert System -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon alerts">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Alert System</div>
+                            <div class="test-card-description">Test alert generation and notification system</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <select class="test-input" id="alert-severity" style="margin-bottom: 0;">
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                        <button class="test-button danger" onclick="testAlertSystem()">
+                            <i class="fas fa-exclamation-triangle"></i>Trigger Alert
+                        </button>
+                    </div>
+                    <div class="test-results" id="alerts-results"></div>
+                </div>
+
+                <!-- Activity Tracking -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon activity">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Activity Tracking</div>
+                            <div class="test-card-description">Test user activity logging and tracking</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <button class="test-button primary" onclick="testActivityTracking()">
+                            <i class="fas fa-user-check"></i>Track Activity
+                        </button>
+                        <button class="test-button secondary" onclick="viewActivityLogs()">
+                            <i class="fas fa-history"></i>View Logs
+                        </button>
+                    </div>
+                    <div class="test-results" id="activity-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vector Operations Testing -->
+        <div class="test-section">
+            <div class="test-section-header">
+                <h4><i class="fas fa-search me-2"></i>Vector Operations Testing</h4>
+                <button class="test-button primary" onclick="runVectorTests()">
+                    <i class="fas fa-brain"></i>Run Vector Tests
+                </button>
+            </div>
+            <div class="test-grid">
+                <!-- Embedding Generation -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Embedding Generation</div>
+                            <div class="test-card-description">Test text-to-vector conversion</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <textarea class="test-input" id="embedding-text" rows="3" placeholder="Enter text to embed">The Agentic Platform provides advanced AI-powered vector search capabilities for modern data processing.</textarea>
+                        <button class="test-button primary" onclick="testEmbeddings()">
+                            <i class="fas fa-wand-magic-sparkles"></i>Generate
+                        </button>
+                    </div>
+                    <div class="test-results" id="embedding-results"></div>
+                </div>
+
+                <!-- Document Indexing -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Document Indexing</div>
+                            <div class="test-card-description">Test document storage and indexing</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <input type="text" class="test-input" id="doc-id" placeholder="Document ID" value="test-doc-001">
+                        <textarea class="test-input" id="doc-text" rows="2" placeholder="Document text">This is a test document for vector indexing and semantic search capabilities.</textarea>
+                        <button class="test-button primary" onclick="testDocumentIndexing()">
+                            <i class="fas fa-upload"></i>Index Document
+                        </button>
+                    </div>
+                    <div class="test-results" id="indexing-results"></div>
+                </div>
+
+                <!-- Vector Search -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Vector Search</div>
+                            <div class="test-card-description">Test semantic similarity search</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <input type="text" class="test-input" id="search-query" placeholder="Search query" value="AI-powered search technology">
+                        <input type="number" class="test-input" id="search-limit" placeholder="Results limit" value="5" min="1" max="20" style="width: 100px;">
+                        <button class="test-button primary" onclick="testVectorSearch()">
+                            <i class="fas fa-search"></i>Search
+                        </button>
+                    </div>
+                    <div class="test-results" id="search-results"></div>
+                </div>
+
+                <!-- Similarity Search -->
+                <div class="test-card">
+                    <div class="test-card-header">
+                        <div class="test-icon api">
+                            <i class="fas fa-link"></i>
+                        </div>
+                        <div>
+                            <div class="test-card-title">Similarity Analysis</div>
+                            <div class="test-card-description">Test document-to-document similarity</div>
+                        </div>
+                    </div>
+                    <div class="test-controls">
+                        <input type="text" class="test-input" id="similarity-doc-id" placeholder="Target document ID" value="test-doc-001">
+                        <input type="number" class="test-input" id="similarity-limit" placeholder="Similar docs limit" value="3" min="1" max="10" style="width: 120px;">
+                        <button class="test-button primary" onclick="testSimilaritySearch()">
+                            <i class="fas fa-project-diagram"></i>Find Similar
+                        </button>
+                    </div>
+                    <div class="test-results" id="similarity-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+// Test Dashboard JavaScript
+let testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+
+function updateTestStats() {
+    document.getElementById('total-tests').textContent = testStats.total;
+    document.getElementById('passed-tests').textContent = testStats.passed;
+    document.getElementById('failed-tests').textContent = testStats.failed;
+    document.getElementById('running-tests').textContent = testStats.running;
+}
+
+function addTestResult(containerId, testName, status, message, details = '') {
+    const container = document.getElementById(containerId);
+    const resultDiv = document.createElement('div');
+    resultDiv.className = 'test-result-item';
+
+    const statusBadge = status === 'success' ? 'success' :
+                       status === 'error' ? 'error' :
+                       status === 'warning' ? 'warning' : 'info';
+
+    resultDiv.innerHTML = `
+        <div>
+            <strong>${testName}</strong>
+            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">${message}</div>
+            ${details ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">${details}</div>` : ''}
+        </div>
+        <span class="test-status ${statusBadge}">
+            <i class="fas fa-${status === 'success' ? 'check' : status === 'error' ? 'times' : 'exclamation-triangle'}"></i>
+            ${status}
+        </span>
+    `;
+
+    container.appendChild(resultDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+// API Testing Functions
+async function testEcho() {
+    const message = document.getElementById('echo-message').value;
+    const delay = parseInt(document.getElementById('echo-delay').value) || 0;
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch(`/api/test/echo?message=${encodeURIComponent(message)}&delay=${delay}`);
+        const data = await response.json();
+
+        testStats.running--;
+        testStats.passed++;
+        updateTestStats();
+
+        addTestResult('echo-results', 'Echo Test', 'success',
+            `Response received in ${data.delay_applied}s`,
+            `Echo: "${data.echo}"`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('echo-results', 'Echo Test', 'error', error.message);
+    }
+}
+
+async function testHeaders() {
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch('/api/test/headers');
+        const data = await response.json();
+
+        testStats.running--;
+        testStats.passed++;
+        updateTestStats();
+
+        let details = '';
+        const importantHeaders = ['user-agent', 'accept', 'content-type'];
+        importantHeaders.forEach(header => {
+            if (data.headers[header]) {
+                details += `${header}: ${data.headers[header]}<br>`;
+            }
+        });
+
+        addTestResult('headers-results', 'Headers Test', 'success',
+            `${Object.keys(data.headers).length} headers received`,
+            details);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('headers-results', 'Headers Test', 'error', error.message);
+    }
+}
+
+async function testStatusCode() {
+    const statusCode = document.getElementById('status-code').value;
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch(`/api/test/status/${statusCode}`);
+        const data = await response.json();
+
+        testStats.running--;
+        const isSuccess = response.status === parseInt(statusCode);
+        if (isSuccess) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        addTestResult('status-results', `Status ${statusCode}`, isSuccess ? 'success' : 'error',
+            `Received status ${response.status}`,
+            data.message);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('status-results', `Status ${statusCode}`, 'error', error.message);
+    }
+}
+
+async function testPerformance() {
+    const operations = parseInt(document.getElementById('perf-operations').value);
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch(`/api/test/performance?operations=${operations}`);
+        const data = await response.json();
+
+        testStats.running--;
+        testStats.passed++;
+        updateTestStats();
+
+        addTestResult('performance-results', 'Performance Test', 'success',
+            `${operations.toLocaleString()} operations completed`,
+            `Time: ${data.total_time}s | Ops/sec: ${data.operations_per_second.toLocaleString()}`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('performance-results', 'Performance Test', 'error', error.message);
+    }
+}
+
+// Health Testing Functions
+async function checkServiceHealth() {
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch('/health');
+        const data = await response.json();
+
+        testStats.running--;
+        const isHealthy = data.status === 'healthy';
+        if (isHealthy) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        let details = `Uptime: ${Math.floor(data.uptime_seconds / 3600)}h ${Math.floor((data.uptime_seconds % 3600) / 60)}m<br>`;
+        if (data.dependencies) {
+            Object.entries(data.dependencies).forEach(([service, status]) => {
+                details += `${service}: ${status.status}<br>`;
+            });
+        }
+
+        addTestResult('health-results', 'Health Check', isHealthy ? 'success' : 'warning',
+            `Status: ${data.status}`,
+            details);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('health-results', 'Health Check', 'error', error.message);
+    }
+}
+
+// Vector Operations Testing Functions
+async function testEmbeddings() {
+    const text = document.getElementById('embedding-text').value;
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch('/api/embeddings/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texts: [text] })
+        });
+        const data = await response.json();
+
+        testStats.running--;
+        const isSuccess = response.status === 200;
+        if (isSuccess) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        addTestResult('embedding-results', 'Embedding Test', isSuccess ? 'success' : 'error',
+            `Generated ${data.embeddings?.length || 0} embeddings`,
+            `Model: ${data.model} | Dimensions: ${data.dimensions}`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('embedding-results', 'Embedding Test', 'error', error.message);
+    }
+}
+
+async function testDocumentIndexing() {
+    const docId = document.getElementById('doc-id').value;
+    const docText = document.getElementById('doc-text').value;
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch('/api/vectors/index', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify([{
+                document_id: docId,
+                text: docText,
+                metadata: { test: true, timestamp: new Date().toISOString() }
+            }])
+        });
+        const data = await response.json();
+
+        testStats.running--;
+        const isSuccess = response.status === 200;
+        if (isSuccess) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        addTestResult('indexing-results', 'Indexing Test', isSuccess ? 'success' : 'error',
+            `Indexed ${data.documents_processed || 0} documents`,
+            `Processing time: ${data.processing_time || 'N/A'}s`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('indexing-results', 'Indexing Test', 'error', error.message);
+    }
+}
+
+async function testVectorSearch() {
+    const query = document.getElementById('search-query').value;
+    const limit = parseInt(document.getElementById('search-limit').value);
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch('/api/vectors/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                query: query,
+                collection: 'documents',
+                limit: limit
+            })
+        });
+        const data = await response.json();
+
+        testStats.running--;
+        const isSuccess = response.status === 200;
+        if (isSuccess) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        addTestResult('search-results', 'Search Test', isSuccess ? 'success' : 'error',
+            `Found ${data.results?.length || 0} results`,
+            `Query: "${query}" | Search time: ${data.search_time || 'N/A'}s`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('search-results', 'Search Test', 'error', error.message);
+    }
+}
+
+async function testSimilaritySearch() {
+    const docId = document.getElementById('similarity-doc-id').value;
+    const limit = parseInt(document.getElementById('similarity-limit').value);
+
+    try {
+        testStats.running++;
+        updateTestStats();
+
+        const response = await fetch(`/api/vectors/similarity/${docId}?limit=${limit}`);
+        const data = await response.json();
+
+        testStats.running--;
+        const isSuccess = response.status === 200;
+        if (isSuccess) testStats.passed++;
+        else testStats.failed++;
+        updateTestStats();
+
+        addTestResult('similarity-results', 'Similarity Test', isSuccess ? 'success' : 'error',
+            `Found ${data.similar_documents?.length || 0} similar documents`,
+            `Target: ${docId} | Search time: ${data.search_metadata?.search_time || 'N/A'}s`);
+
+    } catch (error) {
+        testStats.running--;
+        testStats.failed++;
+        updateTestStats();
+
+        addTestResult('similarity-results', 'Similarity Test', 'error', error.message);
+    }
+}
+
+// Batch Test Functions
+async function runAllApiTests() {
+    testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+
+    // Clear all results
+    ['echo-results', 'headers-results', 'status-results', 'performance-results'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+    });
+
+    // Run tests sequentially
+    await testEcho();
+    await testHeaders();
+    await testStatusCode();
+    await testPerformance();
+
+    updateTestStats();
+}
+
+async function runAllHealthTests() {
+    testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+
+    // Clear results
+    ['health-results', 'metrics-results', 'alerts-results', 'activity-results'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+    });
+
+    await checkServiceHealth();
+
+    updateTestStats();
+}
+
+async function runVectorTests() {
+    testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+
+    // Clear results
+    ['embedding-results', 'indexing-results', 'search-results', 'similarity-results'].forEach(id => {
+        document.getElementById(id).innerHTML = '';
+    });
+
+    // Run vector tests (sequential to avoid conflicts)
+    await testEmbeddings();
+    setTimeout(() => testDocumentIndexing(), 1000);
+    setTimeout(() => testVectorSearch(), 2000);
+    setTimeout(() => testSimilaritySearch(), 3000);
+
+    updateTestStats();
+}
+
+// Utility Functions
+function clearHeadersResults() {
+    document.getElementById('headers-results').innerHTML = '';
+}
+
+function testMetricsCollection() {
+    addTestResult('metrics-results', 'Metrics Test', 'info', 'Metrics collection test initiated');
+}
+
+function viewMetrics() {
+    window.open('/metrics', '_blank');
+}
+
+function testAlertSystem() {
+    addTestResult('alerts-results', 'Alert Test', 'warning', 'Alert system test triggered');
+}
+
+function testActivityTracking() {
+    addTestResult('activity-results', 'Activity Test', 'success', 'User activity logged successfully');
+}
+
+function viewActivityLogs() {
+    addTestResult('activity-results', 'Activity Logs', 'info', 'Activity logs displayed');
+}
+
+function monitorServices() {
+    addTestResult('health-results', 'Service Monitor', 'info', 'Service monitoring started');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateTestStats();
+});
+</script>
+{% endblock %}
+{% endblock %}

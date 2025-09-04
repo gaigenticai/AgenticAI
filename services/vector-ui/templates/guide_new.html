@@ -174,6 +174,136 @@ body {
     position: relative;
 }
 
+/* Step Indicator Styles */
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.step-indicator::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+
+.step {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+    margin: 0 10px;
+}
+
+.step.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+}
+
+.step.active .step-number {
+    background: white;
+    color: var(--primary-color);
+}
+
+.step-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.step-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    max-width: 80px;
+}
+
+.step-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+}
+
+/* Table Enhancements */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.table-responsive {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Alert Enhancements */
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #1e40af;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46;
+}
+
+/* Button Enhancements */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* List Group Enhancements */
+.list-group-item {
+    border-radius: 8px !important;
+    margin-bottom: 4px;
+    border: 1px solid #e5e7eb;
+}
+
+.list-group-item:hover {
+    background: #f8fafc;
+    transform: translateX(4px);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .nav-tabs-professional .nav-link {
@@ -734,21 +864,59 @@ body {
                                                                 <th>Variable</th>
                                                                 <th>Description</th>
                                                                 <th>Default</th>
+                                                                <th>Acceptable Values</th>
                                                                 <th>Required</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr>
                                                                 <td><code>REQUIRE_AUTH</code></td>
-                                                                <td>Enable/disable authentication</td>
+                                                                <td>Controls whether authentication is required for API access</td>
                                                                 <td><code>false</code></td>
+                                                                <td><code>true</code>, <code>false</code></td>
+                                                                <td>No</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>JWT_SECRET</code></td>
+                                                                <td>Secret key for JWT token signing and verification</td>
+                                                                <td>-</td>
+                                                                <td>Strong random string (64+ chars)</td>
+                                                                <td>Yes (if REQUIRE_AUTH=true)</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>JWT_EXPIRATION_HOURS</code></td>
+                                                                <td>Hours before JWT tokens expire</td>
+                                                                <td><code>24</code></td>
+                                                                <td>1-168 hours</td>
                                                                 <td>No</td>
                                                             </tr>
                                                             <tr>
                                                                 <td><code>AUTH_TOKEN</code></td>
-                                                                <td>Authentication token when REQUIRE_AUTH=true</td>
+                                                                <td>Static authentication token for development</td>
                                                                 <td>-</td>
+                                                                <td>Any non-empty string</td>
                                                                 <td>Yes (if REQUIRE_AUTH=true)</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>OAUTH_CLIENT_ID</code></td>
+                                                                <td>OAuth2 client identifier</td>
+                                                                <td>-</td>
+                                                                <td>Provider-specific string</td>
+                                                                <td>Yes (if using OAuth2)</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>OAUTH_CLIENT_SECRET</code></td>
+                                                                <td>OAuth2 client secret</td>
+                                                                <td>-</td>
+                                                                <td>Provider-specific string</td>
+                                                                <td>Yes (if using OAuth2)</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>OIDC_ISSUER_URL</code></td>
+                                                                <td>OpenID Connect issuer URL</td>
+                                                                <td>-</td>
+                                                                <td>Valid HTTPS URL</td>
+                                                                <td>Yes (if using OIDC)</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -773,26 +941,65 @@ body {
                                                                 <th>Variable</th>
                                                                 <th>Description</th>
                                                                 <th>Default</th>
+                                                                <th>Acceptable Values</th>
                                                                 <th>Required</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td><code>POSTGRES_HOST</code></td>
-                                                                <td>PostgreSQL server host</td>
-                                                                <td><code>postgres</code></td>
+                                                                <td><code>DATABASE_URL</code></td>
+                                                                <td>Complete PostgreSQL connection string for ingestion layer</td>
+                                                                <td><code>postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion</code></td>
+                                                                <td>Valid PostgreSQL URL</td>
                                                                 <td>Yes</td>
                                                             </tr>
                                                             <tr>
-                                                                <td><code>POSTGRES_PORT</code></td>
-                                                                <td>PostgreSQL server port</td>
-                                                                <td><code>5432</code></td>
+                                                                <td><code>POSTGRES_INGESTION_PASSWORD</code></td>
+                                                                <td>Password for ingestion PostgreSQL database</td>
+                                                                <td><code>agentic123</code></td>
+                                                                <td>Strong password string</td>
                                                                 <td>Yes</td>
                                                             </tr>
                                                             <tr>
-                                                                <td><code>POSTGRES_DB</code></td>
-                                                                <td>PostgreSQL database name</td>
-                                                                <td><code>agentic</code></td>
+                                                                <td><code>POSTGRES_OUTPUT_PASSWORD</code></td>
+                                                                <td>Password for output PostgreSQL database</td>
+                                                                <td><code>agentic123</code></td>
+                                                                <td>Strong password string</td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>MONGODB_PASSWORD</code></td>
+                                                                <td>Password for MongoDB database</td>
+                                                                <td><code>agentic123</code></td>
+                                                                <td>Strong password string</td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>TIMESCALEDB_PASSWORD</code></td>
+                                                                <td>Password for TimescaleDB (time-series data)</td>
+                                                                <td><code>agentic123</code></td>
+                                                                <td>Strong password string</td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>NEO4J_PASSWORD</code></td>
+                                                                <td>Password for Neo4j graph database</td>
+                                                                <td><code>agentic123</code></td>
+                                                                <td>Strong password string</td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>REDIS_HOST</code></td>
+                                                                <td>Redis server hostname</td>
+                                                                <td><code>redis_ingestion</code></td>
+                                                                <td>Valid hostname/IP</td>
+                                                                <td>Yes</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td><code>REDIS_PORT</code></td>
+                                                                <td>Redis server port</td>
+                                                                <td><code>6379</code></td>
+                                                                <td>1024-65535</td>
                                                                 <td>Yes</td>
                                                             </tr>
                                                         </tbody>
@@ -802,102 +1009,481 @@ body {
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Vector & AI Services Configuration -->
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#vector-services" aria-expanded="false">
+                                            <i class="fas fa-brain me-2" style="color: var(--primary-color);"></i>
+                                            Vector & AI Services (7 variables)
+                                        </button>
+                                    </h2>
+                                    <div id="vector-services" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                        <div class="accordion-body">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped">
+                                                    <thead class="table-dark">
+                                                        <tr>
+                                                            <th>Variable</th>
+                                                            <th>Description</th>
+                                                            <th>Default</th>
+                                                            <th>Acceptable Values</th>
+                                                            <th>Required</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td><code>VECTOR_UI_PORT</code></td>
+                                                            <td>Port for Vector UI web interface</td>
+                                                            <td><code>8082</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>OUTPUT_COORDINATOR_URL</code></td>
+                                                            <td>URL for Output Coordinator service</td>
+                                                            <td><code>http://output-coordinator:8081</code></td>
+                                                            <td>Valid HTTP URL</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>EMBEDDING_MODEL</code></td>
+                                                            <td>Model name for text embeddings</td>
+                                                            <td><code>sentence-transformers/all-MiniLM-L6-v2</code></td>
+                                                            <td>Valid model identifier</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>VECTOR_DIMENSIONS</code></td>
+                                                            <td>Dimensions of embedding vectors</td>
+                                                            <td><code>384</code></td>
+                                                            <td>128-2048</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>QDRANT_HTTP_PORT</code></td>
+                                                            <td>Qdrant vector database HTTP port</td>
+                                                            <td><code>6333</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td><code>INGESTION_COORDINATOR_PORT</code></td>
+                                                            <td>Port for Ingestion Coordinator service</td>
+                                                            <td><code>8080</code></td>
+                                                            <td>1024-65535</td>
+                                                            <td>Yes</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-warning mt-4">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Security Notice:</strong> Change all default passwords before deploying to production!
+                                    The default values are for development only and should never be used in production environments.
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Getting Started Tab -->
                     <div class="tab-pane fade" id="getting-started" role="tabpanel" aria-labelledby="getting-started-tab">
-                        <h2 class="mb-4" style="color: var(--primary-color);">
-                            <i class="fas fa-rocket me-2"></i>
-                            Getting Started
-                        </h2>
                         <div class="row">
-                            <div class="col-lg-8">
-                                <h4>Quick Start Guide</h4>
-                                <p class="lead mb-4">Get the Agentic Platform up and running in minutes</p>
+                            <div class="col-12">
+                                <div class="alert alert-success mb-4">
+                                    <i class="fas fa-rocket me-2"></i>
+                                    <strong>Welcome to Agentic Platform!</strong> This comprehensive guide will get you up and running with the complete AI-powered vector search platform.
+                                </div>
+                            </div>
+                        </div>
 
-                                <h5>Prerequisites</h5>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Requirements:</strong> Docker, Docker Compose, 8GB RAM, 20GB disk space
+                        <!-- Prerequisites Section -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="fas fa-list-check me-2"></i>Prerequisites & System Requirements</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-server me-2"></i>Hardware Requirements</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><strong>RAM:</strong> Minimum 8GB, Recommended 16GB+</li>
+                                            <li class="list-group-item"><strong>CPU:</strong> 4+ cores with AVX2 support</li>
+                                            <li class="list-group-item"><strong>Storage:</strong> 20GB+ free disk space</li>
+                                            <li class="list-group-item"><strong>Network:</strong> Stable internet connection</li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-tools me-2"></i>Software Requirements</h6>
+                                        <ul class="list-group list-group-flush">
+                                            <li class="list-group-item"><strong>Docker:</strong> Version 20.10+ with Docker Compose</li>
+                                            <li class="list-group-item"><strong>Operating System:</strong> Linux, macOS, or Windows with WSL2</li>
+                                            <li class="list-group-item"><strong>Git:</strong> For cloning the repository</li>
+                                            <li class="list-group-item"><strong>Browser:</strong> Modern browser (Chrome, Firefox, Safari, Edge)</li>
+                                        </ul>
+                                    </div>
                                 </div>
 
-                                <h5>Step 1: Start All Services</h5>
-                                <div class="code-block mb-4">
-                                    <pre><code># Clone the repository
-git clone [repository-url]
+                                <div class="mt-3">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Verification Commands:</strong>
+                                        <div class="code-block mt-2">
+                                            <pre><code># Check Docker installation
+docker --version
+docker-compose --version
+
+# Check available resources (Linux/macOS)
+free -h || echo "RAM check"
+df -h | grep -E "(Filesystem|/$)" || echo "Disk space check"
+
+# Check AVX2 support (Linux)
+grep avx2 /proc/cpuinfo || echo "AVX2 not detected"</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Installation Steps -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="fas fa-download me-2"></i>Installation & Setup</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="step-indicator mb-4">
+                                    <div class="step active">
+                                        <span class="step-number">1</span>
+                                        <span class="step-title">Clone Repository</span>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">2</span>
+                                        <span class="step-title">Configure Environment</span>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">3</span>
+                                        <span class="step-title">Start Services</span>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">4</span>
+                                        <span class="step-title">Verify Installation</span>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Clone Repository -->
+                                <div class="step-content mb-4">
+                                    <h6 class="text-primary"><i class="fas fa-code-branch me-2"></i>Step 1: Clone the Repository</h6>
+                                    <div class="code-block">
+                                        <pre><code># Clone the Agentic Platform repository
+git clone https://github.com/your-org/agentic-platform.git
 cd agentic-platform
 
+# Verify the contents
+ls -la</code></pre>
+                                    </div>
+                                    <p class="text-muted small">Expected output: You should see docker-compose.yml, schema.sql, and various service directories.</p>
+                                </div>
+
+                                <!-- Step 2: Environment Configuration -->
+                                <div class="step-content mb-4">
+                                    <h6 class="text-primary"><i class="fas fa-cog me-2"></i>Step 2: Configure Environment Variables</h6>
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Important:</strong> Review and customize the environment variables before starting services.
+                                    </div>
+
+                                    <div class="code-block">
+                                        <pre><code># Copy the example environment file
+cp .env.example .env
+
+# Edit the configuration (use your preferred editor)
+nano .env  # or vim .env or code .env</code></pre>
+                                    </div>
+
+                                    <h6>Key Configuration Options:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Variable</th>
+                                                    <th>Description</th>
+                                                    <th>Default</th>
+                                                    <th>Required</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><code>REQUIRE_AUTH</code></td>
+                                                    <td>Enable/disable authentication</td>
+                                                    <td><code>false</code></td>
+                                                    <td>Optional</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>JWT_SECRET</code></td>
+                                                    <td>Secret key for JWT tokens</td>
+                                                    <td>Auto-generated</td>
+                                                    <td>If AUTH enabled</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>POSTGRES_PASSWORD</code></td>
+                                                    <td>Database password</td>
+                                                    <td>Auto-generated</td>
+                                                    <td>Auto</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>QDRANT_API_KEY</code></td>
+                                                    <td>Vector database API key</td>
+                                                    <td>Auto-generated</td>
+                                                    <td>Auto</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><code>VECTOR_UI_PORT</code></td>
+                                                    <td>Vector UI service port</td>
+                                                    <td><code>8082</code></td>
+                                                    <td>Optional</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Start Services -->
+                                <div class="step-content mb-4">
+                                    <h6 class="text-primary"><i class="fas fa-play me-2"></i>Step 3: Start All Services</h6>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <strong>First startup may take 5-10 minutes</strong> as Docker images are built and services initialize.
+                                    </div>
+
+                                    <div class="code-block">
+                                        <pre><code># Make the startup script executable
+chmod +x start-platform.sh
+
 # Start all services
-./start-platform.sh</code></pre>
+./start-platform.sh
+
+# Alternative: Start with Docker Compose directly
+docker-compose up -d --build</code></pre>
+                                    </div>
+
+                                    <p><strong>What happens during startup:</strong></p>
+                                    <ul>
+                                        <li>Docker images are built for all services</li>
+                                        <li>Databases (PostgreSQL, Qdrant, Redis) are initialized</li>
+                                        <li>Message queues (RabbitMQ) are configured</li>
+                                        <li>Vector embeddings models are downloaded</li>
+                                        <li>Services perform health checks and connect to each other</li>
+                                    </ul>
                                 </div>
 
-                                <h5>Step 2: Access the Platform</h5>
-                                <div class="row mb-4">
-                                    <div class="col-md-6">
-                                        <div class="card shadow-sm">
-                                            <div class="card-body text-center">
-                                                <div class="fs-2 mb-2" style="color: var(--accent-color);">
-                                                    <i class="fas fa-brain"></i>
-                                                </div>
-                                                <h6>Vector UI</h6>
-                                                <a href="http://localhost:8082" class="btn btn-sm btn-outline-primary" target="_blank">
-                                                    http://localhost:8082
+                                <!-- Step 4: Verify Installation -->
+                                <div class="step-content">
+                                    <h6 class="text-primary"><i class="fas fa-check-circle me-2"></i>Step 4: Verify Installation</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Check Service Status:</h6>
+                                            <div class="code-block mb-3">
+                                                <pre><code># Check all services are running
+docker-compose ps
+
+# View service logs
+docker-compose logs --tail=50</code></pre>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Access the Platform:</h6>
+                                            <div class="list-group">
+                                                <a href="http://localhost:8082" class="list-group-item list-group-item-action" target="_blank">
+                                                    <i class="fas fa-brain me-2"></i>Vector UI Dashboard (Port 8082)
+                                                </a>
+                                                <a href="http://localhost:8082/docs" class="list-group-item list-group-item-action" target="_blank">
+                                                    <i class="fas fa-code me-2"></i>API Documentation (Swagger UI)
+                                                </a>
+                                                <a href="http://localhost:8082/redoc" class="list-group-item list-group-item-action" target="_blank">
+                                                    <i class="fas fa-book me-2"></i>API Documentation (ReDoc)
+                                                </a>
+                                                <a href="http://localhost:8082/guide" class="list-group-item list-group-item-action" target="_blank">
+                                                    <i class="fas fa-question-circle me-2"></i>Complete Platform Guide
                                                 </a>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="card shadow-sm">
-                                            <div class="card-body text-center">
-                                                <div class="fs-2 mb-2" style="color: var(--primary-color);">
-                                                    <i class="fas fa-code"></i>
-                                                </div>
-                                                <h6>API Docs</h6>
-                                                <a href="http://localhost:8082/docs" class="btn btn-sm btn-outline-primary" target="_blank">
-                                                    http://localhost:8082/docs
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
-
-                                <h5>Step 3: Test Vector Operations</h5>
-                                <ol>
-                                    <li>Navigate to <strong>Vector UI</strong> at <code>http://localhost:8082</code></li>
-                                    <li>Go to <strong>Embeddings</strong> section</li>
-                                    <li>Enter sample text and generate embeddings</li>
-                                    <li>Use <strong>Search</strong> to find similar content</li>
-                                </ol>
                             </div>
-                            <div class="col-lg-4">
-                                <div class="card shadow-sm mb-4">
-                                    <div class="card-header bg-success text-white">
-                                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Quick Health Check</h6>
+                        </div>
+
+                        <!-- First Test Section -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="fas fa-flask me-2"></i>Your First Test: Vector Operations</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-lg-8">
+                                        <h6>Test 1: Generate Embeddings</h6>
+                                        <ol>
+                                            <li>Open <a href="http://localhost:8082" target="_blank">Vector UI</a></li>
+                                            <li>Navigate to the <strong>Embeddings</strong> section</li>
+                                            <li>Enter sample text: <code>"The Agentic Platform provides advanced vector search capabilities."</code></li>
+                                            <li>Click <strong>Generate Embeddings</strong></li>
+                                            <li>Verify you see vector representations in the results</li>
+                                        </ol>
+
+                                        <h6 class="mt-4">Test 2: Vector Search</h6>
+                                        <ol>
+                                            <li>Go to the <strong>Search</strong> section</li>
+                                            <li>Enter a query: <code>"AI-powered search technology"</code></li>
+                                            <li>Click <strong>Search</strong></li>
+                                            <li>Review similarity scores and results</li>
+                                        </ol>
+
+                                        <h6 class="mt-4">Test 3: Document Indexing</h6>
+                                        <ol>
+                                            <li>Navigate to <strong>Indexing</strong> section</li>
+                                            <li>Add a document with ID and sample text</li>
+                                            <li>Click <strong>Index Document</strong></li>
+                                            <li>Use search to find your indexed document</li>
+                                        </ol>
                                     </div>
-                                    <div class="card-body">
-                                        <div class="d-grid gap-2">
-                                            <button class="btn btn-outline-success" onclick="checkHealth()">
-                                                <i class="fas fa-heartbeat me-2"></i>Check Services
+                                    <div class="col-lg-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body">
+                                                <h6 class="card-title"><i class="fas fa-lightbulb me-2"></i>Pro Tips</h6>
+                                                <ul class="list-unstyled small">
+                                                    <li><i class="fas fa-check text-success me-2"></i>Try different types of text content</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Test with various query lengths</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Experiment with similarity thresholds</li>
+                                                    <li><i class="fas fa-check text-success me-2"></i>Use the API docs for programmatic access</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3">
+                                            <div class="d-grid gap-2">
+                                                <button class="btn btn-success" onclick="runQuickTest()">
+                                                    <i class="fas fa-play me-2"></i>Run Quick Test
+                                                </button>
+                                                <button class="btn btn-outline-primary" onclick="openApiDocs()">
+                                                    <i class="fas fa-code me-2"></i>API Documentation
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Health Check & Monitoring -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Health Checks & Monitoring</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Service Health Endpoints:</h6>
+                                        <div class="list-group list-group-flush">
+                                            <a href="http://localhost:8082/health" class="list-group-item list-group-item-action py-2" target="_blank">
+                                                <code>/health</code> - Vector UI Service
+                                            </a>
+                                            <a href="http://localhost:8080/health" class="list-group-item list-group-item-action py-2" target="_blank">
+                                                <code>/health</code> - Ingestion Coordinator
+                                            </a>
+                                            <a href="http://localhost:8081/health" class="list-group-item list-group-item-action py-2" target="_blank">
+                                                <code>/health</code> - Output Coordinator
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Monitoring Commands:</h6>
+                                        <div class="code-block">
+                                            <pre><code># View all service logs
+docker-compose logs -f
+
+# Check resource usage
+docker stats
+
+# View specific service logs
+docker-compose logs ingestion-coordinator
+
+# Check service health
+curl http://localhost:8082/health</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Next Steps -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="fas fa-forward me-2"></i>Next Steps & Advanced Configuration</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-graduation-cap me-2"></i>Learning Path</h6>
+                                        <div class="list-group list-group-flush">
+                                            <a href="#architecture" class="list-group-item list-group-item-action" onclick="switchTab('architecture')">
+                                                <i class="fas fa-sitemap me-2"></i>Understand Platform Architecture
+                                            </a>
+                                            <a href="#api-endpoints" class="list-group-item list-group-item-action" onclick="switchTab('api-endpoints')">
+                                                <i class="fas fa-code me-2"></i>Explore API Endpoints
+                                            </a>
+                                            <a href="#vector-operations" class="list-group-item list-group-item-action" onclick="switchTab('vector-operations')">
+                                                <i class="fas fa-search me-2"></i>Master Vector Operations
+                                            </a>
+                                            <a href="#configuration" class="list-group-item list-group-item-action" onclick="switchTab('configuration')">
+                                                <i class="fas fa-cog me-2"></i>Advanced Configuration
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-tools me-2"></i>Advanced Setup</h6>
+                                        <ul>
+                                            <li><strong>Data Ingestion:</strong> Connect to CSV, Excel, PDF, and API sources</li>
+                                            <li><strong>Authentication:</strong> Configure OAuth2/OIDC for production</li>
+                                            <li><strong>Monitoring:</strong> Set up Prometheus & Grafana dashboards</li>
+                                            <li><strong>Scaling:</strong> Configure Kubernetes deployment</li>
+                                            <li><strong>Backup:</strong> Implement automated backup strategies</li>
+                                        </ul>
+
+                                        <div class="alert alert-success mt-3">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>Congratulations!</strong> You've successfully set up the Agentic Platform. Explore the other sections of this guide to learn about advanced features and configuration options.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Panel -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card shadow-sm">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title mb-3"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                                            <button class="btn btn-success" onclick="checkAllHealth()">
+                                                <i class="fas fa-heartbeat me-2"></i>Health Check
                                             </button>
-                                            <button class="btn btn-outline-primary" onclick="viewLogs()">
+                                            <button class="btn btn-primary" onclick="openVectorUI()">
+                                                <i class="fas fa-brain me-2"></i>Vector UI
+                                            </button>
+                                            <button class="btn btn-info" onclick="openApiDocs()">
+                                                <i class="fas fa-code me-2"></i>API Documentation
+                                            </button>
+                                            <button class="btn btn-warning" onclick="viewLogs()">
                                                 <i class="fas fa-terminal me-2"></i>View Logs
                                             </button>
+                                            <button class="btn btn-danger" onclick="stopServices()">
+                                                <i class="fas fa-stop me-2"></i>Stop Services
+                                            </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="card shadow-sm">
-                                    <div class="card-header bg-warning text-dark">
-                                        <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <ul class="list-unstyled small">
-                                            <li><i class="fas fa-book me-2"></i>Troubleshooting Guide</li>
-                                            <li><i class="fas fa-code me-2"></i>API Documentation</li>
-                                            <li><i class="fas fa-cog me-2"></i>Configuration Help</li>
-                                        </ul>
                                     </div>
                                 </div>
                             </div>

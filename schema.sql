@@ -1075,3 +1075,316 @@ CREATE TRIGGER update_vector_collections_updated_at
 CREATE TRIGGER update_vector_documents_updated_at
     BEFORE UPDATE ON vector_documents
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ========================================
+-- DASHBOARD & MONITORING TABLES
+-- ========================================
+
+-- Dashboard metrics table for storing real-time metrics
+CREATE TABLE IF NOT EXISTS dashboard_metrics (
+    id SERIAL PRIMARY KEY,
+    metric_name VARCHAR(255) NOT NULL,
+    metric_value DECIMAL(15,6),
+    metric_type VARCHAR(50) DEFAULT 'gauge', -- gauge, counter, histogram
+    labels JSONB DEFAULT '{}', -- Additional labels/tags
+    service_name VARCHAR(255),
+    collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE -- For time-based cleanup
+);
+
+-- Service health monitoring table
+CREATE TABLE IF NOT EXISTS service_health (
+    id SERIAL PRIMARY KEY,
+    service_name VARCHAR(255) NOT NULL,
+    service_type VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'unknown', -- healthy, degraded, unhealthy, unknown
+    response_time_ms INTEGER,
+    error_message TEXT,
+    last_check TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    next_check TIMESTAMP WITH TIME ZONE,
+    consecutive_failures INTEGER DEFAULT 0,
+    uptime_percentage DECIMAL(5,2) DEFAULT 100.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User activity tracking for dashboard analytics
+CREATE TABLE IF NOT EXISTS user_activity (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255), -- NULL for anonymous users
+    session_id VARCHAR(255),
+    activity_type VARCHAR(100) NOT NULL, -- login, api_call, page_view, etc.
+    activity_details JSONB DEFAULT '{}',
+    ip_address INET,
+    user_agent TEXT,
+    service_name VARCHAR(255),
+    endpoint VARCHAR(500),
+    response_time_ms INTEGER,
+    status_code INTEGER,
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Alert and notification system
+CREATE TABLE IF NOT EXISTS system_alerts (
+    id SERIAL PRIMARY KEY,
+    alert_type VARCHAR(100) NOT NULL, -- system, service, performance, security
+    severity VARCHAR(20) DEFAULT 'info', -- info, warning, error, critical
+    title VARCHAR(500) NOT NULL,
+    description TEXT,
+    affected_service VARCHAR(255),
+    alert_data JSONB DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    acknowledged BOOLEAN DEFAULT false,
+    acknowledged_by VARCHAR(255),
+    acknowledged_at TIMESTAMP WITH TIME ZONE,
+    resolved BOOLEAN DEFAULT false,
+    resolved_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Performance monitoring table
+CREATE TABLE IF NOT EXISTS performance_metrics (
+    id SERIAL PRIMARY KEY,
+    service_name VARCHAR(255) NOT NULL,
+    metric_type VARCHAR(100) NOT NULL, -- cpu, memory, disk, network, response_time
+    metric_value DECIMAL(15,6),
+    unit VARCHAR(20), -- percentage, bytes, milliseconds, etc.
+    collected_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    retention_period INTERVAL DEFAULT '30 days'
+);
+
+-- Dashboard configuration table
+CREATE TABLE IF NOT EXISTS dashboard_config (
+    id SERIAL PRIMARY KEY,
+    dashboard_name VARCHAR(255) UNIQUE NOT NULL,
+    config_data JSONB DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- API usage tracking table
+CREATE TABLE IF NOT EXISTS api_usage (
+    id SERIAL PRIMARY KEY,
+    service_name VARCHAR(255) NOT NULL,
+    endpoint VARCHAR(500) NOT NULL,
+    method VARCHAR(10) NOT NULL,
+    user_id VARCHAR(255),
+    request_count INTEGER DEFAULT 1,
+    total_response_time_ms INTEGER,
+    avg_response_time_ms DECIMAL(10,2),
+    error_count INTEGER DEFAULT 0,
+    last_request_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    first_request_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(service_name, endpoint, method, user_id)
+);
+
+-- Session management table
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) UNIQUE NOT NULL,
+    user_id VARCHAR(255),
+    ip_address INET,
+    user_agent TEXT,
+    login_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_activity TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    logout_time TIMESTAMP WITH TIME ZONE,
+    is_active BOOLEAN DEFAULT true,
+    session_data JSONB DEFAULT '{}'
+);
+
+-- ========================================
+-- INDEXES FOR DASHBOARD TABLES
+-- ========================================
+
+-- Dashboard metrics indexes
+CREATE INDEX IF NOT EXISTS idx_dashboard_metrics_name_time ON dashboard_metrics(metric_name, collected_at);
+CREATE INDEX IF NOT EXISTS idx_dashboard_metrics_service ON dashboard_metrics(service_name);
+CREATE INDEX IF NOT EXISTS idx_dashboard_metrics_expires ON dashboard_metrics(expires_at) WHERE expires_at IS NOT NULL;
+
+-- Service health indexes
+CREATE INDEX IF NOT EXISTS idx_service_health_name ON service_health(service_name);
+CREATE INDEX IF NOT EXISTS idx_service_health_status ON service_health(status);
+CREATE INDEX IF NOT EXISTS idx_service_health_last_check ON service_health(last_check);
+
+-- User activity indexes
+CREATE INDEX IF NOT EXISTS idx_user_activity_user ON user_activity(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_activity_session ON user_activity(session_id);
+CREATE INDEX IF NOT EXISTS idx_user_activity_type ON user_activity(activity_type);
+CREATE INDEX IF NOT EXISTS idx_user_activity_created ON user_activity(created_at);
+
+-- System alerts indexes
+CREATE INDEX IF NOT EXISTS idx_system_alerts_type ON system_alerts(alert_type);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_severity ON system_alerts(severity);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_active ON system_alerts(is_active);
+CREATE INDEX IF NOT EXISTS idx_system_alerts_created ON system_alerts(created_at);
+
+-- Performance metrics indexes
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_service ON performance_metrics(service_name);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_type ON performance_metrics(metric_type);
+CREATE INDEX IF NOT EXISTS idx_performance_metrics_collected ON performance_metrics(collected_at);
+
+-- API usage indexes
+CREATE INDEX IF NOT EXISTS idx_api_usage_service ON api_usage(service_name);
+CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint ON api_usage(endpoint);
+CREATE INDEX IF NOT EXISTS idx_api_usage_user ON api_usage(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_usage_last_request ON api_usage(last_request_at);
+
+-- Session management indexes
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_active ON user_sessions(is_active);
+CREATE INDEX IF NOT EXISTS idx_user_sessions_last_activity ON user_sessions(last_activity);
+
+-- ========================================
+-- TRIGGERS FOR DASHBOARD TABLES
+-- ========================================
+
+-- Triggers for updated_at on dashboard tables
+CREATE TRIGGER update_service_health_updated_at
+    BEFORE UPDATE ON service_health
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_system_alerts_updated_at
+    BEFORE UPDATE ON system_alerts
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_dashboard_config_updated_at
+    BEFORE UPDATE ON dashboard_config
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ========================================
+-- CLEANUP FUNCTIONS
+-- ========================================
+
+-- Function to clean up old dashboard metrics
+CREATE OR REPLACE FUNCTION cleanup_expired_metrics()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM dashboard_metrics
+    WHERE expires_at IS NOT NULL
+    AND expires_at < CURRENT_TIMESTAMP;
+
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to clean up old performance metrics
+CREATE OR REPLACE FUNCTION cleanup_old_performance_metrics()
+RETURNS INTEGER AS $$
+DECLARE
+    deleted_count INTEGER;
+BEGIN
+    DELETE FROM performance_metrics
+    WHERE collected_at < (CURRENT_TIMESTAMP - retention_period);
+
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to update user session last activity
+CREATE OR REPLACE FUNCTION update_session_activity(session_id_param VARCHAR(255))
+RETURNS VOID AS $$
+BEGIN
+    UPDATE user_sessions
+    SET last_activity = CURRENT_TIMESTAMP
+    WHERE session_id = session_id_param
+    AND is_active = true;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ========================================
+-- VIEWS FOR DASHBOARD ANALYTICS
+-- ========================================
+
+-- View for active service health summary
+CREATE OR REPLACE VIEW active_service_health AS
+SELECT
+    service_name,
+    service_type,
+    status,
+    response_time_ms,
+    consecutive_failures,
+    uptime_percentage,
+    last_check,
+    CASE
+        WHEN last_check > CURRENT_TIMESTAMP - INTERVAL '5 minutes' THEN 'current'
+        WHEN last_check > CURRENT_TIMESTAMP - INTERVAL '15 minutes' THEN 'stale'
+        ELSE 'outdated'
+    END as health_status
+FROM service_health
+WHERE status IN ('healthy', 'degraded')
+ORDER BY service_name;
+
+-- View for recent user activity summary
+CREATE OR REPLACE VIEW recent_user_activity AS
+SELECT
+    DATE_TRUNC('hour', created_at) as hour,
+    activity_type,
+    COUNT(*) as activity_count,
+    COUNT(DISTINCT COALESCE(user_id, session_id)) as unique_users
+FROM user_activity
+WHERE created_at >= CURRENT_TIMESTAMP - INTERVAL '24 hours'
+GROUP BY DATE_TRUNC('hour', created_at), activity_type
+ORDER BY hour DESC, activity_count DESC;
+
+-- View for API usage summary
+CREATE OR REPLACE VIEW api_usage_summary AS
+SELECT
+    service_name,
+    endpoint,
+    method,
+    SUM(request_count) as total_requests,
+    AVG(avg_response_time_ms) as avg_response_time,
+    SUM(error_count) as total_errors,
+    MAX(last_request_at) as last_request
+FROM api_usage
+GROUP BY service_name, endpoint, method
+ORDER BY total_requests DESC;
+
+-- ========================================
+-- DASHBOARD DEFAULT CONFIGURATION
+-- ========================================
+
+-- Insert default dashboard configuration
+INSERT INTO dashboard_config (dashboard_name, config_data, created_by) VALUES
+('main-dashboard', '{
+  "title": "Agentic Platform Dashboard",
+  "description": "Real-time monitoring and control center",
+  "refresh_interval": 30,
+  "widgets": [
+    {
+      "type": "metric",
+      "title": "Active Microservices",
+      "metric": "service_health_count",
+      "position": {"x": 0, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "metric",
+      "title": "API Endpoints",
+      "metric": "api_endpoints_count",
+      "position": {"x": 3, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "metric",
+      "title": "Data Formats",
+      "metric": "data_formats_count",
+      "position": {"x": 6, "y": 0, "width": 3, "height": 2}
+    },
+    {
+      "type": "metric",
+      "title": "Platform Uptime",
+      "metric": "platform_uptime",
+      "position": {"x": 9, "y": 0, "width": 3, "height": 2}
+    }
+  ],
+  "theme": "professional",
+  "auto_refresh": true
+}', 'system')
+ON CONFLICT (dashboard_name) DO NOTHING;

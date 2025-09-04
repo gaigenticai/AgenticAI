@@ -32,10 +32,12 @@ import redis
 import structlog
 from fastapi import FastAPI, File, HTTPException, UploadFile, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
-from prometheus_client import Counter, Gauge, Histogram, generate_latest
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, JSON
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 import uvicorn
@@ -158,17 +160,115 @@ redis_client = redis.Redis(
 rabbitmq_connection = None
 rabbitmq_channel = None
 
-# Prometheus metrics - temporarily disabled to avoid conflicts
-# INGESTION_JOBS_TOTAL = Counter('ingestion_coordinator_jobs_total', 'Total number of ingestion jobs', ['source_type', 'status'])
-# INGESTION_RECORDS_PROCESSED = Counter('ingestion_coordinator_records_processed', 'Total records processed', ['source_type'])
-# INGESTION_JOB_DURATION = Histogram('ingestion_coordinator_job_duration_seconds', 'Job duration in seconds', ['source_type'])
-# ACTIVE_INGESTION_JOBS = Gauge('ingestion_coordinator_active_jobs', 'Number of active ingestion jobs')
+# Create custom registry for ingestion-coordinator to avoid metric name conflicts
+INGESTION_REGISTRY = CollectorRegistry()
 
-# Placeholder metrics (will be enabled after fixing registry conflicts)
-INGESTION_JOBS_TOTAL = None
-INGESTION_RECORDS_PROCESSED = None
-INGESTION_JOB_DURATION = None
-ACTIVE_INGESTION_JOBS = None
+# Prometheus metrics - enabled with custom registry to avoid conflicts
+INGESTION_JOBS_TOTAL = Counter(
+    'ingestion_jobs_total',
+    'Total number of ingestion jobs processed by ingestion coordinator',
+    ['source_type', 'status'],
+    registry=INGESTION_REGISTRY
+)
+
+INGESTION_RECORDS_PROCESSED = Counter(
+    'ingestion_records_processed',
+    'Total records processed by ingestion coordinator',
+    ['source_type'],
+    registry=INGESTION_REGISTRY
+)
+
+INGESTION_JOB_DURATION = Histogram(
+    'ingestion_job_duration_seconds',
+    'Time taken to process ingestion jobs',
+    ['source_type'],
+    registry=INGESTION_REGISTRY
+)
+
+ACTIVE_INGESTION_JOBS = Gauge(
+    'ingestion_active_jobs',
+    'Number of currently active ingestion jobs being processed',
+    registry=INGESTION_REGISTRY
+)
+
+# Metrics helper functions
+def record_job_completion(source_type: str, records_processed: int, duration_seconds: float):
+    """Record metrics for completed job"""
+    if INGESTION_RECORDS_PROCESSED:
+        INGESTION_RECORDS_PROCESSED.labels(source_type=source_type).inc(records_processed)
+
+    logger.info(
+        "Job metrics recorded",
+        source_type=source_type,
+        records_processed=records_processed,
+        duration_seconds=duration_seconds
+    )
+
+# Global exception handlers for consistent error responses
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+    """Handle HTTP exceptions with proper logging"""
+    logger.warning(
+        "HTTP exception occurred",
+        status_code=exc.status_code,
+        detail=exc.detail,
+        path=request.url.path,
+        method=request.method
+    )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": {
+                "type": "http_exception",
+                "message": exc.detail,
+                "status_code": exc.status_code
+            }
+        }
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    """Handle request validation errors"""
+    logger.warning(
+        "Request validation error",
+        errors=exc.errors(),
+        path=request.url.path,
+        method=request.method
+    )
+
+    return JSONResponse(
+        status_code=422,
+        content={
+            "error": {
+                "type": "validation_error",
+                "message": "Request validation failed",
+                "details": exc.errors()
+            }
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    """Handle any unhandled exceptions"""
+    logger.error(
+        "Unhandled exception occurred",
+        error=str(exc),
+        error_type=type(exc).__name__,
+        path=request.url.path,
+        method=request.method,
+        exc_info=True
+    )
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "type": "internal_server_error",
+                "message": "An internal server error occurred"
+            }
+        }
+    )
 
 # Middleware
 app.add_middleware(
@@ -184,12 +284,20 @@ security = HTTPBearer()
 
 # Dependency to get database session
 def get_db():
-    """Database session dependency"""
+    """Database session dependency with enhanced error handling"""
     db = SessionLocal()
     try:
         yield db
+    except Exception as e:
+        logger.error("Database session error", error=str(e), error_type=type(e).__name__)
+        db.rollback()
+        raise
     finally:
-        db.close()
+        try:
+            db.close()
+            logger.debug("Database session closed successfully")
+        except Exception as e:
+            logger.error("Error closing database session", error=str(e))
 
 # Authentication dependency
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
@@ -290,30 +398,54 @@ def publish_message(queue_name: str, message: Dict[str, Any]):
 
 # Core ingestion functions
 def create_ingestion_job(db: Session, source_config: DataSourceConfig, priority: int = 1) -> str:
-    """Create a new ingestion job"""
-    job_id = str(uuid.uuid4())
+    """Create a new ingestion job with comprehensive error handling"""
+    try:
+        job_id = str(uuid.uuid4())
 
-    job = IngestionJob(
-        job_id=job_id,
-        source_type=source_config.source_type,
-        status="pending",
-        metadata={
-            "source_config": source_config.dict(),
-            "priority": priority,
-            "created_by": "api"
-        }
-    )
+        # Validate source configuration
+        if not source_config.source_type:
+            raise ValueError("Source type is required for ingestion job")
 
-    db.add(job)
-    db.commit()
+        job = IngestionJob(
+            job_id=job_id,
+            source_type=source_config.source_type,
+            status="pending",
+            metadata={
+                "source_config": source_config.dict(),
+                "priority": priority,
+                "created_by": "api"
+            }
+        )
 
-    if INGESTION_JOBS_TOTAL:
-        INGESTION_JOBS_TOTAL.labels(source_type=source_config.source_type, status="created").inc()
-    if ACTIVE_INGESTION_JOBS:
-        ACTIVE_INGESTION_JOBS.inc()
+        db.add(job)
+        db.commit()
 
-    logger.info("Ingestion job created", job_id=job_id, source_type=source_config.source_type)
-    return job_id
+        # Update metrics
+        if INGESTION_JOBS_TOTAL:
+            INGESTION_JOBS_TOTAL.labels(source_type=source_config.source_type, status="created").inc()
+        if ACTIVE_INGESTION_JOBS:
+            ACTIVE_INGESTION_JOBS.inc()
+
+        logger.info(
+            "Ingestion job created successfully",
+            job_id=job_id,
+            source_type=source_config.source_type,
+            priority=priority
+        )
+        return job_id
+
+    except Exception as e:
+        logger.error(
+            "Failed to create ingestion job",
+            error=str(e),
+            error_type=type(e).__name__,
+            source_type=getattr(source_config, 'source_type', 'unknown')
+        )
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create ingestion job: {str(e)}"
+        )
 
 def update_job_status(db: Session, job_id: str, status: str, **kwargs):
     """Update job status"""
@@ -332,6 +464,10 @@ def update_job_status(db: Session, job_id: str, status: str, **kwargs):
                 if INGESTION_JOB_DURATION:
                     INGESTION_JOB_DURATION.labels(source_type=job.source_type).observe(duration)
 
+                # Record job completion metrics
+                if status == "completed" and job.processed_records:
+                    record_job_completion(job.source_type, job.processed_records, duration)
+
         # Update counters
         if old_status != status:
             if INGESTION_JOBS_TOTAL:
@@ -344,6 +480,10 @@ def update_job_status(db: Session, job_id: str, status: str, **kwargs):
 
         db.commit()
         logger.info("Job status updated", job_id=job_id, old_status=old_status, new_status=status)
+        return True
+    else:
+        logger.warning("Job not found for status update", job_id=job_id)
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
 
 # Pydantic models for authentication
 class UserLogin(BaseModel):
@@ -369,65 +509,101 @@ class TokenResponse(BaseModel):
 @app.post("/auth/login", response_model=TokenResponse)
 async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     """
-    User login endpoint - available when REQUIRE_AUTH=true
+    User login endpoint with comprehensive error handling - available when REQUIRE_AUTH=true
 
     Rule 10: Authentication is controlled by REQUIRE_AUTH environment variable
     """
-    require_auth = os.getenv("REQUIRE_AUTH", "false").lower() == "true"
+    try:
+        require_auth = os.getenv("REQUIRE_AUTH", "false").lower() == "true"
 
-    if not require_auth:
-        raise HTTPException(
-            status_code=403,
-            detail="Authentication not enabled. Set REQUIRE_AUTH=true to enable login."
-        )
+        if not require_auth:
+            logger.warning("Login attempt when authentication is disabled")
+            raise HTTPException(
+                status_code=403,
+                detail="Authentication not enabled. Set REQUIRE_AUTH=true to enable login."
+            )
 
-    # Check user credentials (simplified - use proper password hashing in production)
-    user = db.query(User).filter(
-        (User.username == user_credentials.username) |
-        (User.email == user_credentials.username)
-    ).first()
+        # Validate input
+        if not user_credentials.username or not user_credentials.password:
+            logger.warning("Login attempt with missing credentials")
+            raise HTTPException(status_code=400, detail="Username and password are required")
 
-    if not user or not user.is_active:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        # Check user credentials with proper error handling
+        try:
+            user = db.query(User).filter(
+                (User.username == user_credentials.username) |
+                (User.email == user_credentials.username)
+            ).first()
+        except Exception as e:
+            logger.error("Database error during user lookup", error=str(e))
+            raise HTTPException(status_code=500, detail="Database error")
 
-    # Verify password (simplified - use proper password verification)
-    if user.password_hash != user_credentials.password:  # In production: check_password_hash
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        if not user:
+            logger.warning("Login attempt with non-existent user", username=user_credentials.username)
+            raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Generate JWT token
-    payload = {
-        "user_id": str(user.user_id),
-        "username": user.username,
-        "email": user.email,
-        "roles": ["user"],  # Simplified - get from database in production
-        "exp": int(time.time()) + (int(os.getenv("JWT_EXPIRATION_HOURS", "24")) * 3600)
-    }
+        if not user.is_active:
+            logger.warning("Login attempt for inactive user", user_id=user.id)
+            raise HTTPException(status_code=401, detail="Account is disabled")
 
-    secret = os.getenv("JWT_SECRET", "default-secret-key-change-in-production")
+        # Verify password with proper error handling
+        try:
+            if user.password_hash != user_credentials.password:  # In production: check_password_hash
+                logger.warning("Login attempt with wrong password", user_id=user.id)
+                raise HTTPException(status_code=401, detail="Invalid credentials")
+        except Exception as e:
+            logger.error("Password verification error", error=str(e), user_id=user.id)
+            raise HTTPException(status_code=500, detail="Authentication error")
 
-    if jwt:
-        # Use proper JWT library if available
-        token = jwt.encode(payload, secret, algorithm="HS256")
-    else:
-        # Fallback simple token (not secure - for development only)
-        import base64
-        import json
+        # Generate JWT token with error handling
+        try:
+            payload = {
+                "user_id": str(user.user_id),
+                "username": user.username,
+                "email": user.email,
+                "roles": ["user"],  # Simplified - get from database in production
+                "exp": int(time.time()) + (int(os.getenv("JWT_EXPIRATION_HOURS", "24")) * 3600)
+            }
 
-        header = {"alg": "HS256", "typ": "JWT"}
-        header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
-        payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
+            secret = os.getenv("JWT_SECRET", "default-secret-key-change-in-production")
 
-        # Simple signature (not cryptographically secure)
-        message = f"{header_b64}.{payload_b64}"
-        signature = base64.urlsafe_b64encode(message.encode())[:43].decode()  # 32 bytes
+            if not secret or secret == "default-secret-key-change-in-production":
+                logger.warning("Using default JWT secret - change in production!")
 
-        token = f"{header_b64}.{payload_b64}.{signature}"
+            if jwt:
+                # Use proper JWT library if available
+                token = jwt.encode(payload, secret, algorithm="HS256")
+            else:
+                # Fallback simple token (not secure - for development only)
+                import base64
+                import json
 
-    # Update last login
-    user.last_login = datetime.utcnow()
-    db.commit()
+                header = {"alg": "HS256", "typ": "JWT"}
+                header_b64 = base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip("=")
+                payload_b64 = base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip("=")
 
-    return TokenResponse(
+                # Simple signature (not cryptographically secure)
+                message = f"{header_b64}.{payload_b64}"
+                signature = base64.urlsafe_b64encode(message.encode())[:43].decode()  # 32 bytes
+
+                token = f"{header_b64}.{payload_b64}.{signature}"
+
+        except Exception as e:
+            logger.error("Token generation error", error=str(e), user_id=str(user.user_id))
+            raise HTTPException(status_code=500, detail="Token generation failed")
+
+        # Update last login with error handling
+        try:
+            user.last_login = datetime.utcnow()
+            db.commit()
+        except Exception as e:
+            logger.error("Failed to update last login", error=str(e), user_id=str(user.user_id))
+            # Don't fail the login if this update fails
+            db.rollback()
+
+        logger.info("User logged in successfully", user_id=str(user.user_id), username=user.username)
+
+        return TokenResponse(
         access_token=token,
         token_type="bearer",
         expires_in=int(os.getenv("JWT_EXPIRATION_HOURS", "24")) * 3600,
@@ -438,6 +614,10 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
             "full_name": user.full_name
         }
     )
+
+    except Exception as e:
+        logger.error("Login failed", error=str(e), error_type=type(e).__name__)
+        raise HTTPException(status_code=500, detail="Login failed due to internal error")
 
 @app.post("/auth/register")
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
@@ -509,8 +689,60 @@ async def health_check():
 
 @app.get("/metrics")
 async def metrics():
-    """Prometheus metrics endpoint"""
-    return generate_latest()
+    """
+    Prometheus metrics endpoint for monitoring ingestion coordinator performance.
+
+    Returns comprehensive metrics including:
+    - Total ingestion jobs by source type and status (ingestion_jobs_total)
+    - Records processed by source type (ingestion_records_processed)
+    - Job processing duration histograms (ingestion_job_duration_seconds)
+    - Active jobs gauge (ingestion_active_jobs)
+
+    Access this endpoint at: http://localhost:8080/metrics
+    """
+    from prometheus_client import CONTENT_TYPE_LATEST
+    response = generate_latest(INGESTION_REGISTRY)
+    return response
+
+@app.get("/metrics/info")
+async def metrics_info():
+    """
+    Human-readable metrics information endpoint.
+
+    Provides overview of available metrics and their current values.
+    Useful for debugging and monitoring without Prometheus.
+    """
+    metrics_info = {
+        "service": "ingestion-coordinator",
+        "timestamp": datetime.utcnow().isoformat(),
+        "metrics": {
+            "ingestion_jobs_total": {
+                "description": "Total number of ingestion jobs by source type and status",
+                "type": "Counter",
+                "labels": ["source_type", "status"]
+            },
+            "ingestion_records_processed": {
+                "description": "Total records processed by source type",
+                "type": "Counter",
+                "labels": ["source_type"]
+            },
+            "ingestion_job_duration_seconds": {
+                "description": "Time taken to process ingestion jobs",
+                "type": "Histogram",
+                "labels": ["source_type"]
+            },
+            "ingestion_active_jobs": {
+                "description": "Number of currently active ingestion jobs",
+                "type": "Gauge"
+            }
+        },
+        "endpoints": {
+            "prometheus_metrics": "/metrics",
+            "metrics_info": "/metrics/info"
+        }
+    }
+
+    return metrics_info
 
 @app.post("/ingestion/jobs", response_model=dict)
 async def create_job(
@@ -550,14 +782,56 @@ async def get_job_status(
     db: Session = Depends(get_db),
     token: Optional[str] = Depends(verify_token)
 ):
-    """Get job status"""
-    job = db.query(IngestionJob).filter(IngestionJob.job_id == job_id).first()
-    if not job:
-        raise HTTPException(status_code=404, detail="Job not found")
+    """Get job status with comprehensive error handling"""
+    try:
+        # Validate job_id format
+        if not job_id or not isinstance(job_id, str) or len(job_id) != 36:
+            raise HTTPException(status_code=400, detail="Invalid job ID format")
 
-    progress = 0.0
-    if job.total_records and job.total_records > 0:
-        progress = (job.processed_records / job.total_records) * 100
+        job = db.query(IngestionJob).filter(IngestionJob.job_id == job_id).first()
+
+        if not job:
+            logger.warning("Job not found", job_id=job_id, user_id=getattr(token, 'sub', 'anonymous'))
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+
+        # Create and return job status response
+        progress = 0.0
+        if job.total_records and job.total_records > 0:
+            progress = (job.processed_records / job.total_records) * 100
+
+        duration = None
+        if job.start_time and job.end_time:
+            duration = str(job.end_time - job.start_time)
+        elif job.start_time:
+            duration = str(datetime.utcnow() - job.start_time)
+
+        return JobStatusResponse(
+            job_id=job.job_id,
+            status=job.status,
+            progress=progress,
+            total_records=job.total_records,
+            processed_records=job.processed_records,
+            failed_records=job.failed_records,
+            start_time=job.start_time,
+            end_time=job.end_time,
+            duration=duration,
+            error_message=job.job_metadata.get("error_message") if job.job_metadata else None
+        )
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
+    except Exception as e:
+        logger.error(
+            "Failed to retrieve job status",
+            error=str(e),
+            error_type=type(e).__name__,
+            job_id=job_id
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error while retrieving job status"
+        )
 
     duration = None
     if job.start_time and job.end_time:

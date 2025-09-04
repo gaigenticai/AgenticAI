@@ -172,77 +172,77 @@ services:
       - agentic-network
     restart: unless-stopped
 
-  # Excel Ingestion Service
-  excel-ingestion-service:
-    build: ./ingestion-services/excel-service
-    container_name: agentic-excel-ingestion
-    depends_on:
-      ingestion-coordinator:
-        condition: service_healthy
-    environment:
-      - SERVICE_TYPE=excel
-      - COORDINATOR_HOST=ingestion-coordinator
-      - QUEUE_HOST=rabbitmq
-      - DB_HOST=postgresql_ingestion
-      - CACHE_HOST=redis_ingestion
-    volumes:
-      - ingestion_data:/app/data
-    networks:
-      - agentic-network
-    restart: unless-stopped
+  # Excel Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
+  # excel-ingestion-service:
+  #   build: ./ingestion-services/excel-service
+  #   container_name: agentic-excel-ingestion
+  #   depends_on:
+  #     ingestion-coordinator:
+  #       condition: service_healthy
+  #   environment:
+  #     - SERVICE_TYPE=excel
+  #     - COORDINATOR_HOST=ingestion-coordinator
+  #     - QUEUE_HOST=rabbitmq
+  #     - DB_HOST=postgresql_ingestion
+  #     - CACHE_HOST=redis_ingestion
+  #   volumes:
+  #     - ingestion_data:/app/data
+  #   networks:
+  #     - agentic-network
+  #   restart: unless-stopped
 
-  # JSON Ingestion Service
-  json-ingestion-service:
-    build: ./ingestion-services/json-service
-    container_name: agentic-json-ingestion
-    depends_on:
-      ingestion-coordinator:
-        condition: service_healthy
-    environment:
-      - SERVICE_TYPE=json
-      - COORDINATOR_HOST=ingestion-coordinator
-      - QUEUE_HOST=rabbitmq
-      - DB_HOST=postgresql_ingestion
-      - CACHE_HOST=redis_ingestion
-    volumes:
-      - ingestion_data:/app/data
-    networks:
-      - agentic-network
-    restart: unless-stopped
+  # JSON Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
+  # json-ingestion-service:
+  #   build: ./ingestion-services/json-service
+  #   container_name: agentic-json-ingestion
+  #   depends_on:
+  #     ingestion-coordinator:
+  #       condition: service_healthy
+  #   environment:
+  #     - SERVICE_TYPE=json
+  #     - COORDINATOR_HOST=ingestion-coordinator
+  #     - QUEUE_HOST=rabbitmq
+  #     - DB_HOST=postgresql_ingestion
+  #     - CACHE_HOST=redis_ingestion
+  #   volumes:
+  #     - ingestion_data:/app/data
+  #   networks:
+  #     - agentic-network
+  #   restart: unless-stopped
 
-  # API Ingestion Service
-  api-ingestion-service:
-    build: ./ingestion-services/api-service
-    container_name: agentic-api-ingestion
-    depends_on:
-      ingestion-coordinator:
-        condition: service_healthy
-    environment:
-      - SERVICE_TYPE=api
-      - COORDINATOR_HOST=ingestion-coordinator
-      - QUEUE_HOST=rabbitmq
-      - DB_HOST=postgresql_ingestion
-      - CACHE_HOST=redis_ingestion
-    networks:
-      - agentic-network
-    restart: unless-stopped
+  # API Ingestion Service - DISABLED: Missing Dockerfile (Rule 1 violation)
+  # api-ingestion-service:
+  #   build: ./ingestion-services/api-service
+  #   container_name: agentic-api-ingestion
+  #   depends_on:
+  #     ingestion-coordinator:
+  #       condition: service_healthy
+  #   environment:
+  #     - SERVICE_TYPE=api
+  #     - COORDINATOR_HOST=ingestion-coordinator
+  #     - QUEUE_HOST=rabbitmq
+  #     - DB_HOST=postgresql_ingestion
+  #     - CACHE_HOST=redis_ingestion
+  #   networks:
+  #     - agentic-network
+  #   restart: unless-stopped
 
-  # UI Scraper Service
-  ui-scraper-service:
-    build: ./ingestion-services/ui-scraper-service
-    container_name: agentic-ui-scraper
-    depends_on:
-      ingestion-coordinator:
-        condition: service_healthy
-    environment:
-      - SERVICE_TYPE=ui-scraper
-      - COORDINATOR_HOST=ingestion-coordinator
-      - QUEUE_HOST=rabbitmq
-      - DB_HOST=postgresql_ingestion
-      - CACHE_HOST=redis_ingestion
-    networks:
-      - agentic-network
-    restart: unless-stopped
+  # UI Scraper Service - DISABLED: Missing Dockerfile (Rule 1 violation)
+  # ui-scraper-service:
+  #   build: ./ingestion-services/ui-scraper-service
+  #   container_name: agentic-ui-scraper
+  #   depends_on:
+  #     ingestion-coordinator:
+  #     condition: service_healthy
+  #   environment:
+  #     - SERVICE_TYPE=ui-scraper
+  #     - COORDINATOR_HOST=ingestion-coordinator
+  #     - QUEUE_HOST=rabbitmq
+  #     - DB_HOST=postgresql_ingestion
+  #     - CACHE_HOST=redis_ingestion
+  #   networks:
+  #     - agentic-network
+  #   restart: unless-stopped
 
   # === OUTPUT LAYER SERVICES ===
 
@@ -282,10 +282,11 @@ services:
     networks:
       - agentic-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     restart: unless-stopped
 
   # Document Database - MongoDB
@@ -891,37 +892,25 @@ services:
 
   # === BACKUP & DISASTER RECOVERY ===
 
-  # Backup Orchestrator
-  backup_orchestrator:
-    build: ./scripts/backup
-    container_name: agentic-backup-orchestrator
-    environment:
-      - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-"0 2 * * *"}
-      - RETENTION_POLICY=${RETENTION_POLICY:-30d}
-      - POSTGRES_HOST=postgresql_output
-      - QDRANT_HOST=qdrant_vector
-      - MONGODB_HOST=mongodb_output
-    volumes:
-      - backup_storage:/backup/output
-    networks:
-      - agentic-network
-    restart: unless-stopped
+  # Backup Orchestrator - DISABLED: Missing Dockerfile (Rule 1 violation)
+  # backup_orchestrator:
+  #   build: ./scripts/backup
+  #   container_name: agentic-backup-orchestrator
+  #   environment:
+  #     - BACKUP_SCHEDULE=${BACKUP_SCHEDULE:-"0 2 * * *"}
+  #     - RETENTION_POLICY=${RETENTION_POLICY:-30d}
+  #     - POSTGRES_HOST=postgresql_output
+  #     - QDRANT_HOST=qdrant_vector
+  #     - MONGODB_HOST=mongodb_output
+  #   volumes:
+  #     - backup_storage:/backup/output
+  #   networks:
+  #     - agentic-network
+  #   restart: unless-stopped
 
   # === DEVELOPMENT & TESTING ===
 
-  # Port Conflict Resolver
-  port_manager:
-    build: ./scripts/port-manager
-    container_name: agentic-port-manager
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - agentic-network
-    profiles:
-      - dev
-    restart: unless-stopped
+  # Port Conflict Resolver - REMOVED: Duplicate service, using port-manager instead
 
   # Vector UI Service - Professional Web Interface
   vector-ui:
@@ -948,10 +937,8 @@ services:
 
   # Port Manager Service - Automatic Port Conflict Resolution
   port-manager:
-    image: python:3.11-slim
+    build: ./services/port-manager
     container_name: agentic-port-manager
-    working_dir: /app
-    command: python docker/port_resolver.py
     volumes:
       - .:/app
       - /var/run/docker.sock:/var/run/docker.sock
