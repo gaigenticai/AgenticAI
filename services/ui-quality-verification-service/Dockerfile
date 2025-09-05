@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     libglib2.0-0 \
     libnss3 \
-    libgconf-2-4 \
     libxss1 \
     libxtst6 \
     libxrandr2 \
@@ -25,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     libatk1.0-0 \
     libcairo-gobject2 \
     libgtk-3-0 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-2.0-0 \
     libxcomposite1 \
     libxcursor1 \
     libxdamage1 \

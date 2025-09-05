@@ -87,7 +87,13 @@ check_system_resources() {
     fi
 
     # Check available disk space (in GB)
-    AVAILABLE_DISK=$(df -BG . | tail -1 | awk '{print $4}' | sed 's/G//')
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        AVAILABLE_DISK=$(df -BG . | tail -1 | awk '{print $4}' | sed 's/G//')
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        AVAILABLE_DISK=$(df -g . | tail -1 | awk '{print $4}')
+    else
+        AVAILABLE_DISK="Unknown"
+    fi
 
     print_info "Available RAM: ${AVAILABLE_MEM}GB"
     print_info "Available Disk: ${AVAILABLE_DISK}GB"

@@ -372,7 +372,7 @@ services:
     networks:
       - agentic-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -952,8 +952,6 @@ services:
     depends_on:
       postgresql_output:
         condition: service_healthy
-      qdrant_vector:
-        condition: service_healthy
       mongodb_output:
         condition: service_healthy
     environment:
@@ -1301,8 +1299,6 @@ services:
     build: ./services/reasoning-module-factory
     container_name: agentic-reasoning-module-factory
     depends_on:
-      llm-processor:
-        condition: service_healthy
       memory-manager:
         condition: service_healthy
       plugin-registry:
@@ -1394,11 +1390,11 @@ services:
         condition: service_healthy
       pdf-ingestion-service:
         condition: service_healthy
-      postgresql-output:
+      postgresql_output:
         condition: service_healthy
-      qdrant-vector:
+      qdrant_vector:
         condition: service_healthy
-      elasticsearch-output:
+      elasticsearch_output:
         condition: service_healthy
     environment:
       - CSV_INGESTION_PORT=8001
@@ -1544,46 +1540,6 @@ services:
       retries: 3
     restart: unless-stopped
 
-  # Deployment Pipeline - Agent validation, testing, and deployment
-  deployment-pipeline:
-    build: ./services/deployment-pipeline
-    container_name: agentic-deployment-pipeline
-    depends_on:
-      postgresql_ingestion:
-        condition: service_healthy
-      brain-factory:
-        condition: service_healthy
-      agent-orchestrator:
-        condition: service_healthy
-      workflow-engine:
-        condition: service_healthy
-    environment:
-      - POSTGRES_HOST=postgresql_ingestion
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=agentic_ingestion
-      - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
-      - BRAIN_FACTORY_HOST=brain-factory
-      - BRAIN_FACTORY_PORT=8301
-      - AGENT_ORCHESTRATOR_HOST=agent-orchestrator
-      - AGENT_ORCHESTRATOR_PORT=8200
-      - WORKFLOW_ENGINE_HOST=workflow-engine
-      - WORKFLOW_ENGINE_PORT=8202
-      - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
-      - DEPLOYMENT_PIPELINE_PORT=${DEPLOYMENT_PIPELINE_PORT:-8303}
-    volumes:
-      - agent_deployments:/app/deployments
-      - agent_brain_data:/app/data
-    ports:
-      - "${DEPLOYMENT_PIPELINE_PORT:-8303}:8303"
-    networks:
-      - agentic-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8303/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-    restart: unless-stopped
 
   # === MONITORING & OBSERVABILITY ===
 
@@ -1849,9 +1805,9 @@ services:
     build: ./services/authentication-service
     container_name: agentic-authentication-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT:-8330}
@@ -1908,9 +1864,9 @@ services:
     build: ./services/audit-logging-service
     container_name: agentic-audit-logging-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - AUDIT_SERVICE_PORT=${AUDIT_SERVICE_PORT:-8340}
@@ -1966,9 +1922,9 @@ services:
     build: ./services/monitoring-metrics-service
     container_name: agentic-monitoring-metrics-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - METRICS_SERVICE_PORT=${METRICS_SERVICE_PORT:-8350}
@@ -2028,9 +1984,9 @@ services:
     build: ./services/grafana-dashboards-service
     container_name: agentic-grafana-dashboards-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - GRAFANA_DASHBOARDS_PORT=${GRAFANA_DASHBOARDS_PORT:-8360}
@@ -2080,9 +2036,9 @@ services:
     build: ./services/error-handling-service
     container_name: agentic-error-handling-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - ERROR_HANDLING_PORT=${ERROR_HANDLING_PORT:-8370}
@@ -2136,9 +2092,9 @@ services:
     build: ./services/end-to-end-testing-service
     container_name: agentic-e2e-testing-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - E2E_TESTING_PORT=${E2E_TESTING_PORT:-8380}
@@ -2187,9 +2143,9 @@ services:
     build: ./services/automated-testing-service
     container_name: agentic-automated-testing-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - AUTOMATED_TESTING_PORT=${AUTOMATED_TESTING_PORT:-8390}
@@ -2231,9 +2187,9 @@ services:
     build: ./services/ui-quality-verification-service
     container_name: agentic-ui-quality-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - UI_QUALITY_PORT=${UI_QUALITY_PORT:-8400}
@@ -2270,9 +2226,9 @@ services:
     build: ./services/documentation-service
     container_name: agentic-documentation-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - DOCUMENTATION_PORT=${DOCUMENTATION_PORT:-8410}
@@ -2309,9 +2265,9 @@ services:
     build: ./services/performance-optimization-service
     container_name: agentic-performance-optimization-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
     environment:
       - PERFORMANCE_OPTIMIZATION_PORT=${PERFORMANCE_OPTIMIZATION_PORT:-8420}
@@ -2352,9 +2308,9 @@ services:
     build: ./services/platform-validation-service
     container_name: agentic-platform-validation-service
     depends_on:
-      postgres:
+      postgresql_ingestion:
         condition: service_healthy
-      redis:
+      redis_ingestion:
         condition: service_healthy
       agent-orchestrator:
         condition: service_healthy

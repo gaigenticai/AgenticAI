@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
     libxss1 \
-    libgconf-2-4 \
     libxtst6 \
     libxrandr2 \
     libasound2 \
@@ -23,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     libatk1.0-0 \
     libcairo-gobject2 \
     libgtk-3-0 \
-    libgdk-pixbuf2.0-0 \
+    libgdk-pixbuf-2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Google Chrome
