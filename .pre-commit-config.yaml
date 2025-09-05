@@ -1,0 +1,60 @@
+# Pre-commit hooks configuration
+# This file defines pre-commit hooks for automated code quality and security checks
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: check-ast  # Validate Python syntax
+
+  - repo: https://github.com/psf/black
+    rev: 23.11.0
+    hooks:
+      - id: black
+        language_version: python3
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        args: ["--max-line-length=120", "--extend-ignore=E203,W503"]
+
+  - repo: local
+    hooks:
+      - id: security-scan
+        name: Security Scanner
+        entry: python scripts/security_scanner.py
+        language: system
+        files: \.(py|js|ts|java|cpp|c|h|php|rb|go|rs|sh|bash|zsh|yml|yaml|json|xml|sql|md|txt|conf|ini|cfg|properties)$
+        exclude: ^(test-results/|\.git/|__pycache__/|node_modules/|\.env.*)$
+        args: [--secrets, --fail-on-find]
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: docker-test-check
+        name: Docker Test Validation
+        entry: python
+        language: system
+        files: (services|tests)/.*\.py$
+        args: ["-c", "import sys; sys.path.append('.'); from tests.docker_test_runner import run_docker_tests; print('Docker test framework available')"]
+        pass_filenames: false
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: ^(test-results/|\.git/|__pycache__/|node_modules/|\.env.*)$

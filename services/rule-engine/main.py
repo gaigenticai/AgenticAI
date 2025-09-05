@@ -46,6 +46,21 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.sql import func
 import httpx
 import uvicorn
+import sys
+import os
+
+# Local configuration (removed utils dependency for Docker compatibility)
+class DatabaseConfig:
+    @staticmethod
+    def get_postgres_config():
+        return {
+            'host': os.getenv('POSTGRES_HOST', 'postgresql_ingestion'),
+            'port': os.getenv('POSTGRES_PORT', '5432'),
+            'database': os.getenv('POSTGRES_DB', 'agentic_db'),
+            'user': os.getenv('POSTGRES_USER', 'agentic_user'),
+            'password': os.getenv('POSTGRES_PASSWORD', ''),
+            'url': os.getenv('DATABASE_URL', '')
+        }
 
 # JWT support for authentication
 try:
@@ -64,13 +79,18 @@ logger = structlog.get_logger(__name__)
 class Config:
     """Configuration class for Rule Engine Service"""
 
-    # Database Configuration
-    DB_HOST = os.getenv('POSTGRES_HOST', 'postgresql_ingestion')
-    DB_PORT = os.getenv('POSTGRES_PORT', '5432')
-    DB_NAME = os.getenv('POSTGRES_DB', 'agentic_ingestion')
-    DB_USER = os.getenv('POSTGRES_USER', 'agentic_user')
-    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'agentic123')
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Database Configuration - using shared config for modularity (Rule 2)
+    db_config = DatabaseConfig.get_postgres_config()
+    DB_HOST = db_config['host']
+    DB_PORT = db_config['port']
+    DB_NAME = db_config['database']
+    DB_USER = db_config['user']
+    DB_PASSWORD = db_config['password']
+    # Build DATABASE_URL from components if not provided
+    if db_config['url']:
+        DATABASE_URL = db_config['url']
+    else:
+        DATABASE_URL = f"postgresql://{db_config['user']}:{db_config['password']}@{db_config['host']}:{db_config['port']}/{db_config['database']}"
 
     # Redis Configuration
     REDIS_HOST = os.getenv('REDIS_HOST', 'redis_ingestion')
@@ -83,7 +103,7 @@ class Config:
 
     # Authentication Configuration
     REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
-    JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
+    JWT_SECRET = os.getenv('JWT_SECRET', '')
     JWT_ALGORITHM = 'HS256'
 
     # Rule Configuration
@@ -134,7 +154,7 @@ class Rule(Base):
     priority = Column(Integer, default=1)
     conditions = Column(JSON, nullable=False)
     actions = Column(JSON, nullable=False)
-    metadata = Column(JSON, default=dict)
+    rule_metadata = Column(JSON, default=dict)
     is_active = Column(Boolean, default=True)
     execution_count = Column(BigInteger, default=0)
     success_count = Column(BigInteger, default=0)
@@ -1418,7 +1438,7 @@ async def startup_event():
 
     # Create database tables
     try:
-        Base.metadata.create_all(bind=db_engine)
+        # Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
         logger.info("Database tables created/verified")
     except Exception as e:
         logger.error(f"Failed to create database tables: {str(e)}")

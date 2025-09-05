@@ -204,7 +204,29 @@ class EncryptionManager:
 
     def encrypt_data(self, data: Union[str, Dict[str, Any]], algorithm: str = "AES-256-GCM",
                     key_id: Optional[str] = None) -> Dict[str, Any]:
-        """Encrypt data using specified algorithm"""
+        """Encrypt data using specified encryption algorithm with automatic key management.
+
+        This method provides end-to-end encryption for sensitive data using industry-standard
+        algorithms. It supports both string and structured data (dictionaries) and automatically
+        handles key generation and rotation.
+
+        Args:
+            data: Data to encrypt (string or dictionary)
+            algorithm: Encryption algorithm to use (default: AES-256-GCM)
+            key_id: Optional existing key ID to use for encryption
+
+        Returns:
+            Dict containing:
+            - encrypted_data: Base64-encoded encrypted payload
+            - key_id: ID of the key used for encryption
+            - algorithm: Algorithm used for encryption
+            - iv: Initialization vector (for symmetric encryption)
+            - timestamp: Encryption timestamp
+
+        Raises:
+            ValueError: If unsupported algorithm is specified
+            RuntimeError: If encryption operation fails
+        """
         try:
             # Get or generate key
             if not key_id:
@@ -734,7 +756,10 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
+        if not os.getenv("POSTGRES_PASSWORD"):
+            logger.error("POSTGRES_PASSWORD not configured for Data Encryption Service")
+            raise RuntimeError("POSTGRES_PASSWORD not configured for Data Encryption Service")
         }
 
         database_connection = psycopg2.connect(**db_config)

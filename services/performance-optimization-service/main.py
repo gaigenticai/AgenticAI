@@ -92,15 +92,16 @@ class Config:
     CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "3600"))
 
     # Service URLs
-    AGENT_ORCHESTRATOR_URL = os.getenv("AGENT_ORCHESTRATOR_URL", "http://localhost:8200")
-    MONITORING_SERVICE_URL = os.getenv("MONITORING_SERVICE_URL", "http://localhost:8350")
-    PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://localhost:9090")
+    AGENT_ORCHESTRATOR_URL = os.getenv("AGENT_ORCHESTRATOR_URL", "")
+    MONITORING_SERVICE_URL = os.getenv("MONITORING_SERVICE_URL", "")
+    PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "")
 
     # Database Configuration
-    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/agentic_brain")
+    # Do not hardcode DB credentials in source; require environment-supplied DATABASE_URL
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
 
     # Redis Configuration
-    REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+    REDIS_HOST = os.getenv("REDIS_HOST", "")
     REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
     REDIS_DB = int(os.getenv("REDIS_DB", "0"))
 
@@ -267,7 +268,7 @@ class ServiceIntegrationMonitor:
                 {
                     "source": "brain-factory",
                     "target": "memory-manager",
-                    "url": f"http://localhost:8205",
+                    "url": os.getenv("MEMORY_MANAGER_URL", ""),
                     "endpoint": "/health"
                 },
                 {
@@ -325,21 +326,80 @@ class DatabasePerformanceMonitor:
         self.logger = structlog.get_logger("database_monitor")
 
     async def monitor_database_performance(self) -> Dict[str, Any]:
-        """Monitor database connection and query performance"""
+        """Monitor database connection and query performance using real database metrics"""
         try:
-            # Simulate database performance monitoring
-            # In production, this would connect to actual database
-            return {
-                "active_connections": 15,
-                "idle_connections": 5,
-                "total_connections": 20,
-                "connection_pool_utilization": 75.0,
-                "average_query_time_ms": 45.2,
-                "slow_queries_count": 3,
-                "cache_hit_ratio": 85.6,
-                "deadlock_count": 0,
-                "timestamp": datetime.utcnow().isoformat()
-            }
+            database_url = os.getenv('DATABASE_URL', '')
+            if not database_url:
+                return {"error": "DATABASE_URL not configured"}
+
+            # Create database engine for monitoring
+            engine = create_engine(database_url, pool_pre_ping=True)
+
+            with engine.connect() as conn:
+                # Execute complex SQL query to gather PostgreSQL performance metrics
+                # This query uses subqueries to get real-time database statistics
+                result = conn.execute("""
+                    SELECT
+                        -- Count of active database connections (currently executing queries)
+                        (SELECT count(*) FROM pg_stat_activity WHERE state = 'active') as active_connections,
+                        -- Count of idle database connections (waiting for queries)
+                        (SELECT count(*) FROM pg_stat_activity WHERE state = 'idle') as idle_connections,
+                        -- Total number of database connections
+                        (SELECT count(*) FROM pg_stat_activity) as total_connections,
+                        -- Cache hit ratio: percentage of data found in memory vs disk reads
+                        -- Formula: (blocks_hit / (blocks_hit + blocks_read)) * 100
+                        (SELECT sum(blks_hit) * 100.0 / (sum(blks_hit) + sum(blks_read))
+                         FROM pg_stat_database WHERE datname = current_database()) as cache_hit_ratio,
+                        -- Number of times database had to read from disk (indicates cache misses)
+                        (SELECT count(*) FROM pg_stat_database WHERE datname = current_database()
+                         AND blks_read > 0) as database_reads,
+                        -- Count of exclusive locks (potential deadlock indicators)
+                        (SELECT count(*) FROM pg_locks WHERE mode = 'ExclusiveLock') as deadlock_count
+                """)
+
+                row = result.fetchone()
+
+                # Attempt to get additional query performance metrics from pg_stat_statements
+                # This extension provides detailed query execution statistics
+                try:
+                    stmt_result = conn.execute("""
+                        SELECT
+                            -- Average query execution time in milliseconds
+                            avg(total_time / calls) as avg_query_time_ms,
+                            -- Total number of unique queries executed
+                            count(*) as total_queries,
+                            -- Count of queries taking longer than 1 second (slow queries)
+                            count(*) FILTER (WHERE total_time / calls > 1000) as slow_queries_count
+                        FROM pg_stat_statements
+                        WHERE calls > 0  -- Only consider queries that have been executed
+                        LIMIT 1  -- Get aggregate statistics across all queries
+                    """)
+                    stmt_row = stmt_result.fetchone()
+                    avg_query_time = stmt_row[0] if stmt_row and stmt_row[0] else 0
+                    slow_queries = stmt_row[2] if stmt_row and stmt_row[2] else 0
+                except Exception:
+                    # pg_stat_statements extension might not be installed/enabled
+                    # Fall back to basic metrics without query-level statistics
+                    avg_query_time = 0
+                    slow_queries = 0
+
+                # Calculate connection pool utilization percentage
+                # This shows how effectively the connection pool is being used
+                pool_size = getattr(engine.pool, 'size', 10)  # Total connections in pool
+                checked_out = getattr(engine.pool, '_checked_out', 0)  # Currently active connections
+                pool_utilization = (checked_out / pool_size * 100) if pool_size > 0 else 0
+
+                return {
+                    "active_connections": row[0] or 0,
+                    "idle_connections": row[1] or 0,
+                    "total_connections": row[2] or 0,
+                    "connection_pool_utilization": round(pool_utilization, 1),
+                    "average_query_time_ms": round(avg_query_time, 2) if avg_query_time else 0,
+                    "slow_queries_count": slow_queries,
+                    "cache_hit_ratio": round(row[3], 1) if row[3] else 0,
+                    "deadlock_count": row[5] or 0,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
 
         except Exception as e:
             self.logger.error("Failed to monitor database performance", error=str(e))
@@ -747,7 +807,7 @@ app.add_middleware(
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

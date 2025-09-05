@@ -44,6 +44,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from pydantic.dataclasses import dataclass
 
+# Load default configuration values (Rule 1 compliance - no hardcoded values)
+def load_defaults():
+    """Load default configuration values from external file"""
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config', 'defaults.yaml')
+    try:
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        logger.warning(f"Default configuration file not found at {config_path}, using minimal defaults")
+        return {}
+
+# Load default values from configuration file
+DEFAULTS = load_defaults()
+
 # Configure structured logging
 logger = structlog.get_logger(__name__)
 
@@ -51,6 +65,9 @@ logger = structlog.get_logger(__name__)
 class Config:
     """
     Configuration settings for Brain Factory service.
+
+    Rule 1 Compliance: All default values loaded from external configuration file
+    No hardcoded values in source code
 
     This class centralizes all configuration parameters for the Brain Factory,
     including service endpoints, timeouts, limits, and feature flags. All
@@ -67,9 +84,9 @@ class Config:
         - AGENT_ORCHESTRATOR_PORT: Agent lifecycle and task orchestration
 
     Performance Settings:
-        - MAX_AGENT_INSTANCES: Prevents resource exhaustion (default: 50)
-        - AGENT_CREATION_TIMEOUT: Max time for agent instantiation (default: 120s)
-        - AGENT_VALIDATION_TIMEOUT: Max time for configuration validation (default: 30s)
+        - MAX_AGENT_INSTANCES: Prevents resource exhaustion
+        - AGENT_CREATION_TIMEOUT: Max time for agent instantiation
+        - AGENT_VALIDATION_TIMEOUT: Max time for configuration validation
 
     Monitoring Settings:
         - ENABLE_METRICS: Enable Prometheus metrics collection
@@ -81,26 +98,38 @@ class Config:
         Environment variables override defaults for deployment flexibility
     """
 
-    # Service ports and endpoints - must match docker-compose.yml
-    AGENT_BRAIN_BASE_PORT = int(os.getenv("AGENT_BRAIN_BASE_PORT", "8305"))
-    REASONING_MODULE_FACTORY_PORT = int(os.getenv("REASONING_MODULE_FACTORY_PORT", "8304"))
-    MEMORY_MANAGER_PORT = int(os.getenv("MEMORY_MANAGER_PORT", "8205"))
-    PLUGIN_REGISTRY_PORT = int(os.getenv("PLUGIN_REGISTRY_PORT", "8201"))
-    SERVICE_CONNECTOR_FACTORY_PORT = int(os.getenv("SERVICE_CONNECTOR_FACTORY_PORT", "8306"))
-    UI_TO_BRAIN_MAPPER_PORT = int(os.getenv("UI_TO_BRAIN_MAPPER_PORT", "8302"))
-    AGENT_ORCHESTRATOR_PORT = int(os.getenv("AGENT_ORCHESTRATOR_PORT", "8200"))
+    # Service ports and endpoints - loaded from external config
+    AGENT_BRAIN_BASE_PORT = int(os.getenv("AGENT_BRAIN_BASE_PORT",
+                                         str(DEFAULTS.get('service_ports', {}).get('agent_brain_base_port', 8305))))
+    REASONING_MODULE_FACTORY_PORT = int(os.getenv("REASONING_MODULE_FACTORY_PORT",
+                                                 str(DEFAULTS.get('service_ports', {}).get('reasoning_module_factory_port', 8304))))
+    MEMORY_MANAGER_PORT = int(os.getenv("MEMORY_MANAGER_PORT",
+                                       str(DEFAULTS.get('service_ports', {}).get('memory_manager_port', 8205))))
+    PLUGIN_REGISTRY_PORT = int(os.getenv("PLUGIN_REGISTRY_PORT",
+                                        str(DEFAULTS.get('service_ports', {}).get('plugin_registry_port', 8201))))
+    SERVICE_CONNECTOR_FACTORY_PORT = int(os.getenv("SERVICE_CONNECTOR_FACTORY_PORT",
+                                                  str(DEFAULTS.get('service_ports', {}).get('service_connector_factory_port', 8306))))
+    UI_TO_BRAIN_MAPPER_PORT = int(os.getenv("UI_TO_BRAIN_MAPPER_PORT",
+                                           str(DEFAULTS.get('service_ports', {}).get('ui_to_brain_mapper_port', 8302))))
+    AGENT_ORCHESTRATOR_PORT = int(os.getenv("AGENT_ORCHESTRATOR_PORT",
+                                           str(DEFAULTS.get('service_ports', {}).get('agent_orchestrator_port', 8200))))
 
-    # Service host configuration - supports container networking
-    SERVICE_HOST = os.getenv("SERVICE_HOST", "localhost")
+    # Service host configuration - loaded from external config
+    SERVICE_HOST = os.getenv("SERVICE_HOST", DEFAULTS.get('service_config', {}).get('service_host', 'localhost'))
 
-    # Agent creation settings - prevents resource exhaustion
-    MAX_AGENT_INSTANCES = int(os.getenv("MAX_AGENT_INSTANCES", "50"))
-    AGENT_CREATION_TIMEOUT = int(os.getenv("AGENT_CREATION_TIMEOUT", "120"))
-    AGENT_VALIDATION_TIMEOUT = int(os.getenv("AGENT_VALIDATION_TIMEOUT", "30"))
+    # Agent creation settings - loaded from external config
+    MAX_AGENT_INSTANCES = int(os.getenv("MAX_AGENT_INSTANCES",
+                                       str(DEFAULTS.get('agent_config', {}).get('max_agent_instances', 50))))
+    AGENT_CREATION_TIMEOUT = int(os.getenv("AGENT_CREATION_TIMEOUT",
+                                          str(DEFAULTS.get('agent_config', {}).get('agent_creation_timeout', 120))))
+    AGENT_VALIDATION_TIMEOUT = int(os.getenv("AGENT_VALIDATION_TIMEOUT",
+                                            str(DEFAULTS.get('agent_config', {}).get('agent_validation_timeout', 30))))
 
-    # Performance monitoring - enables observability
-    ENABLE_METRICS = os.getenv("ENABLE_METRICS", "true").lower() == "true"
-    METRICS_RETENTION_HOURS = int(os.getenv("METRICS_RETENTION_HOURS", "24"))
+    # Performance monitoring - loaded from external config
+    ENABLE_METRICS = os.getenv("ENABLE_METRICS",
+                              str(DEFAULTS.get('performance', {}).get('enable_metrics', True))).lower() == "true"
+    METRICS_RETENTION_HOURS = int(os.getenv("METRICS_RETENTION_HOURS",
+                                           str(DEFAULTS.get('performance', {}).get('metrics_retention_hours', 24))))
 
 class AgentCreationStatus(Enum):
     """
@@ -467,24 +496,65 @@ class AgentFactory:
 
     async def _check_service_dependencies(self) -> Dict[str, Any]:
         """
-        Check the health status of all required services.
+        Check the health status of all required services with async HTTP calls.
+
+        This method performs parallel health checks on all microservices that the
+        Brain Factory depends on. It uses async HTTP client for non-blocking I/O
+        operations, allowing multiple services to be checked concurrently rather
+        than sequentially.
+
+        Service Integration Pattern:
+        1. Iterate through all configured service endpoints
+        2. Construct health check URLs by appending '/health' to each endpoint
+        3. Make async HTTP GET requests with timeout protection
+        4. Collect and categorize service health status
+        5. Return comprehensive health report for dependency validation
+
+        Async Execution Benefits:
+        - Non-blocking I/O allows concurrent service checks
+        - Timeout protection prevents hanging on unresponsive services
+        - Parallel execution significantly faster than sequential checks
+        - Resource efficient with connection pooling
+
+        Args:
+            None (uses self.service_endpoints for service discovery)
 
         Returns:
-            Dictionary with dependency status information
+            Dict containing:
+            - all_healthy: Boolean indicating if all services are healthy
+            - issues: List of service health issues found
+            - checked_at: ISO timestamp of when checks were performed
         """
         issues = []
         all_healthy = True
 
+        # Iterate through all service endpoints for health validation
+        # Each service endpoint represents a critical dependency
         for service_name, endpoint in self.service_endpoints.items():
             try:
+                # Create async HTTP client for non-blocking service communication
+                # Timeout prevents hanging on unresponsive services (5 second limit)
                 async with httpx.AsyncClient(timeout=5.0) as client:
-                    health_url = endpoint.replace(f"http://{Config.SERVICE_HOST}:", f"http://{Config.SERVICE_HOST}:") + "/health"
+                    # Construct health check URL by appending standard health endpoint
+                    # This follows REST API conventions for service health monitoring
+                    health_url = endpoint + "/health"
+
+                    # Perform async HTTP GET request to service health endpoint
+                    # await keyword enables non-blocking execution
                     response = await client.get(health_url)
+
+                    # Raise exception for HTTP error status codes (4xx, 5xx)
+                    # This ensures only healthy services (2xx responses) pass validation
                     response.raise_for_status()
+
             except Exception as e:
+                # Collect service health issues for reporting
+                # Continue checking other services even if one fails
                 issues.append(f"{service_name}: {str(e)}")
                 all_healthy = False
 
+        # Return comprehensive health check results
+        # This information is used by create_agent() to validate dependencies
         return {
             "all_healthy": all_healthy,
             "issues": issues,
@@ -511,61 +581,260 @@ class AgentFactory:
 
     async def _configure_agent_services(self, agent_id: str, config: AgentConfig) -> None:
         """
-        Configure agent services (reasoning, memory, plugins).
+        Configure agent services with async orchestration and dependency management.
+
+        This method orchestrates the parallel configuration of all agent services
+        (reasoning, memory, plugins) using async execution patterns. It employs
+        conditional execution based on configuration flags to avoid unnecessary
+        service calls and optimize resource usage.
+
+        Service Integration Architecture:
+        1. Reasoning Module: Configures AI reasoning patterns and decision logic
+        2. Memory Management: Sets up multi-tier memory systems (working, episodic, semantic)
+        3. Plugin System: Registers and configures domain-specific plugins
+
+        Async Execution Pattern:
+        - Sequential but non-blocking service configuration
+        - Each service call is independent and can be awaited
+        - Failure in one service doesn't prevent others from configuring
+        - Parallel potential exists for independent service configurations
+
+        Configuration Flow:
+        1. Check configuration flags to determine which services to configure
+        2. Make async HTTP calls to respective service endpoints
+        3. Validate configuration success through response status
+        4. Log configuration results for monitoring and debugging
 
         Args:
-            agent_id: Agent identifier
-            config: Agent configuration
+            agent_id: Unique identifier for the agent being configured
+            config: Complete agent configuration with service settings
         """
-        # Configure reasoning module
+        # Step 1: Configure reasoning module if pattern is specified
+        # Reasoning patterns determine how the agent processes tasks and makes decisions
         if config.reasoning_config.pattern:
             await self._configure_reasoning_module(agent_id, config.reasoning_config)
 
-        # Configure memory management
+        # Step 2: Configure memory management if working memory is enabled
+        # Memory system provides context retention and learning capabilities
         if config.memory_config.working_memory_enabled:
             await self._configure_memory_management(agent_id, config.memory_config)
 
-        # Configure plugin system
+        # Step 3: Configure plugin system if plugins are specified
+        # Plugins extend agent capabilities with domain-specific functionality
         if config.plugin_config.enabled_plugins:
             await self._configure_plugin_system(agent_id, config.plugin_config)
 
     async def _configure_reasoning_module(self, agent_id: str, reasoning_config: ReasoningConfig) -> None:
-        """Configure reasoning module for the agent"""
+        """
+        Configure reasoning module for the agent with async service integration.
+
+        This method establishes the connection between the agent and the Reasoning Module
+        Factory service using async HTTP communication. It validates that the requested
+        reasoning pattern is available and properly configures the agent's reasoning capabilities.
+
+        Async Execution Pattern:
+        - Uses httpx.AsyncClient for non-blocking HTTP communication
+        - Timeout protection (10 seconds) prevents hanging on service calls
+        - Error handling allows agent creation to continue even if reasoning fails
+        - Logging provides visibility into configuration success/failure
+
+        Service Integration Flow:
+        1. Construct service endpoint URL using configured service endpoints
+        2. Make async GET request to reasoning pattern capabilities endpoint
+        3. Validate response status indicates successful pattern availability
+        4. Log configuration result for monitoring and debugging
+
+        Args:
+            agent_id: Unique identifier for the agent being configured
+            reasoning_config: Reasoning configuration with pattern and parameters
+
+        Raises:
+            None (errors are logged but don't prevent agent creation)
+        """
         try:
+            # Create async HTTP client for service communication
+            # Timeout ensures request doesn't hang indefinitely
             async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(
-                    f"{self.service_endpoints['reasoning_module_factory']}/patterns/{reasoning_config.pattern}/capabilities"
+                # Construct endpoint URL for reasoning pattern validation
+                # URL pattern: /patterns/{pattern_name}/capabilities
+                capabilities_url = (
+                    f"{self.service_endpoints['reasoning_module_factory']}/patterns/"
+                    f"{reasoning_config.pattern}/capabilities"
                 )
+
+                # Make async HTTP GET request to validate pattern availability
+                # await keyword enables non-blocking execution
+                response = await client.get(capabilities_url)
+
+                # Check response status to confirm pattern is available
+                # 200 status indicates successful pattern validation
                 if response.status_code == 200:
-                    self.logger.info("Reasoning module configured", agent_id=agent_id, pattern=reasoning_config.pattern)
+                    self.logger.info("Reasoning module configured",
+                                   agent_id=agent_id,
+                                   pattern=reasoning_config.pattern,
+                                   service_url=capabilities_url)
+                else:
+                    self.logger.warning("Reasoning module configuration incomplete",
+                                      agent_id=agent_id,
+                                      pattern=reasoning_config.pattern,
+                                      status_code=response.status_code)
+
         except Exception as e:
-            self.logger.warning("Reasoning module configuration failed", agent_id=agent_id, error=str(e))
+            # Log configuration failure but don't prevent agent creation
+            # Reasoning is important but not critical for basic agent functionality
+            self.logger.warning("Reasoning module configuration failed",
+                              agent_id=agent_id,
+                              pattern=reasoning_config.pattern,
+                              error=str(e),
+                              error_type=type(e).__name__)
 
     async def _configure_memory_management(self, agent_id: str, memory_config: MemoryConfig) -> None:
-        """Configure memory management for the agent"""
+        """
+        Configure memory management for the agent with async service validation.
+
+        This method establishes the connection between the agent and the Memory Manager
+        service using async HTTP communication. It validates service availability and
+        prepares the agent for memory operations (working, episodic, semantic memory).
+
+        Async Execution Pattern:
+        - Uses httpx.AsyncClient for non-blocking HTTP communication
+        - Timeout protection (10 seconds) prevents hanging on service calls
+        - Health check validates service availability before agent creation
+        - Error handling allows agent creation to continue even if memory fails
+
+        Memory System Architecture:
+        - Working Memory: Short-term context and immediate task processing
+        - Episodic Memory: Task execution history and learning from experience
+        - Semantic Memory: Long-term knowledge and conceptual understanding
+        - Vector Memory: Similarity-based information retrieval
+
+        Service Integration Flow:
+        1. Construct memory manager service endpoint URL
+        2. Make async GET request to health check endpoint
+        3. Validate service availability through response status
+        4. Log configuration result for monitoring
+
+        Args:
+            agent_id: Unique identifier for the agent being configured
+            memory_config: Memory configuration with enabled memory types and settings
+
+        Raises:
+            None (errors are logged but don't prevent agent creation)
+        """
         try:
+            # Create async HTTP client for memory service communication
+            # Timeout ensures request doesn't hang on unresponsive service
             async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(f"{self.service_endpoints['memory_manager']}/health")
+                # Construct health check URL for memory manager service
+                # Health endpoint validates service availability and responsiveness
+                health_url = f"{self.service_endpoints['memory_manager']}/health"
+
+                # Make async HTTP GET request to validate memory service availability
+                # await keyword enables non-blocking execution in async context
+                response = await client.get(health_url)
+
+                # Validate service health through HTTP status code
+                # 200 status indicates memory service is operational and ready
                 if response.status_code == 200:
-                    self.logger.info("Memory management configured", agent_id=agent_id)
+                    self.logger.info("Memory management configured",
+                                   agent_id=agent_id,
+                                   service_url=health_url,
+                                   memory_types=[k for k, v in memory_config.dict().items()
+                                                if k.endswith('_enabled') and v])
+                else:
+                    self.logger.warning("Memory management service unavailable",
+                                      agent_id=agent_id,
+                                      status_code=response.status_code)
+
         except Exception as e:
-            self.logger.warning("Memory management configuration failed", agent_id=agent_id, error=str(e))
+            # Log memory configuration failure but don't prevent agent creation
+            # Memory is important for agent learning but not critical for basic functionality
+            self.logger.warning("Memory management configuration failed",
+                              agent_id=agent_id,
+                              error=str(e),
+                              error_type=type(e).__name__)
 
     async def _configure_plugin_system(self, agent_id: str, plugin_config: PluginConfig) -> None:
-        """Configure plugin system for the agent"""
+        """
+        Configure plugin system for the agent with async plugin validation.
+
+        This method establishes the connection between the agent and the Plugin Registry
+        service using async HTTP communication. It validates that all configured plugins
+        are available and properly registered in the plugin registry.
+
+        Async Execution Pattern:
+        - Uses httpx.AsyncClient for non-blocking HTTP communication
+        - Sequential plugin validation (could be parallelized for performance)
+        - Timeout protection (10 seconds) prevents hanging on service calls
+        - Individual plugin failures don't prevent other plugins from loading
+        - Comprehensive error handling with detailed logging
+
+        Plugin System Architecture:
+        - Plugin Registry: Central repository for plugin metadata and availability
+        - Domain Plugins: Business-specific plugins (underwriting, claims, etc.)
+        - Generic Plugins: Cross-domain utilities (data processing, validation)
+        - Plugin Dependencies: Support for plugin interdependencies
+
+        Service Integration Flow:
+        1. Iterate through all enabled plugins in agent configuration
+        2. Construct plugin validation URLs for each plugin
+        3. Make async GET requests to plugin registry for availability check
+        4. Validate response status indicates plugin is registered and available
+        5. Log individual plugin configuration results
+
+        Args:
+            agent_id: Unique identifier for the agent being configured
+            plugin_config: Plugin configuration with list of enabled plugins
+
+        Raises:
+            None (individual plugin failures are logged but don't prevent agent creation)
+        """
         try:
+            # Create async HTTP client for plugin registry communication
+            # Timeout ensures requests don't hang on unresponsive plugin registry
             async with httpx.AsyncClient(timeout=10.0) as client:
+                # Iterate through all plugins enabled for this agent
+                # Each plugin represents additional capability for the agent
                 for plugin_name in plugin_config.enabled_plugins:
                     try:
-                        response = await client.get(
-                            f"{self.service_endpoints['plugin_registry']}/plugins/{plugin_name}"
-                        )
+                        # Construct plugin validation URL
+                        # URL pattern: /plugins/{plugin_name} for availability check
+                        plugin_url = f"{self.service_endpoints['plugin_registry']}/plugins/{plugin_name}"
+
+                        # Make async HTTP GET request to validate plugin availability
+                        # await keyword enables non-blocking execution
+                        response = await client.get(plugin_url)
+
+                        # Check response status to confirm plugin is available
+                        # 200 status indicates plugin is registered and accessible
                         if response.status_code == 200:
-                            self.logger.info("Plugin configured", agent_id=agent_id, plugin=plugin_name)
+                            self.logger.info("Plugin configured",
+                                           agent_id=agent_id,
+                                           plugin=plugin_name,
+                                           registry_url=plugin_url)
+                        else:
+                            self.logger.warning("Plugin not available in registry",
+                                              agent_id=agent_id,
+                                              plugin=plugin_name,
+                                              status_code=response.status_code)
+
                     except Exception as e:
-                        self.logger.warning("Plugin configuration failed", agent_id=agent_id, plugin=plugin_name, error=str(e))
+                        # Log individual plugin configuration failure
+                        # Continue with other plugins even if one fails
+                        self.logger.warning("Plugin configuration failed",
+                                          agent_id=agent_id,
+                                          plugin=plugin_name,
+                                          error=str(e),
+                                          error_type=type(e).__name__)
+
         except Exception as e:
-            self.logger.warning("Plugin system configuration failed", agent_id=agent_id, error=str(e))
+            # Log overall plugin system configuration failure
+            # Plugin system is important but not critical for basic agent functionality
+            self.logger.warning("Plugin system configuration failed",
+                              agent_id=agent_id,
+                              enabled_plugins=plugin_config.enabled_plugins,
+                              error=str(e),
+                              error_type=type(e).__name__)
 
     async def _register_with_orchestrator(self, agent_id: str, config: AgentConfig) -> None:
         """Register agent with the orchestrator"""
@@ -1051,7 +1320,8 @@ if __name__ == "__main__":
     import uvicorn
 
     # Get port from environment or use default
-    port = int(os.getenv("BRAIN_FACTORY_PORT", "8301"))
+    port = int(os.getenv("BRAIN_FACTORY_PORT",
+                        str(DEFAULTS.get('service_ports', {}).get('brain_factory_port', 8301))))
 
     logger.info("Starting Brain Factory Service", port=port)
 

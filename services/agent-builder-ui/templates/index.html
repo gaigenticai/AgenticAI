@@ -13,6 +13,9 @@
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="/static/css/agent-builder.css">
+    <script src="/static/js/professional-enhancements.js">
+    <!-- Shared UI Utilities -->
+    <script src="/services/shared-ui-utils.js"></script>
 
     <!-- Custom Configuration for Tailwind -->
     <script>
@@ -49,20 +52,20 @@
                         <p class="text-sm text-gray-500">No-Code AI Agent Creation Platform</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="new-agent-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-agent-primary hover:bg-agent-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                <div class="flex items-center space-x-3">
+                    <button id="new-agent-btn" class="btn-professional btn-primary" data-tooltip="Create a new agent workflow">
                         <i class="fas fa-plus mr-2"></i>
                         New Agent
                     </button>
-                    <button id="templates-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                    <button id="templates-btn" class="btn-professional btn-secondary" data-tooltip="Browse agent templates">
                         <i class="fas fa-template-icon mr-2"></i>
                         Templates
                     </button>
-                    <button id="save-btn" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-agent-primary">
+                    <button id="save-btn" class="btn-professional btn-secondary" data-tooltip="Save current workflow (Ctrl+S)">
                         <i class="fas fa-save mr-2"></i>
                         Save
                     </button>
-                    <button id="deploy-btn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <button id="deploy-btn" class="btn-professional btn-success" data-tooltip="Deploy agent to production">
                         <i class="fas fa-rocket mr-2"></i>
                         Deploy
                     </button>

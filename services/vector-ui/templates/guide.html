@@ -1,370 +1,735 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Platform - Complete User Guide</title>
 
-{% block title %}Vector Operations User Guide - {{ title }}{% endblock %}
+    <!-- Modern Fonts: Inter and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-{% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Header -->
-            <div class="text-center mb-5">
-                <h1 class="display-5 fw-bold text-primary mb-3">
-                    <i class="fas fa-book me-3"></i>
-                    Vector Operations User Guide
-                </h1>
-                <p class="lead text-muted">
-                    Complete guide to using FastEmbed and Qdrant for vector search operations
-                </p>
+    <!-- Tailwind CSS for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+    <!-- Configure Tailwind with custom design tokens -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'primary': {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        'accent': {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        },
+                        'warning': {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                            950: '#451a03',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-subtle': 'bounce 2s infinite',
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                        'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        'large': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-glass {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .guide-section {
+            scroll-margin-top: 100px;
+        }
+
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-block {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+
+        .service-card {
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    <!-- Modern Glassmorphism Navigation -->
+    <nav class="nav-glass sticky top-0 z-50 border-b border-gray-200/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-brain text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">Agentic Platform</h1>
+                            <p class="text-xs text-gray-500 hidden sm:block">Complete User Guide</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="#overview" class="nav-link px-3 py-2 rounded-lg text-sm font-medium bg-primary-50 text-primary-700">
+                        <i class="fas fa-book mr-2"></i>Guide
+                    </a>
+                    <a href="/docs" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-code mr-2"></i>API Docs
+                    </a>
+                    <a href="/settings" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
             </div>
+        </div>
 
-            <!-- Navigation -->
-            <div class="mb-4">
-                <nav aria-label="Guide navigation">
-                    <ul class="nav nav-pills justify-content-center" id="guideTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="overview-tab" data-bs-toggle="pill"
-                                    data-bs-target="#overview" type="button" role="tab">
-                                <i class="fas fa-home me-1"></i>Overview
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="embeddings-tab" data-bs-toggle="pill"
-                                    data-bs-target="#embeddings" type="button" role="tab">
-                                <i class="fas fa-brain me-1"></i>Embeddings
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="indexing-tab" data-bs-toggle="pill"
-                                    data-bs-target="#indexing" type="button" role="tab">
-                                <i class="fas fa-database me-1"></i>Indexing
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="search-tab" data-bs-toggle="pill"
-                                    data-bs-target="#search" type="button" role="tab">
-                                <i class="fas fa-search me-1"></i>Search
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="api-tab" data-bs-toggle="pill"
-                                    data-bs-target="#api" type="button" role="tab">
-                                <i class="fas fa-code me-1"></i>API Reference
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-4 py-3 space-y-1">
+                <a href="/" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="#overview" class="block px-3 py-2 rounded-lg text-sm font-medium bg-primary-50 text-primary-700">
+                    <i class="fas fa-book mr-2"></i>Guide
+                </a>
+                <a href="/docs" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-code mr-2"></i>API Docs
+                </a>
+                <a href="/settings" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </a>
             </div>
+        </div>
+    </nav>
 
-            <!-- Tab Content -->
-            <div class="tab-content" id="guideTabsContent">
-                <!-- Overview Tab -->
-                <div class="tab-pane fade show active" id="overview" role="tabpanel">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-primary text-white">
-                            <h3 class="mb-0">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Overview
-                            </h3>
-                        </div>
-                        <div class="card-body p-4">
-                            <h4>What are Vector Operations?</h4>
-                            <p>
-                                Vector operations enable semantic search by converting text into high-dimensional
-                                numerical representations (embeddings) that capture meaning and context.
-                            </p>
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 rounded-full bg-primary-50 text-primary-700 mb-6">
+                <i class="fas fa-graduation-cap mr-2"></i>
+                <span class="text-sm font-medium">Complete Platform Guide</span>
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                Agentic Platform <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-accent-600">User Guide</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                Comprehensive documentation for deploying, configuring, and managing your enterprise AI platform
+            </p>
+        </div>
 
-                            <h4>Key Components:</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="feature-card mb-3">
-                                        <h6 class="text-primary">
-                                            <i class="fas fa-brain me-2"></i>FastEmbed
-                                        </h6>
-                                        <p class="small">Open-source embedding model for converting text to vectors</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="feature-card mb-3">
-                                        <h6 class="text-primary">
-                                            <i class="fas fa-search me-2"></i>Qdrant
-                                        </h6>
-                                        <p class="small">Vector database for storing and searching embeddings</p>
-                                    </div>
-                                </div>
-                            </div>
+        <!-- Table of Contents -->
+        <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-list-ul mr-3 text-primary-600"></i>
+                Table of Contents
+            </h2>
 
-                            <h4>Benefits:</h4>
-                            <ul>
-                                <li><strong>Semantic Search:</strong> Find content by meaning, not keywords</li>
-                                <li><strong>Context Awareness:</strong> Understands relationships between concepts</li>
-                                <li><strong>Multilingual Support:</strong> Works across different languages</li>
-                                <li><strong>Scalable:</strong> Handles millions of documents efficiently</li>
-                            </ul>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Getting Started</h3>
+                    <a href="#overview" class="block p-3 rounded-lg hover:bg-primary-50 transition-colors">
+                        <i class="fas fa-home mr-2 text-primary-600"></i>Platform Overview
+                    </a>
+                    <a href="#architecture" class="block p-3 rounded-lg hover:bg-primary-50 transition-colors">
+                        <i class="fas fa-sitemap mr-2 text-primary-600"></i>System Architecture
+                    </a>
+                    <a href="#quickstart" class="block p-3 rounded-lg hover:bg-primary-50 transition-colors">
+                        <i class="fas fa-rocket mr-2 text-primary-600"></i>Quick Start Guide
+                    </a>
                 </div>
 
-                <!-- Embeddings Tab -->
-                <div class="tab-pane fade" id="embeddings" role="tabpanel">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-success text-white">
-                            <h3 class="mb-0">
-                                <i class="fas fa-brain me-2"></i>
-                                Generating Embeddings
-                            </h3>
-                        </div>
-                        <div class="card-body p-4">
-                            <h4>How Embeddings Work</h4>
-                            <p>
-                                Embeddings convert text into numerical vectors that capture semantic meaning.
-                                Similar texts produce similar vectors.
-                            </p>
-
-                            <h4>Step-by-Step Guide:</h4>
-                            <ol>
-                                <li>Navigate to the <strong>Embeddings</strong> page</li>
-                                <li>Enter text (one per line) in the input field</li>
-                                <li>Click <strong>"Generate Embeddings"</strong></li>
-                                <li>View the resulting vectors and metadata</li>
-                            </ol>
-
-                            <div class="alert alert-info">
-                                <h5><i class="fas fa-lightbulb me-2"></i>Tips for Better Embeddings:</h5>
-                                <ul class="mb-0">
-                                    <li>Use clear, descriptive text</li>
-                                    <li>Avoid very short texts (less than 10 words)</li>
-                                    <li>Include context for better semantic understanding</li>
-                                    <li>Consider domain-specific terminology</li>
-                                </ul>
-                            </div>
-
-                            <h4>Example Usage:</h4>
-                            <div class="code-block">
-curl -X POST http://localhost:8081/embeddings/generate \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "texts": [
-      "Machine learning is a subset of artificial intelligence",
-      "Natural language processing helps computers understand text"
-    ]
-  }'
-                            </div>
-                        </div>
-                    </div>
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Core Services</h3>
+                    <a href="#data-ingestion" class="block p-3 rounded-lg hover:bg-accent-50 transition-colors">
+                        <i class="fas fa-upload mr-2 text-accent-600"></i>Data Ingestion
+                    </a>
+                    <a href="#vector-operations" class="block p-3 rounded-lg hover:bg-accent-50 transition-colors">
+                        <i class="fas fa-brain mr-2 text-accent-600"></i>Vector Operations
+                    </a>
+                    <a href="#data-lake" class="block p-3 rounded-lg hover:bg-accent-50 transition-colors">
+                        <i class="fas fa-database mr-2 text-accent-600"></i>Data Lake & Storage
+                    </a>
                 </div>
 
-                <!-- Indexing Tab -->
-                <div class="tab-pane fade" id="indexing" role="tabpanel">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-warning text-white">
-                            <h3 class="mb-0">
-                                <i class="fas fa-database me-2"></i>
-                                Document Indexing
-                            </h3>
-                        </div>
-                        <div class="card-body p-4">
-                            <h4>What is Document Indexing?</h4>
-                            <p>
-                                Document indexing stores your content with its vector representation in the
-                                vector database for fast retrieval during search operations.
-                            </p>
-
-                            <h4>Indexing Process:</h4>
-                            <ol>
-                                <li>Prepare documents with ID, text, and optional metadata</li>
-                                <li>Generate embeddings for each document</li>
-                                <li>Store vectors in Qdrant with document information</li>
-                                <li>Documents become searchable by semantic similarity</li>
-                            </ol>
-
-                            <h4>Document Format:</h4>
-                            <div class="code-block">
-{
-  "id": "unique-document-id",
-  "text": "Your document content here...",
-  "metadata": {
-    "category": "example",
-    "author": "user",
-    "tags": ["sample", "test"]
-  }
-}
-                            </div>
-
-                            <div class="alert alert-warning">
-                                <h5><i class="fas fa-exclamation-triangle me-2"></i>Important Notes:</h5>
-                                <ul class="mb-0">
-                                    <li>Document IDs must be unique within a collection</li>
-                                    <li>Metadata is optional but useful for filtering</li>
-                                    <li>Large documents may be truncated for embedding</li>
-                                    <li>Consider batch processing for many documents</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search Tab -->
-                <div class="tab-pane fade" id="search" role="tabpanel">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-info text-white">
-                            <h3 class="mb-0">
-                                <i class="fas fa-search me-2"></i>
-                                Vector Search
-                            </h3>
-                        </div>
-                        <div class="card-body p-4">
-                            <h4>Semantic Search Explained</h4>
-                            <p>
-                                Unlike keyword search, semantic search understands the meaning behind your query
-                                and finds relevant content based on conceptual similarity.
-                            </p>
-
-                            <h4>Search Features:</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6>Semantic Matching</h6>
-                                    <p>Finds content by meaning, not exact words</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6>Similarity Scores</h6>
-                                    <p>Each result includes a relevance score</p>
-                                </div>
-                            </div>
-
-                            <h4>Effective Search Queries:</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6 class="text-success">✅ Good Examples:</h6>
-                                    <ul>
-                                        <li>"machine learning algorithms"</li>
-                                        <li>"natural language processing techniques"</li>
-                                        <li>"computer vision applications"</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-danger">❌ Less Effective:</h6>
-                                    <ul>
-                                        <li>Single words: "AI"</li>
-                                        <li>Very short: "ML"</li>
-                                        <li>Unclear context</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <h4>Search Results:</h4>
-                            <p>Results include:</p>
-                            <ul>
-                                <li>Document ID and content preview</li>
-                                <li>Similarity score (higher = more relevant)</li>
-                                <li>Associated metadata</li>
-                                <li>Search execution time</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- API Reference Tab -->
-                <div class="tab-pane fade" id="api" role="tabpanel">
-                    <div class="card shadow-lg">
-                        <div class="card-header bg-dark text-white">
-                            <h3 class="mb-0">
-                                <i class="fas fa-code me-2"></i>
-                                API Reference
-                            </h3>
-                        </div>
-                        <div class="card-body p-4">
-                            <h4>Base URL:</h4>
-                            <p><code>http://localhost:8081</code> (Output Coordinator)</p>
-
-                            <h4>Endpoints:</h4>
-
-                            <div class="endpoint mb-4">
-                                <h5>POST /embeddings/generate</h5>
-                                <p>Generate embeddings for text</p>
-                                <div class="code-block">
-curl -X POST http://localhost:8081/embeddings/generate \\
-  -H "Content-Type: application/json" \\
-  -d '{"texts": ["Your text here"]}'
-                                </div>
-                            </div>
-
-                            <div class="endpoint mb-4">
-                                <h5>POST /vectors/index</h5>
-                                <p>Index documents with embeddings</p>
-                                <div class="code-block">
-curl -X POST http://localhost:8081/vectors/index \\
-  -H "Content-Type: application/json" \\
-  -d '[{"id": "doc1", "text": "Document content", "metadata": {}}]'
-                                </div>
-                            </div>
-
-                            <div class="endpoint mb-4">
-                                <h5>POST /vectors/search</h5>
-                                <p>Search for similar vectors</p>
-                                <div class="code-block">
-curl -X POST http://localhost:8081/vectors/search \\
-  -H "Content-Type: application/json" \\
-  -d '{"query": "search query", "limit": 10}'
-                                </div>
-                            </div>
-
-                            <div class="endpoint mb-4">
-                                <h5>GET /vectors/similarity/{doc_id}</h5>
-                                <p>Find similar documents</p>
-                                <div class="code-block">
-curl http://localhost:8081/vectors/similarity/doc1
-                                </div>
-                            </div>
-
-                            <h4>Authentication:</h4>
-                            <p>When REQUIRE_AUTH=true, include authentication headers in requests.</p>
-
-                            <h4>Error Codes:</h4>
-                            <ul>
-                                <li><code>401</code> - Authentication required</li>
-                                <li><code>404</code> - Document/collection not found</li>
-                                <li><code>500</code> - Internal server error</li>
-                                <li><code>503</code> - Service unavailable</li>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="space-y-3">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-3">Configuration</h3>
+                    <a href="#deployment" class="block p-3 rounded-lg hover:bg-warning-50 transition-colors">
+                        <i class="fas fa-server mr-2 text-warning-600"></i>Deployment
+                    </a>
+                    <a href="#configuration" class="block p-3 rounded-lg hover:bg-warning-50 transition-colors">
+                        <i class="fas fa-cogs mr-2 text-warning-600"></i>Configuration
+                    </a>
+                    <a href="#monitoring" class="block p-3 rounded-lg hover:bg-warning-50 transition-colors">
+                        <i class="fas fa-chart-line mr-2 text-warning-600"></i>Monitoring
+                    </a>
                 </div>
             </div>
         </div>
+
+        <!-- Platform Overview Section -->
+        <section id="overview" class="guide-section bg-white rounded-2xl p-8 border border-gray-100 shadow-soft mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-info-circle mr-3 text-primary-600"></i>
+                Platform Overview
+            </h2>
+
+            <div class="prose prose-lg max-w-none">
+                <p class="text-lg text-gray-700 mb-6">
+                    The Agentic Platform is a comprehensive enterprise-grade AI and data processing platform built on microservices architecture.
+                    It provides advanced capabilities for data ingestion, vector operations, semantic search, and intelligent automation.
+                </p>
+
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Key Features</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="feature-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-brain text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">AI-Powered Vector Search</h4>
+                        <p class="text-gray-600">Semantic similarity search using FastEmbed and Qdrant for intelligent content discovery</p>
+                    </div>
+
+                    <div class="feature-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-upload text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Multi-Source Data Ingestion</h4>
+                        <p class="text-gray-600">Support for CSV, Excel, PDF, JSON, API, and UI scraping with intelligent validation</p>
+                    </div>
+
+                    <div class="feature-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-warning-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-database text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Enterprise Data Lake</h4>
+                        <p class="text-gray-600">Medallion architecture with automated data transformation and quality assurance</p>
+                    </div>
+
+                    <div class="feature-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-shield-alt text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Enterprise Security</h4>
+                        <p class="text-gray-600">JWT authentication, RBAC, data encryption, and comprehensive audit logging</p>
+                    </div>
+
+                    <div class="feature-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Real-time Monitoring</h4>
+                        <p class="text-gray-600">Prometheus metrics, Grafana dashboards, and comprehensive observability</p>
+                    </div>
+
+                    <div class="feature-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-warning-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-cogs text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Microservices Architecture</h4>
+                        <p class="text-gray-600">Scalable, modular design with Docker containerization and Kubernetes support</p>
+                    </div>
+                </div>
+
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Architecture Overview</h3>
+                <div class="bg-gray-50 rounded-xl p-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Core Components</h4>
+                            <ul class="space-y-2 text-gray-700">
+                                <li><i class="fas fa-check text-accent-600 mr-2"></i><strong>Data Ingestion:</strong> Multi-format data import</li>
+                                <li><i class="fas fa-check text-accent-600 mr-2"></i><strong>Vector Operations:</strong> AI-powered embeddings</li>
+                                <li><i class="fas fa-check text-accent-600 mr-2"></i><strong>Data Lake:</strong> Medallion architecture</li>
+                                <li><i class="fas fa-check text-accent-600 mr-2"></i><strong>Message Queue:</strong> Event-driven processing</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-3">Supporting Services</h4>
+                            <ul class="space-y-2 text-gray-700">
+                                <li><i class="fas fa-check text-primary-600 mr-2"></i><strong>Authentication:</strong> JWT & OAuth2/OIDC</li>
+                                <li><i class="fas fa-check text-primary-600 mr-2"></i><strong>Monitoring:</strong> Prometheus & Grafana</li>
+                                <li><i class="fas fa-check text-primary-600 mr-2"></i><strong>Security:</strong> Encryption & audit logging</li>
+                                <li><i class="fas fa-check text-primary-600 mr-2"></i><strong>Backup:</strong> Automated data protection</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- System Architecture Section -->
+        <section id="architecture" class="guide-section bg-white rounded-2xl p-8 border border-gray-100 shadow-soft mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-sitemap mr-3 text-primary-600"></i>
+                System Architecture
+            </h2>
+
+            <div class="mb-8">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Microservices Overview</h3>
+                <p class="text-lg text-gray-700 mb-6">
+                    The platform consists of 15+ microservices, each handling specific functionality with clear separation of concerns.
+                    This modular architecture ensures scalability, maintainability, and fault isolation.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="service-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-upload mr-2 text-primary-600"></i>Data Ingestion Services
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• CSV Ingestion Service</li>
+                            <li>• Excel Ingestion Service</li>
+                            <li>• PDF Ingestion Service</li>
+                            <li>• JSON Ingestion Service</li>
+                            <li>• UI Scraper Service</li>
+                            <li>• API Ingestion Service</li>
+                        </ul>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-brain mr-2 text-accent-600"></i>AI & Vector Services
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Vector UI Service</li>
+                            <li>• Output Coordinator</li>
+                            <li>• Agent Brain Base</li>
+                            <li>• Reasoning Module Factory</li>
+                            <li>• Service Connector Factory</li>
+                        </ul>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-database mr-2 text-warning-600"></i>Data & Storage Services
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• PostgreSQL (Ingestion)</li>
+                            <li>• PostgreSQL (Output)</li>
+                            <li>• MongoDB</li>
+                            <li>• Qdrant Vector DB</li>
+                            <li>• Redis Cache</li>
+                        </ul>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-shield-alt mr-2 text-primary-600"></i>Security & Auth Services
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Authentication Service</li>
+                            <li>• OAuth2/OIDC Service</li>
+                            <li>• Data Encryption Service</li>
+                            <li>• Audit Compliance Service</li>
+                        </ul>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-chart-line mr-2 text-accent-600"></i>Monitoring & Management
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Grafana Dashboards</li>
+                            <li>• Prometheus Metrics</li>
+                            <li>• Monitoring Service</li>
+                            <li>• Backup Orchestration</li>
+                        </ul>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-3">
+                            <i class="fas fa-exchange-alt mr-2 text-warning-600"></i>Communication Services
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• RabbitMQ Message Queue</li>
+                            <li>• Message Queue Service</li>
+                            <li>• Ingestion Coordinator</li>
+                            <li>• Workflow Engine</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Data Flow Architecture</h3>
+                <div class="text-center">
+                    <img src="/static/images/architecture-diagram.png" alt="Platform Architecture" class="mx-auto border rounded-lg shadow-sm"
+                         onerror="this.style.display='none'">
+                    <p class="text-gray-600 mt-4">Platform Architecture Diagram</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Guide Section -->
+        <section id="quickstart" class="guide-section bg-white rounded-2xl p-8 border border-gray-100 shadow-soft mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-rocket mr-3 text-accent-600"></i>
+                Quick Start Guide
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-4">🚀 Getting Started</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-sm">1</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Start the Platform</h4>
+                                <p class="text-gray-600">Run the startup script to launch all services</p>
+                                <div class="code-block mt-2">
+./start-platform.sh
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-sm">2</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Access the Dashboard</h4>
+                                <p class="text-gray-600">Open your browser and navigate to the main interface</p>
+                                <div class="code-block mt-2">
+http://localhost:8082
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-sm">3</div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900">Upload Your Data</h4>
+                                <p class="text-gray-600">Use the data ingestion services to import your content</p>
+                                <div class="code-block mt-2">
+# Example: Upload CSV file
+curl -X POST http://localhost:8080/jobs \\
+  -F "file=@data.csv" \\
+  -F "source_type=csv"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-4">📋 Prerequisites</h3>
+                    <div class="bg-gray-50 rounded-xl p-6">
+                        <ul class="space-y-3">
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-accent-600 mr-3"></i>
+                                <span class="text-gray-700">Docker and Docker Compose installed</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-accent-600 mr-3"></i>
+                                <span class="text-gray-700">At least 8GB RAM available</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-accent-600 mr-3"></i>
+                                <span class="text-gray-700">20GB free disk space</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-accent-600 mr-3"></i>
+                                <span class="text-gray-700">Modern web browser</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check text-accent-600 mr-3"></i>
+                                <span class="text-gray-700">Python 3.11+ (for development)</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <h3 class="text-2xl font-semibold text-gray-900 mb-4 mt-6">🔧 Configuration</h3>
+                    <div class="bg-blue-50 rounded-xl p-6">
+                        <h4 class="font-semibold text-gray-900 mb-2">Environment Variables</h4>
+                        <div class="code-block">
+# Copy and modify as needed
+cp .env.example .env
+
+# Key settings:
+REQUIRE_AUTH=false  # Set to true for authentication
+POSTGRES_PASSWORD=your_password
+QDRANT_API_KEY=your_api_key
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Ingestion Section -->
+        <section id="data-ingestion" class="guide-section bg-white rounded-2xl p-8 border border-gray-100 shadow-soft mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-upload mr-3 text-primary-600"></i>
+                Data Ingestion
+            </h2>
+
+            <div class="mb-8">
+                <h3 class="text-2xl font-semibold text-gray-900 mb-4">Supported Data Formats</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="service-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-file-csv text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">CSV Files</h4>
+                        <p class="text-gray-600 mb-4">Comma-separated values with automatic delimiter detection</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "file=@data.csv" \\
+  -F "source_type=csv" \\
+  -F "has_header=true"
+                        </div>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-file-excel text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Excel Files</h4>
+                        <p class="text-gray-600 mb-4">.xlsx and .xls files with multi-sheet support</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "file=@data.xlsx" \\
+  -F "source_type=excel" \\
+  -F "sheet_name=Sheet1"
+                        </div>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-warning-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-file-pdf text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">PDF Documents</h4>
+                        <p class="text-gray-600 mb-4">PDF files with OCR capability for scanned documents</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "file=@document.pdf" \\
+  -F "source_type=pdf" \\
+  -F "extract_images=true"
+                        </div>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-code text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">JSON Data</h4>
+                        <p class="text-gray-600 mb-4">JSON files and API responses with nested structure support</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "file=@data.json" \\
+  -F "source_type=json" \\
+  -F "json_path=$.data[*]"
+                        </div>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-accent-50 to-accent-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-accent-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-globe text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Web Scraping</h4>
+                        <p class="text-gray-600 mb-4">Extract data from websites and web applications</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "source_type=ui_scraper" \\
+  -F "url=https://example.com" \\
+  -F "selectors=.content"
+                        </div>
+                    </div>
+
+                    <div class="service-card bg-gradient-to-br from-warning-50 to-warning-100 p-6 rounded-xl">
+                        <div class="w-12 h-12 bg-warning-500 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fas fa-plug text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">API Integration</h4>
+                        <p class="text-gray-600 mb-4">Connect to REST APIs and third-party services</p>
+                        <div class="code-block text-xs">
+curl -X POST http://localhost:8080/jobs \\
+  -F "source_type=api" \\
+  -F "api_url=https://api.example.com/data" \\
+  -F "auth_token=your_token"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Ingestion Workflow</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">1</div>
+                        <h4 class="font-semibold text-gray-900">Upload</h4>
+                        <p class="text-sm text-gray-600">Select data source and upload files</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-accent-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">2</div>
+                        <h4 class="font-semibold text-gray-900">Validate</h4>
+                        <p class="text-sm text-gray-600">Automatic data quality checks</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-warning-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">3</div>
+                        <h4 class="font-semibold text-gray-900">Process</h4>
+                        <p class="text-sm text-gray-600">Transform and normalize data</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg mx-auto mb-2">4</div>
+                        <h4 class="font-semibold text-gray-900">Store</h4>
+                        <p class="text-sm text-gray-600">Save to data lake and vector database</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-white py-12 mt-16 rounded-2xl">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div class="col-span-1 md:col-span-2">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-500 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-brain text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold">Agentic Platform</h3>
+                                <p class="text-gray-400 text-sm">Complete User Guide</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 leading-relaxed">
+                            Comprehensive documentation for deploying, configuring, and managing your enterprise AI platform with advanced vector operations and data processing capabilities.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#overview" class="text-gray-300 hover:text-white transition-colors">Platform Overview</a></li>
+                            <li><a href="#architecture" class="text-gray-300 hover:text-white transition-colors">System Architecture</a></li>
+                            <li><a href="#quickstart" class="text-gray-300 hover:text-white transition-colors">Quick Start Guide</a></li>
+                            <li><a href="/docs" class="text-gray-300 hover:text-white transition-colors">API Documentation</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-4">Support</h4>
+                        <ul class="space-y-2">
+                            <li><a href="#data-ingestion" class="text-gray-300 hover:text-white transition-colors">Data Ingestion</a></li>
+                            <li><a href="#vector-operations" class="text-gray-300 hover:text-white transition-colors">Vector Operations</a></li>
+                            <li><a href="#monitoring" class="text-gray-300 hover:text-white transition-colors">Monitoring</a></li>
+                            <li><a href="/settings" class="text-gray-300 hover:text-white transition-colors">Settings</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © 2024 Agentic Platform. Enterprise-grade AI and data processing.
+                    </p>
+                    <div class="flex items-center space-x-6 mt-4 md:mt-0">
+                        <span class="text-gray-400 text-sm flex items-center">
+                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                            Documentation v2.0.0
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
-</div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-// Tab navigation handling
-document.addEventListener('DOMContentLoaded', function() {
-    const tabs = document.querySelectorAll('#guideTabs .nav-link');
-    const tabContent = document.querySelectorAll('.tab-pane');
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Update URL hash
-            const target = this.getAttribute('data-bs-target').substring(1);
-            window.location.hash = target;
-
-            // Update active states
-            tabs.forEach(t => t.classList.remove('active'));
-            tabContent.forEach(c => c.classList.remove('show', 'active'));
-
-            this.classList.add('active');
-            document.getElementById(target).classList.add('show', 'active');
-        });
-    });
-
-    // Handle URL hash on page load
-    const hash = window.location.hash.substring(1);
-    if (hash) {
-        const targetTab = document.getElementById(hash + '-tab');
-        if (targetTab) {
-            targetTab.click();
+    <script>
+        // Mobile menu toggle functionality
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
         }
-    }
-});
-</script>
-{% endblock %}
+
+        // Smooth scrolling for anchor links
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a[href^="#"]');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        e.preventDefault();
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

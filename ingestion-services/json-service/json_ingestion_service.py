@@ -68,7 +68,11 @@ JSON_VALIDATION_ERRORS = Counter('json_validation_errors_total', 'Total validati
 ACTIVE_JSON_JOBS = Gauge('active_json_jobs', 'Number of active JSON processing jobs', registry=JSON_REGISTRY)
 
 # Database connection
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    logger.error("DATABASE_URL is not configured for JSON Ingestion Service; set DATABASE_URL in environment")
+    raise RuntimeError("DATABASE_URL not configured for JSON Ingestion Service")
+
 engine = create_engine(DATABASE_URL)
 
 # Message queue connection
@@ -446,10 +450,13 @@ def setup_rabbitmq():
     global rabbitmq_connection, rabbitmq_channel
 
     try:
-        credentials = pika.PlainCredentials(
-            os.getenv("RABBITMQ_USER", "agentic_user"),
-            os.getenv("RABBITMQ_PASSWORD", "agentic123")
-        )
+        rabbitmq_user = os.getenv("RABBITMQ_USER", "agentic_user")
+        rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "")
+        if not rabbitmq_password:
+            logger.error("RABBITMQ_PASSWORD is not set for JSON Ingestion Service; set RABBITMQ_PASSWORD in environment")
+            raise RuntimeError("RABBITMQ_PASSWORD not configured for JSON Ingestion Service")
+
+        credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
         parameters = pika.ConnectionParameters(
             host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
             port=int(os.getenv("RABBITMQ_PORT", 5672)),

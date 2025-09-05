@@ -29,7 +29,7 @@ class TestIngestionFlow(unittest.TestCase):
     def setUp(self):
         """Set up test environment"""
         self.base_url = os.getenv("INGESTION_COORDINATOR_URL", "http://localhost:8080")
-        self.db_url = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@localhost:5432/agentic_ingestion")
+        self.db_url = os.getenv("DATABASE_URL", "postgresql://agentic_user:@localhost:5432/agentic_ingestion")
 
         # Test data
         self.test_data = [

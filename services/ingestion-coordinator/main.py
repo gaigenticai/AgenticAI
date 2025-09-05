@@ -145,7 +145,11 @@ app = FastAPI(
 )
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    logger.error("DATABASE_URL is not configured for Ingestion Coordinator; set DATABASE_URL in environment")
+    raise RuntimeError("DATABASE_URL not configured for Ingestion Coordinator")
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -357,10 +361,13 @@ def setup_rabbitmq():
     """Setup RabbitMQ connection"""
     global rabbitmq_connection, rabbitmq_channel
     try:
-        credentials = pika.PlainCredentials(
-            os.getenv("RABBITMQ_USER", "agentic_user"),
-            os.getenv("RABBITMQ_PASSWORD", "agentic123")
-        )
+        rabbitmq_user = os.getenv("RABBITMQ_USER", "agentic_user")
+        rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "")
+        if not rabbitmq_password:
+            logger.error("RABBITMQ_PASSWORD is not configured for Ingestion Coordinator; set RABBITMQ_PASSWORD in environment")
+            raise RuntimeError("RABBITMQ_PASSWORD not configured for Ingestion Coordinator")
+
+        credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
         parameters = pika.ConnectionParameters(
             host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
             port=int(os.getenv("RABBITMQ_PORT", 5672)),
@@ -1017,7 +1024,7 @@ async def startup_event():
     logger.info("Ingestion Coordinator starting up...")
 
     # Create database tables
-    Base.metadata.create_all(bind=engine)
+    # Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 
     # Setup RabbitMQ
     setup_rabbitmq()

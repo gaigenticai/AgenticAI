@@ -94,7 +94,8 @@ class Config:
     PERFORMANCE_TEST_DURATION = int(os.getenv("PERFORMANCE_TEST_DURATION", "60"))  # 1 minute
 
     # Database Configuration
-    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/agentic_brain")
+    # Avoid hardcoded credentials; read full DATABASE_URL from env or leave empty
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
 
     # Redis Configuration
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -570,8 +571,53 @@ class ProductionReadinessValidator:
                 "weight": 0.15
             })
 
-            # Calculate overall readiness score
-            readiness_score = 85.7  # Mock score - would be calculated from actual checks
+            # Calculate overall readiness score using weighted validation results
+            # This replaces the previous mock score with real production metrics
+            try:
+                # Execute comprehensive validation checks across all system components
+                health_result = await self.validate_service_health()      # System health status
+                config_result = await self.validate_configuration()       # Configuration validation
+                db_result = await self.validate_database()               # Database connectivity
+                api_result = await self.validate_api_endpoints()         # API availability
+
+                # Initialize weighted scoring system
+                # Higher weights indicate more critical components
+                total_score = 0
+                total_weight = 0
+
+                # Service health check (25% weight) - Most critical for basic functionality
+                health_score = 100 if health_result.get("status") == "healthy" else 50
+                total_score += health_score * 0.25
+                total_weight += 0.25
+
+                # Configuration validation (20% weight) - Ensures proper setup
+                config_score = 100 if config_result.get("status") == "valid" else 30
+                total_score += config_score * 0.2
+                total_weight += 0.2
+
+                # Database connectivity (25% weight) - Critical for data operations
+                db_score = 100 if db_result.get("status") == "connected" else 0
+                total_score += db_score * 0.25
+                total_weight += 0.25
+
+                # API endpoints availability (15% weight) - External interface health
+                api_score = 100 if api_result.get("status") == "available" else 40
+                total_score += api_score * 0.15
+                total_weight += 0.15
+
+                # Security/performance/monitoring baseline (15% weight)
+                # TODO: Implement specific security validation checks
+                security_score = 80  # Conservative default for security posture
+                total_score += security_score * 0.15
+                total_weight += 0.15
+
+                # Calculate final weighted average score
+                readiness_score = total_score / total_weight if total_weight > 0 else 0
+
+            except Exception as e:
+                logger.error("Failed to calculate readiness score", error=str(e))
+                readiness_score = 0
+
             readiness_status = "ready" if readiness_score >= 90 else "warning" if readiness_score >= 75 else "not_ready"
 
             return {
@@ -819,7 +865,7 @@ app.add_middleware(
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

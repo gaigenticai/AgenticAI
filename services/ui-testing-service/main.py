@@ -179,7 +179,8 @@ class Config:
 
     # Security
     REQUIRE_AUTH = os.getenv("REQUIRE_AUTH", "false").lower() == "true"
-    JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key")
+    # JWT secret must be provided via environment when REQUIRE_AUTH=true
+    JWT_SECRET = os.getenv("JWT_SECRET", "")
 
     # Monitoring
     ENABLE_METRICS = os.getenv("ENABLE_METRICS", "true").lower() == "true"
@@ -1465,7 +1466,7 @@ app.add_middleware(
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

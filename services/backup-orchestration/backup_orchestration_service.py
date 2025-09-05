@@ -233,7 +233,10 @@ class BackupOrchestrationManager:
 
             # Set password environment variable
             env = os.environ.copy()
-            env["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "agentic123")
+            env["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "")
+            if not env["PGPASSWORD"]:
+                logger.error("POSTGRES_PASSWORD not configured for Backup Orchestration Service")
+                raise RuntimeError("POSTGRES_PASSWORD not configured for Backup Orchestration Service")
 
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
 
@@ -271,7 +274,7 @@ class BackupOrchestrationManager:
             minio_client = Minio(
                 os.getenv("MINIO_ENDPOINT", "http://minio_bronze:9000"),
                 access_key=os.getenv("MINIO_ACCESS_KEY", "agentic_user"),
-                secret_key=os.getenv("MINIO_SECRET_KEY", "agentic123"),
+                secret_key=os.getenv("MINIO_SECRET_KEY", ""),
                 secure=False
             )
 
@@ -435,7 +438,10 @@ class BackupOrchestrationManager:
             ]
 
             env = os.environ.copy()
-            env["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "agentic123")
+            env["PGPASSWORD"] = os.getenv("POSTGRES_PASSWORD", "")
+            if not env["PGPASSWORD"]:
+                logger.error("POSTGRES_PASSWORD not configured for Backup Orchestration Service")
+                raise RuntimeError("POSTGRES_PASSWORD not configured for Backup Orchestration Service")
 
             result = subprocess.run(cmd, env=env, capture_output=True, text=True)
 
@@ -456,7 +462,7 @@ class BackupOrchestrationManager:
             minio_client = Minio(
                 os.getenv("MINIO_ENDPOINT", "http://minio_bronze:9000"),
                 access_key=os.getenv("MINIO_ACCESS_KEY", "agentic_user"),
-                secret_key=os.getenv("MINIO_SECRET_KEY", "agentic123"),
+                secret_key=os.getenv("MINIO_SECRET_KEY", ""),
                 secure=False
             )
 
@@ -878,7 +884,7 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
         }
 
         database_connection = psycopg2.connect(**db_config)

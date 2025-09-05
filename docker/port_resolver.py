@@ -1,176 +1,191 @@
 #!/usr/bin/env python3
 """
-Port Conflict Resolution Utility
+Automatic Port Conflict Resolution for Docker Compose
 
-This utility helps resolve Docker port conflicts by:
-- Checking if specified ports are available
-- Suggesting alternative ports if conflicts exist
-- Updating docker-compose.yml with resolved ports
+This script integrates with docker-compose to automatically resolve port conflicts
+before starting services. It works by:
+
+1. Checking for port conflicts using the port-manager service
+2. Updating .env file with resolved port assignments
+3. Ensuring docker-compose starts without port conflicts
+
+Usage:
+    python port_resolver.py [check|resolve|auto]
+
+Arguments:
+    check   - Check for port conflicts without resolving
+    resolve - Resolve conflicts and update .env file
+    auto    - Automatically resolve conflicts (default)
+
+Environment Variables:
+    PORT_MANAGER_URL - URL of port-manager service (default: http://localhost:8000)
+    ENV_FILE         - Path to environment file (default: .env)
+    BACKUP_ENV       - Create backup of .env file (default: true)
 """
 
+import requests
 import json
 import os
-import socket
-import subprocess
 import sys
-from typing import Dict, List, Optional, Tuple
+import time
+from pathlib import Path
+from typing import Dict, Any, Optional
 
-def check_port_available(port: int, host: str = 'localhost') -> bool:
-    """Check if a port is available on the specified host"""
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(1)
-        result = sock.connect_ex((host, port))
-        sock.close()
-        return result != 0  # Port is available if connection fails
-    except:
+
+class PortResolver:
+    """Automatic port conflict resolver for Docker Compose"""
+
+    def __init__(self):
+        self.port_manager_url = os.getenv('PORT_MANAGER_URL', 'http://localhost:8000')
+        self.env_file = os.getenv('ENV_FILE', '.env')
+        self.backup_env = os.getenv('BACKUP_ENV', 'true').lower() == 'true'
+        self.session = requests.Session()
+        self.session.timeout = 30
+
+    def check_service_health(self) -> bool:
+        """Check if port-manager service is available"""
+        try:
+            response = self.session.get(f"{self.port_manager_url}/health")
+            return response.status_code == 200
+        except requests.RequestException:
+            return False
+
+    def wait_for_service(self, timeout: int = 60) -> bool:
+        """Wait for port-manager service to become available"""
+        print("Waiting for port-manager service to be available...")
+
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if self.check_service_health():
+                print("Port-manager service is available")
+                return True
+            time.sleep(2)
+
+        print("Timeout waiting for port-manager service")
         return False
 
-def find_available_port(start_port: int, max_attempts: int = 100) -> Optional[int]:
-    """Find an available port starting from the given port"""
-    for port in range(start_port, start_port + max_attempts):
-        if check_port_available(port):
-            return port
-    return None
+    def check_conflicts(self) -> Dict[str, Any]:
+        """Check for port conflicts"""
+        try:
+            response = self.session.get(f"{self.port_manager_url}/check-conflicts")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Failed to check conflicts: {e}")
+            return {"status": "error", "message": str(e)}
 
-def get_docker_compose_ports() -> Dict[str, int]:
-    """Extract port mappings from docker-compose.yml"""
-    ports = {}
+    def resolve_conflicts(self) -> Dict[str, Any]:
+        """Resolve port conflicts"""
+        try:
+            response = self.session.post(f"{self.port_manager_url}/resolve-conflicts")
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            print(f"Failed to resolve conflicts: {e}")
+            return {"status": "error", "message": str(e)}
 
-    try:
-        with open('docker-compose.yml', 'r') as f:
-            content = f.read()
+    def create_backup(self) -> Optional[str]:
+        """Create backup of .env file"""
+        if not self.backup_env or not Path(self.env_file).exists():
+            return None
 
-        # Extract environment variables that define ports
-        import re
-        env_vars = re.findall(r'\$\{([^}]+)\}', content)
+        backup_file = f"{self.env_file}.backup.{int(time.time())}"
+        try:
+            with open(self.env_file, 'r') as src, open(backup_file, 'w') as dst:
+                dst.write(src.read())
+            print(f"Created backup: {backup_file}")
+            return backup_file
+        except Exception as e:
+            print(f"Failed to create backup: {e}")
+            return None
 
-        for var in env_vars:
-            if 'PORT' in var:
-                # Get the default value from .env.example if it exists
-                default_value = get_env_default(var)
-                if default_value and default_value.isdigit():
-                    ports[var] = int(default_value)
+    def run_check(self) -> int:
+        """Check for port conflicts"""
+        print("Checking for port conflicts...")
 
-    except Exception as e:
-        print(f"Error reading docker-compose.yml: {e}")
+        if not self.check_service_health():
+            if not self.wait_for_service():
+                print("Port-manager service is not available")
+                return 1
 
-    return ports
+        result = self.check_conflicts()
 
-def get_env_default(var_name: str) -> Optional[str]:
-    """Get default value for environment variable from .env.example"""
-    try:
-        with open('.env.example', 'r') as f:
-            for line in f:
-                if line.startswith(f'{var_name}='):
-                    return line.split('=', 1)[1].strip()
-    except:
-        pass
-    return None
+        if result.get("status") == "error":
+            print(f"Error checking conflicts: {result.get('message')}")
+            return 1
 
-def resolve_port_conflicts() -> Dict[str, Tuple[int, int]]:
-    """Resolve port conflicts and return mapping of old->new ports"""
-    resolved_ports = {}
-    current_ports = get_docker_compose_ports()
+        conflicts = result.get("conflicts", {})
+        if not conflicts:
+            print("✅ No port conflicts detected")
+            return 0
 
-    print("🔍 Checking for port conflicts...")
+        print(f"⚠️  Found {len(conflicts)} port conflicts:")
+        for service, conflict in conflicts.items():
+            print(f"   {service}: {conflict['original_port']} -> {conflict['suggested_port']}")
 
-    for var_name, port in current_ports.items():
-        if not check_port_available(port):
-            print(f"⚠️  Port {port} ({var_name}) is already in use")
+        return len(conflicts)
 
-            # Find alternative port
-            alternative = find_available_port(port + 1)
-            if alternative:
-                resolved_ports[var_name] = (port, alternative)
-                print(f"✅ Found alternative port: {alternative}")
-            else:
-                print(f"❌ No available ports found near {port}")
-        else:
-            print(f"✅ Port {port} ({var_name}) is available")
+    def run_resolve(self) -> int:
+        """Resolve port conflicts"""
+        print("Resolving port conflicts...")
 
-    return resolved_ports
+        if not self.check_service_health():
+            if not self.wait_for_service():
+                print("Port-manager service is not available")
+                return 1
 
-def update_docker_compose(resolved_ports: Dict[str, Tuple[int, int]]):
-    """Update docker-compose.yml with resolved ports"""
-    if not resolved_ports:
-        print("🎉 No port conflicts found!")
-        return
+        # Create backup before making changes
+        self.create_backup()
 
-    print("\n📝 Updating docker-compose.yml...")
+        result = self.resolve_conflicts()
 
-    try:
-        with open('docker-compose.yml', 'r') as f:
-            content = f.read()
+        if result.get("status") == "error":
+            print(f"Error resolving conflicts: {result.get('message')}")
+            return 1
 
-        for var_name, (old_port, new_port) in resolved_ports.items():
-            # Update port mappings
-            old_mapping = f'"${{{var_name}}}'
-            new_mapping = f'"{new_port}'
-            content = content.replace(old_mapping, new_mapping)
+        conflicts_resolved = result.get("conflicts_resolved", 0)
+        if conflicts_resolved == 0:
+            print("✅ No port conflicts to resolve")
+            return 0
 
-            print(f"🔄 Updated {var_name}: {old_port} → {new_port}")
+        print(f"✅ Successfully resolved {conflicts_resolved} port conflicts")
+        conflicts = result.get("conflicts", {})
+        for service, conflict in conflicts.items():
+            print(f"   {service}: {conflict['original_port']} -> {conflict['suggested_port']}")
 
-        with open('docker-compose.yml', 'w') as f:
-            f.write(content)
+        return 0
 
-        print("✅ docker-compose.yml updated successfully!")
+    def run_auto(self) -> int:
+        """Automatically check and resolve conflicts"""
+        conflicts_found = self.run_check()
 
-    except Exception as e:
-        print(f"❌ Error updating docker-compose.yml: {e}")
+        if conflicts_found > 0:
+            print("\nAuto-resolving conflicts...")
+            return self.run_resolve()
 
-def create_env_file(resolved_ports: Dict[str, Tuple[int, int]]):
-    """Create .env file with resolved ports"""
-    if not resolved_ports:
-        return
+        return 0
 
-    print("\n📄 Creating .env file with resolved ports...")
-
-    env_content = "# Environment configuration with resolved ports\n"
-
-    # Read existing .env.example
-    try:
-        with open('.env.example', 'r') as f:
-            for line in f:
-                var_name = line.split('=')[0] if '=' in line else None
-
-                if var_name and var_name in resolved_ports:
-                    old_port, new_port = resolved_ports[var_name]
-                    env_content += f"{var_name}={new_port}\n"
-                else:
-                    env_content += line
-    except:
-        # Fallback: create basic .env file
-        for var_name, (old_port, new_port) in resolved_ports.items():
-            env_content += f"{var_name}={new_port}\n"
-
-    with open('.env', 'w') as f:
-        f.write(env_content)
-
-    print("✅ .env file created!")
 
 def main():
-    """Main port resolution function"""
-    print("🚀 Port Conflict Resolution Utility")
-    print("=" * 40)
-
-    resolved_ports = resolve_port_conflicts()
-
-    if resolved_ports:
-        print(f"\n📋 Summary of changes:")
-        for var_name, (old_port, new_port) in resolved_ports.items():
-            print(f"   {var_name}: {old_port} → {new_port}")
-
-        # Ask for confirmation
-        response = input("\n🔧 Apply these changes? (y/N): ").lower().strip()
-        if response == 'y':
-            update_docker_compose(resolved_ports)
-            create_env_file(resolved_ports)
-            print("\n🎉 Port conflicts resolved! You can now run: docker-compose up")
-        else:
-            print("\n❌ Changes not applied.")
+    """Main entry point"""
+    if len(sys.argv) > 1:
+        command = sys.argv[1].lower()
     else:
-        print("\n🎉 All ports are available!")
+        command = 'auto'
+
+    resolver = PortResolver()
+
+    if command == 'check':
+        return resolver.run_check()
+    elif command == 'resolve':
+        return resolver.run_resolve()
+    elif command == 'auto':
+        return resolver.run_auto()
+    else:
+        print(f"Unknown command: {command}")
+        print("Usage: python port_resolver.py [check|resolve|auto]")
+        return 1
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

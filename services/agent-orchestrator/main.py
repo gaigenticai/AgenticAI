@@ -70,8 +70,12 @@ class Config:
     DB_PORT = os.getenv('POSTGRES_PORT', '5432')
     DB_NAME = os.getenv('POSTGRES_DB', 'agentic_ingestion')
     DB_USER = os.getenv('POSTGRES_USER', 'agentic_user')
-    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'agentic123')
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Do NOT hardcode passwords in source. Read from env; default to empty.
+    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', '')
+    # Prefer a full DATABASE_URL in env; fall back to constructing one only if DB_PASSWORD provided
+    DATABASE_URL = os.getenv('DATABASE_URL') or (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}" if DB_PASSWORD else os.getenv('DATABASE_URL', '')
+    )
 
     # Redis Configuration
     REDIS_HOST = os.getenv('REDIS_HOST', 'redis_ingestion')
@@ -82,7 +86,7 @@ class Config:
     RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')
     RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', '5672'))
     RABBITMQ_USER = os.getenv('RABBITMQ_USER', 'agentic_user')
-    RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', 'agentic123')
+    RABBITMQ_PASSWORD = os.getenv('RABBITMQ_PASSWORD', '')
     RABBITMQ_VHOST = os.getenv('RABBITMQ_VHOST', '/')
 
     # Service Configuration
@@ -91,7 +95,8 @@ class Config:
 
     # Authentication Configuration
     REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
-    JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
+    # JWT_SECRET must NOT be hardcoded. Default to empty and require operator to set it in .env
+    JWT_SECRET = os.getenv('JWT_SECRET', '')
     JWT_ALGORITHM = 'HS256'
 
     # Brain Factory Configuration
@@ -134,7 +139,7 @@ class AgentInstance(Base):
     success_rate = Column(Float, default=0.0)
     average_response_time = Column(Float)
     memory_usage_mb = Column(Float)
-    metadata = Column(JSON, default=dict)
+    agent_metadata = Column(JSON, default=dict)
 
 class AgentSession(Base):
     """Database model for agent execution sessions"""
@@ -154,7 +159,7 @@ class AgentSession(Base):
     tokens_used = Column(Integer, default=0)
     cost_estimate = Column(Float, default=0.0)
     memory_used_bytes = Column(BigInteger, default=0)
-    metadata = Column(JSON, default=dict)
+    session_metadata = Column(JSON, default=dict)
 
 class AgentMetrics(Base):
     """Database model for agent performance metrics"""
@@ -713,6 +718,9 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(HTTPBea
         return "anonymous"
 
     try:
+        if not Config.JWT_SECRET:
+            # Prevent decoding with an empty secret; fail closed
+            raise HTTPException(status_code=500, detail="JWT secret not configured on server")
         payload = jwt.decode(credentials.credentials, Config.JWT_SECRET, algorithms=[Config.JWT_ALGORITHM])
         return payload.get("sub")
     except jwt.ExpiredSignatureError:
@@ -998,8 +1006,8 @@ async def execute_task(
 @app.post("/orchestrator/execute-task-intelligent")
 async def execute_task_intelligent(
     task_request: TaskExecutionRequest,
-    routing_preferences: Optional[Dict[str, Any]] = None,
     background_tasks: BackgroundTasks,
+    routing_preferences: Optional[Dict[str, Any]] = None,
     task_orchestrator: TaskOrchestrator = Depends(get_task_orchestrator),
     agent_manager: AgentManager = Depends(get_agent_manager),
     current_user: str = Depends(get_current_user)
@@ -1677,13 +1685,9 @@ async def startup_event():
     """Application startup tasks"""
     logger.info("Starting Agent Orchestrator Service...")
 
-    # Create database tables
-    try:
-        Base.metadata.create_all(bind=db_engine)
-        logger.info("Database tables created/verified")
-    except Exception as e:
-        logger.error(f"Failed to create database tables: {str(e)}")
-        raise
+    # Database tables should be created via schema.sql (Rule 5 compliance)
+    # Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
+    logger.info("Database tables should be managed via schema.sql")
 
     # Test Redis connection
     try:

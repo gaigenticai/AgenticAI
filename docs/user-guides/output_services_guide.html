@@ -440,7 +440,7 @@
         "port": 5432,
         "database": "agentic_output",
         "user": "agentic_user",
-        "password": "agentic123",
+        "password": "<YOUR_STRONG_PASSWORD>",
         "table_name": "processed_data"
     },
     "performance_config": {
@@ -506,7 +506,7 @@ target_config = {
         "port": 5432,
         "database": "agentic_output",
         "user": "agentic_user",
-        "password": "agentic123",
+        "password": "<YOUR_STRONG_PASSWORD>",
         "table_name": "customer_data",
         "create_table": True
     },
@@ -589,7 +589,7 @@ curl -X POST http://localhost:8081/targets \
     "connection_config": {
       "endpoint": "http://minio_bronze:9000",
       "access_key": "agentic_user",
-      "secret_key": "agentic123",
+      "secret_key": "<YOUR_STRONG_PASSWORD>",
       "bucket": "bronze-layer",
       "object_name": "processed_data_{timestamp}.parquet"
     }

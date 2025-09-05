@@ -196,7 +196,7 @@ class Config:
     AUTH_SERVICE_PORT = int(os.getenv("AUTH_SERVICE_PORT", "8330"))
 
     # JWT Configuration
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-super-secret-jwt-key-change-in-production")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     JWT_REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
@@ -829,7 +829,7 @@ if Config.SECURITY_HEADERS_ENABLED:
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

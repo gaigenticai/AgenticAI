@@ -56,10 +56,10 @@ class Config:
     RULE_ENGINE_PORT = int(os.getenv("RULE_ENGINE_PORT", "8204"))
 
     # Service host configuration
-    SERVICE_HOST = os.getenv("SERVICE_HOST", "localhost")
+    SERVICE_HOST = os.getenv("SERVICE_HOST", "")
 
     # LLM Configuration
-    DEFAULT_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4")
+    DEFAULT_MODEL = os.getenv("DEFAULT_LLM_MODEL", "llama-3.1-8b")  # Open-source default to avoid vendor lock-in
     DEFAULT_TEMPERATURE = float(os.getenv("DEFAULT_TEMPERATURE", "0.7"))
     MAX_TOKENS = int(os.getenv("MAX_TOKENS", "4096"))
 

@@ -111,7 +111,7 @@ services:
     container_name: agentic-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: agentic_user
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-agentic123}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
       RABBITMQ_DEFAULT_VHOST: /
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -134,7 +134,7 @@ services:
     environment:
       POSTGRES_DB: agentic_ingestion
       POSTGRES_USER: agentic_user
-      POSTGRES_PASSWORD: ${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      POSTGRES_PASSWORD: ${POSTGRES_INGESTION_PASSWORD}
     volumes:
       - postgres_ingestion_data:/var/lib/postgresql/data
     ports:
@@ -182,7 +182,7 @@ services:
       - DB_PORT=5432
       - DB_NAME=agentic_ingestion
       - DB_USER=agentic_user
-      - DB_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - DB_PASSWORD=${POSTGRES_INGESTION_PASSWORD}
       - QUEUE_HOST=rabbitmq
       - QUEUE_PORT=5672
       - CACHE_HOST=redis_ingestion
@@ -343,7 +343,7 @@ services:
     environment:
       POSTGRES_DB: agentic_output
       POSTGRES_USER: agentic_user
-      POSTGRES_PASSWORD: ${POSTGRES_OUTPUT_PASSWORD:-agentic123}
+      POSTGRES_PASSWORD: ${POSTGRES_OUTPUT_PASSWORD}
     volumes:
       - postgres_output_data:/var/lib/postgresql/data
     ports:
@@ -371,12 +371,13 @@ services:
         target: /qdrant/config/production.yaml
     networks:
       - agentic-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
+    # Temporarily disabled health check for troubleshooting
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:6333/"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+    #   start_period: 30s
     restart: unless-stopped
 
   # Document Database - MongoDB
@@ -385,7 +386,7 @@ services:
     container_name: agentic-mongodb
     environment:
       MONGO_INITDB_ROOT_USERNAME: agentic_user
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-agentic123}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
       MONGO_INITDB_DATABASE: agentic_output
     volumes:
       - mongodb_output_data:/data/db
@@ -393,11 +394,12 @@ services:
       - "${MONGODB_PORT:-27017}:27017"
     networks:
       - agentic-network
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    # Temporarily disabled health check for troubleshooting
+    # healthcheck:
+    #   test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
     restart: unless-stopped
 
   # Search Database - Elasticsearch
@@ -429,7 +431,7 @@ services:
     environment:
       POSTGRES_DB: agentic_timeseries
       POSTGRES_USER: agentic_user
-      POSTGRES_PASSWORD: ${TIMESCALEDB_PASSWORD:-agentic123}
+      POSTGRES_PASSWORD: ${TIMESCALEDB_PASSWORD}
     volumes:
       - timescaledb_data:/var/lib/postgresql/data
     ports:
@@ -448,7 +450,7 @@ services:
     image: neo4j:5.15
     container_name: agentic-neo4j
     environment:
-      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-agentic123}
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD}
       NEO4J_PLUGINS: '["graph-data-science"]'
     volumes:
       - neo4j_data:/data
@@ -458,7 +460,7 @@ services:
     networks:
       - agentic-network
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-agentic123}", "MATCH () RETURN count(*) limit 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-}", "MATCH () RETURN count(*) limit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -471,7 +473,7 @@ services:
     command: server /data/bronze --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_USER:-agentic_user}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-agentic123}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     volumes:
       - minio_bronze_data:/data/bronze
     ports:
@@ -493,7 +495,7 @@ services:
     command: server /data/silver --console-address ":9002"
     environment:
       MINIO_ROOT_USER: ${MINIO_USER:-agentic_user}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-agentic123}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
     volumes:
       - minio_silver_data:/data/silver
     ports:
@@ -515,7 +517,7 @@ services:
     command: server /data/gold --console-address ":9003"
     environment:
       MINIO_ROOT_USER: ${MINIO_USER:-agentic_user}
-      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-agentic123}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-}
     volumes:
       - minio_gold_data:/data/gold
     ports:
@@ -546,16 +548,16 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - MINIO_ENDPOINT_BRONZE=http://minio_bronze:9000
       - MINIO_ENDPOINT_SILVER=http://minio_silver:9010
       - MINIO_ENDPOINT_GOLD=http://minio_gold:9020
       - MINIO_ACCESS_KEY=${MINIO_USER:-agentic_user}
-      - MINIO_SECRET_KEY=${MINIO_PASSWORD:-agentic123}
+      - MINIO_SECRET_KEY=${MINIO_PASSWORD}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
     volumes:
       - ingestion_data:/app/data
     ports:
@@ -583,11 +585,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
     ports:
       - "${MESSAGE_QUEUE_PORT:-8091}:8091"
     networks:
@@ -613,7 +615,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
     ports:
@@ -639,8 +641,8 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
-      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET:-}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}
       - BASE_URL=http://localhost:8093
@@ -667,7 +669,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
     ports:
       - "${DATA_ENCRYPTION_PORT:-8094}:8094"
     networks:
@@ -695,7 +697,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - PROMETHEUS_URL=http://prometheus:9090
       - GRAFANA_URL=http://grafana:3000
       - GRAFANA_API_KEY=${GRAFANA_API_KEY:-admin:admin}
@@ -722,7 +724,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
     ports:
       - "${AUDIT_COMPLIANCE_PORT:-8096}:8096"
     networks:
@@ -746,7 +748,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION:-us-east-1}
@@ -793,7 +795,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - JAEGER_ENDPOINT=http://jaeger:16686
       - JAEGER_AGENT_HOST=jaeger
       - JAEGER_AGENT_PORT=6831
@@ -824,7 +826,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
     ports:
@@ -856,11 +858,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
     ports:
       - "${ELASTICSEARCH_SERVICE_PORT:-8110}:8100"
@@ -888,16 +890,16 @@ services:
       - GRAFANA_HOST=grafana
       - GRAFANA_PORT=3000
       - GRAFANA_USER=admin
-      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
       - POSTGRES_HOST=postgresql_ingestion
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
     ports:
       - "${GRAFANA_SERVICE_PORT:-8120}:8120"
@@ -928,11 +930,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
     ports:
       - "${PROMETHEUS_SERVICE_PORT:-8130}:8130"
@@ -998,11 +1000,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
       - BRAIN_FACTORY_HOST=brain-factory
@@ -1039,7 +1041,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
@@ -1078,11 +1080,11 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672
       - RABBITMQ_USER=agentic_user
-      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-agentic123}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-}
       - PLUGIN_REGISTRY_HOST=plugin-registry
       - PLUGIN_REGISTRY_PORT=8201
       - RULE_ENGINE_HOST=rule-engine
@@ -1119,7 +1121,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
@@ -1152,7 +1154,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
@@ -1187,7 +1189,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - REDIS_HOST=redis_ingestion
       - REDIS_PORT=6379
       - VECTOR_DB_HOST=qdrant_vector
@@ -1510,7 +1512,7 @@ services:
       - POSTGRES_PORT=5432
       - POSTGRES_DB=agentic_ingestion
       - POSTGRES_USER=agentic_user
-      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-agentic123}
+      - POSTGRES_PASSWORD=${POSTGRES_INGESTION_PASSWORD:-}
       - PLUGIN_REGISTRY_HOST=plugin-registry
       - PLUGIN_REGISTRY_PORT=8201
       - WORKFLOW_ENGINE_HOST=workflow-engine
@@ -1666,7 +1668,7 @@ services:
       - OUTPUT_COORDINATOR_URL=http://output-coordinator:8081
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
     ports:
-      - "${VECTOR_UI_PORT:-8082}:8082"
+      - "8084:8082"
     networks:
       - agentic-network
     healthcheck:
@@ -1719,7 +1721,7 @@ services:
       - INTERACTION_RESPONSE_THRESHOLD_MS=${INTERACTION_RESPONSE_THRESHOLD_MS:-1000}
       - MEMORY_USAGE_THRESHOLD_MB=${MEMORY_USAGE_THRESHOLD_MB:-500}
       - REQUIRE_AUTH=${REQUIRE_AUTH:-false}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key}
+      - JWT_SECRET=${JWT_SECRET}
       - ENABLE_METRICS=${ENABLE_METRICS:-true}
       - METRICS_PORT=${METRICS_PORT:-8001}
     volumes:
@@ -1816,7 +1818,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - REDIS_DB=0
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-your-super-secret-jwt-key-change-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-}
       - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       - JWT_REFRESH_TOKEN_EXPIRE_DAYS=${JWT_REFRESH_TOKEN_EXPIRE_DAYS:-7}

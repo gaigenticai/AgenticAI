@@ -97,7 +97,8 @@ class Config:
     ANALYTICS_RETENTION_DAYS = int(os.getenv("ANALYTICS_RETENTION_DAYS", "365"))
 
     # Database Configuration
-    DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/agentic_brain")
+    # Database URL must be provided via environment; avoid hardcoded credentials
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
 
     # Redis Configuration
     REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -253,52 +254,30 @@ class MarkdownToHTMLConverter:
             return f"<div class='error'>Error converting documentation: {str(e)}</div>"
 
     async def _parse_markdown(self, content: str) -> str:
-        """Parse basic Markdown syntax to HTML"""
-        # Headers
-        content = content.replace("### ", "<h3>").replace("\n", "</h3>\n", 1)
-        content = content.replace("## ", "<h2>").replace("\n", "</h2>\n", 1)
-        content = content.replace("# ", "<h1>").replace("\n", "</h1>\n", 1)
+        """Parse basic Markdown syntax to HTML.
 
-        # Bold and italic
-        import re
-        content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
-        content = re.sub(r'\*(.*?)\*', r'<em>\1</em>', content)
-
-        # Links
-        content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', content)
-
-        # Code blocks
-        content = re.sub(r'```([^`]+)```', r'<pre><code>\1</code></pre>', content, flags=re.DOTALL)
-        content = re.sub(r'`([^`]+)`', r'<code>\1</code>', content)
-
-        # Lists
-        lines = content.split('\n')
-        in_list = False
-        for i, line in enumerate(lines):
-            if line.strip().startswith('- '):
-                if not in_list:
-                    lines[i] = '<ul>\n<li>' + line[2:] + '</li>'
-                    in_list = True
-                else:
-                    lines[i] = '<li>' + line[2:] + '</li>'
-            elif in_list and line.strip():
-                lines[i] = '</ul>\n' + line
-                in_list = False
-            elif in_list and not line.strip():
-                lines[i] = '</ul>\n'
-                in_list = False
-
-        content = '\n'.join(lines)
-
-        # Paragraphs
-        paragraphs = []
-        for line in content.split('\n'):
-            if line.strip() and not line.startswith('<'):
-                paragraphs.append(f'<p>{line}</p>')
-            else:
-                paragraphs.append(line)
-
-        return '\n'.join(paragraphs)
+        Note: This implementation is intentionally conservative and uses the
+        `markdown` package when available to avoid fragile ad-hoc parsing.
+        """
+        try:
+            import markdown as _md
+            # Use safe extensions and disable raw HTML by default
+            html = _md.markdown(content, extensions=['extra', 'sane_lists'])
+            return html
+        except Exception:
+            # Fallback: very conservative transformations
+            import re
+            html = content
+            html = re.sub(r'```([\s\S]*?)```', r'<pre><code>\1</code></pre>', html)
+            html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html)
+            html = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html)
+            html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
+            # Very small list handling
+            html = re.sub(r'(?m)^- (.+)$', r'<li>\1</li>', html)
+            html = re.sub(r'(<li>.+</li>)', r'<ul>\1</ul>', html, count=1)
+            # Wrap remaining lines in paragraphs
+            lines = [l for l in html.split('\n') if l.strip()]
+            return '\n'.join(f'<p>{l}</p>' for l in lines)
 
     async def _enhance_with_web_elements(self, content: str, title: str) -> str:
         """Enhance HTML with web form elements and styling"""
@@ -709,7 +688,7 @@ app.add_middleware(
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

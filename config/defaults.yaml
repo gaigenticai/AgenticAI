@@ -1,0 +1,215 @@
+# Default Configuration Values for AgenticAI Platform
+# This file contains all default values to eliminate hardcoded values from source code
+# Rule 1 Compliance: No hardcoded values in source code
+
+# Service Ports and Endpoints
+service_ports:
+  # Agent Brain Base Service
+  agent_brain_base_port: 8305
+  reasoning_module_factory_port: 8304
+  memory_manager_port: 8205
+  plugin_registry_port: 8201
+  rule_engine_port: 8204
+  workflow_engine_port: 8202
+
+  # Brain Factory Service
+  brain_factory_port: 8301
+  service_connector_factory_port: 8306
+  ui_to_brain_mapper_port: 8302
+  agent_orchestrator_port: 8200
+
+# Service Configuration
+service_config:
+  service_host: localhost
+  require_auth: false
+  jwt_secret: ""
+  jwt_algorithm: HS256
+
+# Agent Configuration
+agent_config:
+  default_execution_timeout: 300
+  max_concurrent_tasks: 10
+  memory_ttl_seconds: 3600
+  max_agent_instances: 50
+  agent_creation_timeout: 120
+  agent_validation_timeout: 30
+
+# Performance and Monitoring
+performance:
+  enable_metrics: true
+  metrics_retention_hours: 24
+  plugin_load_timeout: 30
+  plugin_execution_timeout: 300
+  plugin_cache_enabled: true
+  plugin_auto_update: false
+  allow_plugin_upload: true
+  plugin_sandbox_enabled: true
+
+# Database Configuration
+database:
+  host: localhost
+  port: 5432
+  name: agentic_ingestion
+  user: agentic_user
+  password: ""
+
+# Redis Configuration
+redis:
+  host: localhost
+  port: 6379
+  db: 1
+
+# Risk Calculation Thresholds
+risk_calculation:
+  credit_score:
+    poor_threshold: 620
+    fair_threshold: 660
+    good_threshold: 720
+  debt_to_income:
+    acceptable_threshold: 0.36
+    moderate_threshold: 0.43
+    high_threshold: 0.50
+  loan_to_income:
+    moderate_threshold: 2.5
+    high_threshold: 3.0
+    very_high_threshold: 4.0
+  risk_category:
+    low_max: 20
+    medium_max: 40
+    high_max: 60
+
+# LLM Configuration
+llm_config:
+  default_temperature: 0.7
+  processing_delay_seconds: 0.5
+  default_confidence_score: 0.85
+  token_estimate_multiplier: 1.5
+  default_recommendation: PROCEED
+  default_risk_level: LOW
+  default_insights: "Data appears valid,No anomalies detected"
+  next_steps: "Continue processing,Generate report"
+
+# Fraud Detection Configuration
+fraud_config:
+  amount_threshold: 10000
+  frequency_threshold: 5
+  risk_threshold: 25
+  amount_risk_score: 20
+  frequency_risk_score: 15
+  early_claim_days: 30
+  high_claim_amount: 100000
+  max_claim_frequency: 2
+  suspicious_flags_threshold: 1
+
+# Compliance Configuration
+compliance_config:
+  default_score: 95
+  default_recommendation: COMPLIANT
+  high_cost_loan_threshold: 1000000
+  ability_to_repay_threshold: 50000
+  junior_officer_limit: 100000
+
+# CSV Sample Configuration
+csv_config:
+  sample_rows: 2
+  sample_columns: "id,field1,field2"
+
+# Timeout Configuration
+timeout_config:
+  document_indexing_timeout: 120
+  vector_search_timeout: 30
+  similarity_search_timeout: 30
+  default_http_timeout: 30.0
+
+# API Sample Configuration
+api_config:
+  sample_user_id: 1
+  sample_user_name: "John Doe"
+  sample_user_email: "john@example.com"
+
+# Database Sample Configuration
+db_config:
+  sample_policy_id: 123
+  sample_policy_amount: 50000
+  sample_policy_status: active
+
+# Rule Engine Configuration
+rule_engine_config:
+  processing_delay_seconds: 0.2
+
+# Service Endpoints Configuration
+service_endpoints:
+  ingestion_coordinator: "http://localhost:8080"
+  output_coordinator: "http://localhost:8081"
+  qdrant_vector_db: "http://localhost:6333"
+  postgresql_ingestion: "localhost:5432"
+  postgresql_output: "localhost:5433"
+  mongodb: "localhost:27017"
+  redis_cache: "localhost:6379"
+  minio_data_lake: "localhost:9000"
+  rabbitmq: "localhost:5672"
+  grafana: "localhost:3000"
+  prometheus: "localhost:9090"
+
+# Algorithm Parameters
+algorithm_params:
+  default_score_threshold: 0.7
+  vector_similarity_threshold: 0.8
+  search_result_limit: 10
+
+# Advanced Risk Modeling
+advanced_risk:
+  credit_score_weights:
+    subprime: 0.85
+    fair: 0.65
+    good: 0.35
+    very_good: 0.15
+    exceptional: 0.05
+  dti_risk_thresholds:
+    severe: 0.50
+    high: 0.43
+    moderate: 0.36
+    acceptable: 0.28
+    low: 0.05
+  lti_risk_thresholds:
+    extremely_high: 0.90
+    very_high: 0.80
+    high: 0.70
+    moderate: 0.60
+    acceptable: 0.10
+  risk_factor_weights:
+    credit_score: 0.40
+    dti: 0.25
+    lti: 0.20
+    employment: 0.10
+    history: 0.05
+  interaction_effects:
+    synergistic_compounding: 15
+    moderate_compounding: 8
+    protective_offset: 10
+
+# Advanced Fraud Detection
+advanced_fraud:
+  temporal_weights:
+    early_claim: 0.8
+    recent_claim: 0.4
+    normal_timing: 0.1
+  anomaly_weights:
+    temporal_risk: 0.3
+    amount_risk: 0.3
+    behavioral_risk: 0.25
+    coverage_risk: 0.15
+  risk_aggregation:
+    base_weights:
+      temporal: 0.25
+      amount: 0.30
+      behavioral: 0.25
+      coverage: 0.20
+    interaction_effects:
+      temporal_behavioral: 0.15
+      amount_coverage: 0.12
+    anomaly_amplification:
+      high_threshold: 0.7
+      high_multiplier: 1.3
+      moderate_threshold: 0.5
+      moderate_multiplier: 1.1

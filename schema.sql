@@ -392,6 +392,66 @@ CREATE TABLE IF NOT EXISTS masking_rules (
     metadata JSONB
 );
 
+-- Rule engine tables
+CREATE TABLE IF NOT EXISTS rule_sets (
+    id SERIAL PRIMARY KEY,
+    rule_set_id VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    domain VARCHAR(100),
+    version VARCHAR(50) DEFAULT '1.0.0',
+    is_active BOOLEAN DEFAULT true,
+    rule_count INTEGER DEFAULT 0,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS rules (
+    id SERIAL PRIMARY KEY,
+    rule_id VARCHAR(100) UNIQUE NOT NULL,
+    rule_set_id VARCHAR(100) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    rule_type VARCHAR(50) NOT NULL, -- validation, decision, transformation, scoring
+    priority INTEGER DEFAULT 1,
+    conditions JSONB NOT NULL,
+    actions JSONB NOT NULL,
+    rule_metadata JSONB DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    execution_count BIGINT DEFAULT 0,
+    success_count BIGINT DEFAULT 0,
+    average_execution_time_ms REAL,
+    last_executed TIMESTAMP WITH TIME ZONE,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS rule_executions (
+    id SERIAL PRIMARY KEY,
+    execution_id VARCHAR(100) UNIQUE NOT NULL,
+    rule_id VARCHAR(100) NOT NULL,
+    rule_set_id VARCHAR(100),
+    input_data JSONB,
+    output_data JSONB,
+    execution_time_ms INTEGER,
+    status VARCHAR(50) DEFAULT 'running', -- running, completed, failed
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS rule_performance (
+    id SERIAL PRIMARY KEY,
+    rule_id VARCHAR(100) NOT NULL,
+    execution_count INTEGER DEFAULT 0,
+    average_execution_time_ms REAL,
+    success_rate REAL DEFAULT 0.0,
+    last_executed TIMESTAMP WITH TIME ZONE,
+    performance_score REAL DEFAULT 0.0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ===========================================
 -- AUDIT & COMPLIANCE TABLES
 -- ===========================================
@@ -1388,7 +1448,7 @@ CREATE TABLE IF NOT EXISTS agent_sessions (
     memory_used_bytes BIGINT DEFAULT 0,
     tokens_used INTEGER DEFAULT 0,
     cost_estimate DECIMAL(10,4) DEFAULT 0.0000,
-    metadata JSONB DEFAULT '{}'
+    session_metadata JSONB DEFAULT '{}'
 );
 
 -- Agent plugins - registry of available plugins
@@ -1477,14 +1537,159 @@ CREATE TABLE IF NOT EXISTS agent_audit_log (
     event_timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Active agent instances
+CREATE TABLE IF NOT EXISTS active_agents (
+    id SERIAL PRIMARY KEY,
+    agent_id VARCHAR(100) UNIQUE NOT NULL,
+    agent_name VARCHAR(255) NOT NULL,
+    domain VARCHAR(100) NOT NULL,
+    status VARCHAR(50) DEFAULT 'starting',
+    brain_factory_url VARCHAR(500),
+    deployment_id VARCHAR(100),
+    registered_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_health_check TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    active_sessions INTEGER DEFAULT 0,
+    total_sessions BIGINT DEFAULT 0,
+    success_rate REAL DEFAULT 0.0,
+    average_response_time REAL,
+    memory_usage_mb REAL,
+    agent_metadata JSONB DEFAULT '{}'
+);
+
+-- Plugin registry tables
+CREATE TABLE IF NOT EXISTS plugin_metadata (
+    id SERIAL PRIMARY KEY,
+    plugin_id VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    plugin_type VARCHAR(50) NOT NULL, -- domain, generic
+    domain VARCHAR(100), -- underwriting, claims, fraud, etc. (NULL for generic)
+    description TEXT,
+    version VARCHAR(50) DEFAULT '1.0.0',
+    author VARCHAR(255),
+    license VARCHAR(100),
+    repository_url VARCHAR(500),
+    documentation_url VARCHAR(500),
+    dependencies JSONB DEFAULT '[]',
+    configuration_schema JSONB,
+    entry_point VARCHAR(255), -- Python module path
+    is_active BOOLEAN DEFAULT true,
+    is_verified BOOLEAN DEFAULT false,
+    usage_count BIGINT DEFAULT 0,
+    rating REAL,
+    tags JSONB DEFAULT '[]',
+    security_score REAL DEFAULT 0.0, -- 0.0 to 1.0
+    last_updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS plugin_executions (
+    id SERIAL PRIMARY KEY,
+    execution_id VARCHAR(100) UNIQUE NOT NULL,
+    plugin_id VARCHAR(100) NOT NULL,
+    agent_id VARCHAR(100),
+    input_data JSONB,
+    output_data JSONB,
+    execution_time_ms INTEGER,
+    status VARCHAR(50) DEFAULT 'running', -- running, completed, failed
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS plugin_dependencies (
+    id SERIAL PRIMARY KEY,
+    plugin_id VARCHAR(100) NOT NULL,
+    dependency_name VARCHAR(255) NOT NULL,
+    dependency_version VARCHAR(50),
+    is_optional BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Workflow engine tables
+CREATE TABLE IF NOT EXISTS workflow_executions (
+    id SERIAL PRIMARY KEY,
+    execution_id VARCHAR(100) UNIQUE NOT NULL,
+    agent_id VARCHAR(100) NOT NULL,
+    workflow_id VARCHAR(100) NOT NULL,
+    status VARCHAR(50) DEFAULT 'running', -- running, completed, failed, paused
+    started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    duration_seconds REAL,
+    total_components INTEGER DEFAULT 0,
+    completed_components INTEGER DEFAULT 0,
+    failed_components INTEGER DEFAULT 0,
+    input_data JSONB,
+    output_data JSONB,
+    error_message TEXT,
+    execution_plan JSONB, -- Component execution order and dependencies
+    execution_metadata JSONB DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS component_executions (
+    id SERIAL PRIMARY KEY,
+    execution_id VARCHAR(100) NOT NULL,
+    component_id VARCHAR(100) NOT NULL,
+    component_type VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending', -- pending, running, completed, failed, skipped
+    started_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    duration_ms INTEGER,
+    input_data JSONB,
+    output_data JSONB,
+    error_message TEXT,
+    retry_count INTEGER DEFAULT 0,
+    max_retries INTEGER DEFAULT 3,
+    dependencies JSONB DEFAULT '[]', -- List of component IDs this depends on
+    component_metadata JSONB DEFAULT '{}'
+);
+
 -- Template usage tracking
 CREATE TABLE IF NOT EXISTS template_usage (
     id SERIAL PRIMARY KEY,
     template_id VARCHAR(100) NOT NULL,
     user_id VARCHAR(255),
-    usage_type VARCHAR(50) NOT NULL, -- view, instantiate, deploy
+    usage_type VARCHAR(50) NOT NULL, -- view, instantiate, deploy, export
     usage_context JSONB DEFAULT '{}',
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    session_id VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Template store additional tables
+CREATE TABLE IF NOT EXISTS template_versions (
+    id SERIAL PRIMARY KEY,
+    template_id VARCHAR(100) NOT NULL,
+    version VARCHAR(50) NOT NULL,
+    version_type VARCHAR(20) DEFAULT 'minor', -- major, minor, patch
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    changelog TEXT,
+    is_active BOOLEAN DEFAULT true,
+    download_count BIGINT DEFAULT 0,
+    compatibility_info JSONB DEFAULT '{}'
+);
+
+CREATE TABLE IF NOT EXISTS template_validation (
+    id SERIAL PRIMARY KEY,
+    template_id VARCHAR(100) NOT NULL,
+    version VARCHAR(50),
+    validation_type VARCHAR(50) NOT NULL, -- syntax, semantic, compatibility
+    is_valid BOOLEAN DEFAULT true,
+    validation_errors JSONB DEFAULT '[]',
+    validation_warnings JSONB DEFAULT '[]',
+    validated_by VARCHAR(255),
+    validated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS template_backups (
+    id SERIAL PRIMARY KEY,
+    template_id VARCHAR(100) NOT NULL,
+    backup_version VARCHAR(50) NOT NULL,
+    backup_path VARCHAR(500) NOT NULL,
+    backup_size_bytes BIGINT,
+    backup_checksum VARCHAR(64),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Plugin usage tracking

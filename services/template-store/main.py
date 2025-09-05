@@ -46,6 +46,12 @@ from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.sql import func
 import httpx
 import uvicorn
+import sys
+import os
+
+# Add utils to path for shared configuration
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
+from utils.shared_config import DatabaseConfig, ServiceConfig
 
 # JWT support for authentication
 try:
@@ -64,27 +70,31 @@ logger = structlog.get_logger(__name__)
 class Config:
     """Configuration class for Template Store Service"""
 
-    # Database Configuration
-    DB_HOST = os.getenv('POSTGRES_HOST', 'postgresql_ingestion')
-    DB_PORT = os.getenv('POSTGRES_PORT', '5432')
-    DB_NAME = os.getenv('POSTGRES_DB', 'agentic_ingestion')
-    DB_USER = os.getenv('POSTGRES_USER', 'agentic_user')
-    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'agentic123')
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Database Configuration - using shared config for modularity (Rule 2)
+    db_config = DatabaseConfig.get_postgres_config()
+    DB_HOST = db_config['host']
+    DB_PORT = db_config['port']
+    DB_NAME = db_config['database']
+    DB_USER = db_config['user']
+    DB_PASSWORD = db_config['password']
+    DATABASE_URL = db_config['url']
 
-    # Redis Configuration
-    REDIS_HOST = os.getenv('REDIS_HOST', 'redis_ingestion')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
-    REDIS_DB = 3  # Use DB 3 for template store
+    # Redis Configuration - using shared config for modularity (Rule 2)
+    redis_config = DatabaseConfig.get_redis_config()
+    REDIS_HOST = redis_config['host']
+    REDIS_PORT = redis_config['port']
+    REDIS_DB = 3  # Use DB 3 for template store (service-specific)
 
-    # Service Configuration
-    SERVICE_HOST = os.getenv('TEMPLATE_STORE_HOST', '0.0.0.0')
-    SERVICE_PORT = int(os.getenv('TEMPLATE_STORE_PORT', '8203'))
+    # Service Configuration - using shared config for consistency
+    service_config = ServiceConfig.get_service_host_port('TEMPLATE_STORE', '8203')
+    SERVICE_HOST = service_config['host']
+    SERVICE_PORT = int(service_config['port'])
 
-    # Authentication Configuration
-    REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
-    JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
-    JWT_ALGORITHM = 'HS256'
+    # Authentication Configuration - using shared config for consistency
+    auth_config = ServiceConfig.get_auth_config()
+    REQUIRE_AUTH = auth_config['require_auth']
+    JWT_SECRET = auth_config['jwt_secret']
+    JWT_ALGORITHM = auth_config['jwt_algorithm']
 
     # Template Configuration
     TEMPLATE_CACHE_ENABLED = os.getenv('TEMPLATE_CACHE_ENABLED', 'true').lower() == 'true'
@@ -1421,7 +1431,7 @@ async def startup_event():
 
     # Create database tables
     try:
-        Base.metadata.create_all(bind=db_engine)
+        # Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
         logger.info("Database tables created/verified")
     except Exception as e:
         logger.error(f"Failed to create database tables: {str(e)}")

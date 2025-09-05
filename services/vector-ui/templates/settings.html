@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Agentic Platform</title>
+
+    <!-- Modern Fonts: Inter and JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+
+    <!-- Configure Tailwind with custom design tokens -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        'primary': {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        'accent': {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                            950: '#022c22',
+                        },
+                        'warning': {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                            950: '#451a03',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-subtle': 'bounce 2s infinite',
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+                        'medium': '0 4px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        'large': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .nav-glass {
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .setting-card {
+            transition: all 0.3s ease;
+        }
+
+        .setting-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-active {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    <!-- Modern Glassmorphism Navigation -->
+    <nav class="nav-glass sticky top-0 z-50 border-b border-gray-200/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Brand -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <i class="fas fa-brain text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">Agentic Platform</h1>
+                            <p class="text-xs text-gray-500 hidden sm:block">Enterprise Control Center</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                    </a>
+                    <a href="/guide" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-book mr-2"></i>Guide
+                    </a>
+                    <a href="/docs" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                        <i class="fas fa-code mr-2"></i>API Docs
+                    </a>
+                    <a href="/settings" class="nav-link px-3 py-2 rounded-lg text-sm font-medium bg-primary-50 text-primary-700">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </a>
+                </div>
+
+                <!-- User Menu and Notifications -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notification Bell -->
+                    <button class="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-bell text-lg"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-accent-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
+                    </button>
+
+                    <!-- User Avatar -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <span class="hidden sm:block text-sm font-medium text-gray-700">Admin</span>
+                    </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-50" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white border-t border-gray-200">
+            <div class="px-4 py-3 space-y-1">
+                <a href="/" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+                <a href="/guide" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-book mr-2"></i>Guide
+                </a>
+                <a href="/docs" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50">
+                    <i class="fas fa-code mr-2"></i>API Docs
+                </a>
+                <a href="/settings" class="block px-3 py-2 rounded-lg text-sm font-medium bg-primary-50 text-primary-700">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                <i class="fas fa-cog mr-3 text-primary-600"></i>
+                Platform Settings
+            </h1>
+            <p class="text-gray-600">Configure and manage your Agentic Platform settings</p>
+        </div>
+
+        <!-- Settings Tabs -->
+        <div class="mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="showSettingsTab('general')" id="general-tab" class="tab-button tab-active whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        <i class="fas fa-sliders-h mr-2"></i>General
+                    </button>
+                    <button onclick="showSettingsTab('security')" id="security-tab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-shield-alt mr-2"></i>Security
+                    </button>
+                    <button onclick="showSettingsTab('services')" id="services-tab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-server mr-2"></i>Services
+                    </button>
+                    <button onclick="showSettingsTab('monitoring')" id="monitoring-tab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-chart-line mr-2"></i>Monitoring
+                    </button>
+                    <button onclick="showSettingsTab('backup')" id="backup-tab" class="tab-button whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                        <i class="fas fa-save mr-2"></i>Backup
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="space-y-8">
+            <!-- General Settings -->
+            <div id="general-settings" class="settings-tab">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-sliders-h mr-3 text-primary-600"></i>
+                        General Settings
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Platform Configuration -->
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Platform Configuration</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Authentication Required</label>
+                                        <p class="text-xs text-gray-500">Enable login/signup for platform access</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="require-auth" onchange="updateSetting('require_auth', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Auto-start Services</label>
+                                        <p class="text-xs text-gray-500">Automatically start all services on platform launch</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="auto-start" checked onchange="updateSetting('auto_start', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Debug Mode</label>
+                                        <p class="text-xs text-gray-500">Enable detailed logging and error reporting</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="debug-mode" onchange="updateSetting('debug_mode', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Settings -->
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Performance Settings</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Concurrent Requests</label>
+                                    <input type="number" id="max-concurrent" value="100" min="1" max="1000"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('max_concurrent_requests', this.value)">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Request Timeout (seconds)</label>
+                                    <input type="number" id="request-timeout" value="30" min="5" max="300"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('request_timeout', this.value)">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cache TTL (minutes)</label>
+                                    <input type="number" id="cache-ttl" value="60" min="1" max="1440"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('cache_ttl', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div id="security-settings" class="settings-tab hidden">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-shield-alt mr-3 text-accent-600"></i>
+                        Security Settings
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Authentication -->
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Authentication</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">JWT Tokens</label>
+                                        <p class="text-xs text-gray-500">Enable JWT-based authentication</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="jwt-enabled" checked onchange="updateSetting('jwt_enabled', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Token Expiration (hours)</label>
+                                    <input type="number" id="token-expiry" value="24" min="1" max="168"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('token_expiry_hours', this.value)">
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Login Attempts</label>
+                                    <input type="number" id="max-login-attempts" value="5" min="1" max="10"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('max_login_attempts', this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Encryption -->
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Encryption</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Data Encryption</label>
+                                        <p class="text-xs text-gray-500">Encrypt sensitive data at rest</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="data-encryption" checked onchange="updateSetting('data_encryption', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">TLS/SSL</label>
+                                        <p class="text-xs text-gray-500">Enable HTTPS for all connections</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="tls-enabled" onchange="updateSetting('tls_enabled', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Encryption Algorithm</label>
+                                    <select id="encryption-algorithm" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            onchange="updateSetting('encryption_algorithm', this.value)">
+                                        <option value="AES-256">AES-256</option>
+                                        <option value="ChaCha20">ChaCha20</option>
+                                        <option value="RSA-4096">RSA-4096</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services Settings -->
+            <div id="services-settings" class="settings-tab hidden">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-server mr-3 text-warning-600"></i>
+                        Services Configuration
+                    </h2>
+
+                    <div class="space-y-6">
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Service Auto-scaling</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Min Instances</label>
+                                    <input type="number" id="min-instances" value="1" min="1" max="10"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('min_service_instances', this.value)">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Max Instances</label>
+                                    <input type="number" id="max-instances" value="5" min="1" max="20"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('max_service_instances', this.value)">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">CPU Threshold (%)</label>
+                                    <input type="number" id="cpu-threshold" value="80" min="50" max="95"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('cpu_scale_threshold', this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Resource Limits</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Memory Limit (MB)</label>
+                                    <input type="number" id="memory-limit" value="1024" min="256" max="8192"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('memory_limit_mb', this.value)">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">CPU Limit (cores)</label>
+                                    <input type="number" id="cpu-limit" value="2" min="0.5" max="8" step="0.5"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('cpu_limit_cores', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitoring Settings -->
+            <div id="monitoring-settings" class="settings-tab hidden">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-chart-line mr-3 text-accent-600"></i>
+                        Monitoring Configuration
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Metrics Collection</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Prometheus Metrics</label>
+                                        <p class="text-xs text-gray-500">Enable Prometheus metrics collection</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="prometheus-enabled" checked onchange="updateSetting('prometheus_enabled', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Metrics Interval (seconds)</label>
+                                    <input type="number" id="metrics-interval" value="15" min="5" max="300"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('metrics_interval_seconds', this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Alerting</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Email Alerts</label>
+                                        <p class="text-xs text-gray-500">Send alerts via email</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="email-alerts" onchange="updateSetting('email_alerts', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Alert Email</label>
+                                    <input type="email" id="alert-email" placeholder="admin@company.com"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('alert_email', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backup Settings -->
+            <div id="backup-settings" class="settings-tab hidden">
+                <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-soft">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-save mr-3 text-primary-600"></i>
+                        Backup Configuration
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Backup Schedule</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Automated Backups</label>
+                                        <p class="text-xs text-gray-500">Enable automatic backup scheduling</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="auto-backup" checked onchange="updateSetting('auto_backup_enabled', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Backup Frequency</label>
+                                    <select id="backup-frequency" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            onchange="updateSetting('backup_frequency', this.value)">
+                                        <option value="daily">Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Retention Period (days)</label>
+                                    <input type="number" id="retention-period" value="30" min="7" max="365"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('backup_retention_days', this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-card bg-gray-50 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Backup Storage</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Storage Location</label>
+                                    <select id="storage-location" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                            onchange="updateSetting('backup_storage_location', this.value)">
+                                        <option value="local">Local Storage</option>
+                                        <option value="minio">MinIO Object Storage</option>
+                                        <option value="s3">Amazon S3</option>
+                                        <option value="azure">Azure Blob Storage</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Backup Path</label>
+                                    <input type="text" id="backup-path" value="/backups" placeholder="/backups"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                           onchange="updateSetting('backup_path', this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Settings Button -->
+        <div class="mt-8 flex justify-end">
+            <button onclick="saveSettings()" class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center space-x-2">
+                <i class="fas fa-save"></i>
+                <span>Save All Settings</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle functionality
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobileMenu');
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Settings tabs functionality
+        function showSettingsTab(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.settings-tab');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+
+            // Remove active class from all tab buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.classList.remove('tab-active', 'text-primary-700', 'border-primary-500');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // Show selected tab
+            const selectedTab = document.getElementById(tabName + '-settings');
+            selectedTab.classList.remove('hidden');
+
+            // Add active class to selected tab button
+            const selectedButton = document.getElementById(tabName + '-tab');
+            selectedButton.classList.add('tab-active', 'text-primary-700', 'border-primary-500');
+            selectedButton.classList.remove('border-transparent', 'text-gray-500');
+        }
+
+        // Load settings from server
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+
+                    // Update form fields with loaded settings
+                    Object.keys(settings).forEach(key => {
+                        const element = document.getElementById(key.replace(/_/g, '-'));
+                        if (element) {
+                            if (element.type === 'checkbox') {
+                                element.checked = settings[key];
+                            } else {
+                                element.value = settings[key];
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.log('Failed to load settings:', error);
+            }
+        }
+
+        // Update individual setting
+        async function updateSetting(key, value) {
+            try {
+                const response = await fetch('/api/settings/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        key: key,
+                        value: value
+                    })
+                });
+
+                if (response.ok) {
+                    console.log(`Setting ${key} updated successfully`);
+                } else {
+                    console.error(`Failed to update setting ${key}`);
+                }
+            } catch (error) {
+                console.error(`Error updating setting ${key}:`, error);
+            }
+        }
+
+        // Save all settings
+        async function saveSettings() {
+            try {
+                // Show loading state
+                const saveButton = event.target.closest('button');
+                const originalText = saveButton.innerHTML;
+                saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+                saveButton.disabled = true;
+
+                // Collect all settings
+                const settings = {};
+
+                // Get all form inputs
+                const inputs = document.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const key = input.id.replace(/-/g, '_');
+                    if (input.type === 'checkbox') {
+                        settings[key] = input.checked;
+                    } else if (input.type === 'number') {
+                        settings[key] = parseInt(input.value);
+                    } else {
+                        settings[key] = input.value;
+                    }
+                });
+
+                // Save settings
+                const response = await fetch('/api/settings/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('Settings saved successfully!');
+                } else {
+                    alert('Failed to save settings. Please try again.');
+                }
+
+                // Reset button
+                saveButton.innerHTML = originalText;
+                saveButton.disabled = false;
+
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                alert('Failed to save settings. Please try again.');
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+        });
+    </script>
+</body>
+</html>

@@ -241,7 +241,11 @@ OUTPUT_VALIDATION_ERRORS = None
 ACTIVE_OUTPUT_JOBS = None
 
 # Global variables and connections
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_output:5432/agentic_output")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    logger.error("DATABASE_URL is not configured for Output Coordinator; set DATABASE_URL in environment")
+    raise RuntimeError("DATABASE_URL not configured for Output Coordinator")
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -1240,7 +1244,7 @@ async def startup_event():
     logger.info("Output Coordinator starting up...")
 
     # Create database tables
-    Base.metadata.create_all(bind=engine)
+    # Base.metadata.create_all(bind=engine)  # Removed - use schema.sql instead
 
     # Test Redis connection
     try:

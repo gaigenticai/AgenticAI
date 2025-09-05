@@ -106,6 +106,11 @@ class Config:
     TEST_RESULTS_DIR = "/app/test_results"
     TEST_LOGS_DIR = "/app/test_logs"
 
+# Fail-fast: require DATABASE_URL to be set via environment for production use
+if not Config.DATABASE_URL:
+    logger.error("DATABASE_URL not configured for Automated Testing Service; set DATABASE_URL in environment")
+    raise RuntimeError("DATABASE_URL not configured for Automated Testing Service")
+
 # =============================================================================
 # DATABASE MODELS
 # =============================================================================
@@ -1108,7 +1113,7 @@ app.add_middleware(
 
 # Initialize database
 engine = create_engine(Config.DATABASE_URL)
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Initialize Redis

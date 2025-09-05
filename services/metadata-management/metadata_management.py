@@ -295,7 +295,7 @@ def setup_rabbitmq():
     try:
         credentials = pika.PlainCredentials(
             os.getenv("RABBITMQ_USER", "agentic_user"),
-            os.getenv("RABBITMQ_PASSWORD", "agentic123")
+            os.getenv("RABBITMQ_PASSWORD", "")
         )
         parameters = pika.ConnectionParameters(
             host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
@@ -435,7 +435,7 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
         }
 
         database_connection = psycopg2.connect(**db_config)

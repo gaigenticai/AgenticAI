@@ -109,6 +109,36 @@ check_system_resources() {
     fi
 }
 
+# Function to resolve port conflicts automatically
+resolve_port_conflicts() {
+    print_step "Checking for port conflicts..."
+
+    # Check if port resolver script exists
+    if [ ! -f "docker/port_resolver.py" ]; then
+        print_warning "Port resolver script not found. Skipping automatic port resolution."
+        return 0
+    fi
+
+    # Run port conflict resolution
+    if python3 docker/port_resolver.py check; then
+        print_success "No port conflicts detected"
+    else
+        print_warning "Port conflicts detected. Attempting automatic resolution..."
+
+        if python3 docker/port_resolver.py resolve; then
+            print_success "Port conflicts resolved successfully"
+            print_info "Environment file updated with new port assignments"
+        else
+            print_error "Failed to resolve port conflicts automatically"
+            print_warning "You may need to manually resolve port conflicts or stop conflicting services"
+            print_info "Run: python3 docker/port_resolver.py check"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
 # Function to clean up previous containers
 cleanup_containers() {
     print_step "Cleaning up previous containers..."
@@ -260,6 +290,11 @@ main() {
     echo ""
     print_info "Starting Agentic Platform with 15+ microservices..."
     print_info "Estimated startup time: 3-5 minutes"
+    echo ""
+
+    # Resolve port conflicts automatically
+    resolve_port_conflicts
+
     echo ""
 
     # Clean up previous containers

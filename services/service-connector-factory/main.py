@@ -45,6 +45,10 @@ from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, validator
 from pydantic.dataclasses import dataclass
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, DateTime, Text
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.pool import QueuePool
+from sqlalchemy.exc import SQLAlchemyError
 
 # Configure structured logging
 logger = structlog.get_logger(__name__)
@@ -73,7 +77,7 @@ class Config:
     CONNECTION_RETRY_DELAY = float(os.getenv("CONNECTION_RETRY_DELAY", "1.0"))
 
     # Health monitoring
-    HEALTH_CHECK_INTERVAL = int(os.getenv("HEALTH_CHECK_INTERVAL", "30"))
+    HEALTH_CHECK_INTERVAL = int(os.getenv("HEALTH_CHECK_INTERVAL", "30").rstrip('s'))
     SERVICE_TIMEOUT_THRESHOLD = int(os.getenv("SERVICE_TIMEOUT_THRESHOLD", "60"))
 
     # Supported service types
@@ -405,9 +409,39 @@ class ServiceConnector(ABC):
         return self.config.service_type
 
     async def _create_database_connection(self) -> Any:
-        """Create database connection"""
-        # Placeholder for database connection logic
-        return {"type": "database", "status": "connected"}
+        """Create database connection using SQLAlchemy.
+
+        Returns a configured SQLAlchemy engine with connection pooling.
+        """
+        database_url = os.getenv('DATABASE_URL', '')
+        if not database_url:
+            raise RuntimeError('DATABASE_URL not configured; cannot create database connection')
+
+        try:
+            # Create SQLAlchemy engine with connection pooling
+            engine = create_engine(
+                database_url,
+                poolclass=QueuePool,
+                pool_size=10,
+                max_overflow=20,
+                pool_timeout=30,
+                pool_recycle=3600,
+                echo=False  # Set to True for debugging
+            )
+
+            # Test the connection
+            with engine.connect() as conn:
+                conn.execute("SELECT 1")
+
+            logger.info("Database connection established successfully",
+                       service_type=self.config.service_type)
+
+            return engine
+
+        except SQLAlchemyError as e:
+            logger.error("Failed to create database connection",
+                        error=str(e), service_type=self.config.service_type)
+            raise RuntimeError(f'Database connection failed: {str(e)}')
 
     async def _create_filesystem_connection(self) -> Any:
         """Create filesystem connection"""

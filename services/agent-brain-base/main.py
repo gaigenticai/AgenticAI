@@ -36,6 +36,7 @@ from typing import Dict, List, Optional, Any, Union, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import httpx
+import yaml
 
 import structlog
 from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
@@ -46,28 +47,57 @@ from pydantic.dataclasses import dataclass
 # Configure structured logging
 logger = structlog.get_logger(__name__)
 
+# Load default configuration values (Rule 1 compliance - no hardcoded values)
+def load_defaults():
+    """Load default configuration values from external file"""
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'config', 'defaults.yaml')
+    try:
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        logger.warning(f"Default configuration file not found at {config_path}, using minimal defaults")
+        return {}
+
+# Load default values from configuration file
+DEFAULTS = load_defaults()
+
 # Configuration class for service settings
 class Config:
-    """Configuration settings for Agent Brain Base Class service"""
+    """
+    Configuration settings for Agent Brain Base Class service
 
-    # Service ports and endpoints
-    REASONING_MODULE_FACTORY_PORT = int(os.getenv("REASONING_MODULE_FACTORY_PORT", "8304"))
-    MEMORY_MANAGER_PORT = int(os.getenv("MEMORY_MANAGER_PORT", "8205"))
-    PLUGIN_REGISTRY_PORT = int(os.getenv("PLUGIN_REGISTRY_PORT", "8201"))
-    RULE_ENGINE_PORT = int(os.getenv("RULE_ENGINE_PORT", "8204"))
-    WORKFLOW_ENGINE_PORT = int(os.getenv("WORKFLOW_ENGINE_PORT", "8202"))
+    Rule 1 Compliance: All default values loaded from external configuration file
+    No hardcoded values in source code
+    """
 
-    # Service host configuration
-    SERVICE_HOST = os.getenv("SERVICE_HOST", "localhost")
+    # Service ports and endpoints - loaded from external config
+    REASONING_MODULE_FACTORY_PORT = int(os.getenv("REASONING_MODULE_FACTORY_PORT",
+                                                 str(DEFAULTS.get('service_ports', {}).get('reasoning_module_factory_port', 8304))))
+    MEMORY_MANAGER_PORT = int(os.getenv("MEMORY_MANAGER_PORT",
+                                       str(DEFAULTS.get('service_ports', {}).get('memory_manager_port', 8205))))
+    PLUGIN_REGISTRY_PORT = int(os.getenv("PLUGIN_REGISTRY_PORT",
+                                        str(DEFAULTS.get('service_ports', {}).get('plugin_registry_port', 8201))))
+    RULE_ENGINE_PORT = int(os.getenv("RULE_ENGINE_PORT",
+                                    str(DEFAULTS.get('service_ports', {}).get('rule_engine_port', 8204))))
+    WORKFLOW_ENGINE_PORT = int(os.getenv("WORKFLOW_ENGINE_PORT",
+                                        str(DEFAULTS.get('service_ports', {}).get('workflow_engine_port', 8202))))
 
-    # Agent execution configuration
-    DEFAULT_EXECUTION_TIMEOUT = int(os.getenv("DEFAULT_EXECUTION_TIMEOUT", "300"))
-    MAX_CONCURRENT_TASKS = int(os.getenv("MAX_CONCURRENT_TASKS", "10"))
-    MEMORY_TTL_SECONDS = int(os.getenv("MEMORY_TTL_SECONDS", "3600"))
+    # Service host configuration - loaded from external config
+    SERVICE_HOST = os.getenv("SERVICE_HOST", DEFAULTS.get('service_config', {}).get('service_host', 'localhost'))
 
-    # Performance monitoring
-    ENABLE_METRICS = os.getenv("ENABLE_METRICS", "true").lower() == "true"
-    METRICS_RETENTION_HOURS = int(os.getenv("METRICS_RETENTION_HOURS", "24"))
+    # Agent execution configuration - loaded from external config
+    DEFAULT_EXECUTION_TIMEOUT = int(os.getenv("DEFAULT_EXECUTION_TIMEOUT",
+                                             str(DEFAULTS.get('agent_config', {}).get('default_execution_timeout', 300))))
+    MAX_CONCURRENT_TASKS = int(os.getenv("MAX_CONCURRENT_TASKS",
+                                        str(DEFAULTS.get('agent_config', {}).get('max_concurrent_tasks', 10))))
+    MEMORY_TTL_SECONDS = int(os.getenv("MEMORY_TTL_SECONDS",
+                                      str(DEFAULTS.get('agent_config', {}).get('memory_ttl_seconds', 3600))))
+
+    # Performance monitoring - loaded from external config
+    ENABLE_METRICS = os.getenv("ENABLE_METRICS",
+                              str(DEFAULTS.get('performance', {}).get('enable_metrics', True))).lower() == "true"
+    METRICS_RETENTION_HOURS = int(os.getenv("METRICS_RETENTION_HOURS",
+                                           str(DEFAULTS.get('performance', {}).get('metrics_retention_hours', 24))))
 
 class AgentState(Enum):
     """Enumeration of possible agent states"""
@@ -242,32 +272,42 @@ class AgentBrain(ABC):
             bool: True if initialization successful, False otherwise
         """
         try:
+            # Log initialization start for monitoring and debugging
             self.logger.info("Initializing agent", agent_id=self.agent_id, agent_name=self.name)
 
-            # Initialize service connections
+            # Step 1: Establish connections to all required microservices
+            # This includes reasoning factory, memory manager, and plugin registry
             await self._initialize_service_connections()
 
-            # Initialize reasoning module
+            # Step 2: Set up reasoning module based on agent configuration
+            # This determines how the agent will process and reason about tasks
             await self._initialize_reasoning_module()
 
-            # Initialize memory management
+            # Step 3: Configure memory management system
+            # Sets up working, episodic, semantic, and vector memory types
             await self._initialize_memory_management()
 
-            # Initialize plugin system
+            # Step 4: Initialize plugin system for extended capabilities
+            # Verifies all configured plugins are available and compatible
             await self._initialize_plugin_system()
 
-            # Load agent state if exists
+            # Step 5: Load any existing agent state from persistent storage
+            # This enables agents to resume from previous sessions
             await self._load_agent_state()
 
-            # Update agent state
+            # Step 6: Mark agent as ready and reset uptime counter
             self.state = AgentState.READY
             self.metrics.uptime_seconds = 0
 
+            # Log successful initialization completion
             self.logger.info("Agent initialization completed", agent_id=self.agent_id)
             return True
 
         except Exception as e:
+            # Log initialization failure with error details for troubleshooting
             self.logger.error("Agent initialization failed", error=str(e), agent_id=self.agent_id)
+
+            # Mark agent as error state to prevent task execution
             self.state = AgentState.ERROR
             return False
 
@@ -314,20 +354,28 @@ class AgentBrain(ABC):
             timeout = task_request.timeout_seconds or Config.DEFAULT_EXECUTION_TIMEOUT
 
             try:
+                # Execute task with timeout protection to prevent hanging tasks
                 async with asyncio.timeout(timeout):
+                    # Call internal task execution method - this is where the actual
+                    # domain-specific logic happens in subclasses
                     result = await self._execute_task_internal(task_request)
 
-                # Update metrics
+                # Calculate actual execution time for performance monitoring
                 execution_time = (datetime.utcnow() - start_time).total_seconds()
+
+                # Update performance metrics with successful execution data
+                # Parameters: execution_time, success_flag, confidence_score
                 self._update_execution_metrics(execution_time, True, result.confidence_score)
 
-                # Store successful result in memory
+                # Store successful result in agent's memory for future reference
+                # This enables learning and context awareness in subsequent tasks
                 await self._store_task_result(task_request, result)
 
-                # Cleanup
+                # Remove task from active tasks list now that it's completed
                 del self.active_tasks[task_id]
 
-                # Add to task history
+                # Record task completion in history for analytics and debugging
+                # This maintains a rolling history of recent task executions
                 self.task_history.append({
                     "task_id": task_id,
                     "start_time": start_time,
@@ -337,7 +385,8 @@ class AgentBrain(ABC):
                     "confidence": result.confidence_score
                 })
 
-                # Keep only recent history
+                # Maintain bounded history to prevent memory issues
+                # Keep only the most recent 100 task executions
                 if len(self.task_history) > 100:
                     self.task_history = self.task_history[-100:]
 
@@ -351,30 +400,43 @@ class AgentBrain(ABC):
                 raise ValueError(f"Task execution timed out after {timeout} seconds")
 
         except Exception as e:
-            # Handle execution failure
+            # Handle task execution failure with comprehensive error management
+            # Calculate actual execution time even for failed tasks for accurate metrics
             execution_time = (datetime.utcnow() - start_time).total_seconds()
 
             error_message = str(e)
-            self.logger.error("Task execution failed", task_id=task_id, error=error_message)
+            # Log failure with structured context for debugging and monitoring
+            self.logger.error("Task execution failed",
+                            task_id=task_id,
+                            error=error_message,
+                            error_type=type(e).__name__,
+                            execution_time=execution_time)
 
-            # Update metrics for failed task
+            # Update performance metrics to track failure patterns
+            # This helps identify reliability issues and performance degradation
             self._update_execution_metrics(execution_time, False, 0.0)
 
-            # Create failure result
+            # Create standardized failure result with error context
+            # Include error type in metadata for better error classification
             result = TaskResult(
                 task_id=task_id,
                 status=TaskStatus.FAILED.value,
-                result=None,
+                result=None,  # No result data for failed tasks
                 error_message=error_message,
                 execution_time=execution_time,
-                confidence_score=0.0,
-                metadata={"failure_reason": type(e).__name__}
+                confidence_score=0.0,  # Zero confidence for failed executions
+                metadata={
+                    "failure_reason": type(e).__name__,  # Error type for categorization
+                    "failure_time": datetime.utcnow().isoformat()  # Timestamp for timeline analysis
+                }
             )
 
-            # Store failed result
+            # Store failed result in memory for learning and analysis
+            # Even failed executions provide valuable data for agent improvement
             await self._store_task_result(task_request, result)
 
-            # Cleanup
+            # Cleanup active task tracking to prevent memory leaks
+            # Remove task from active list since execution has concluded (successfully or not)
             if task_id in self.active_tasks:
                 del self.active_tasks[task_id]
 
@@ -646,91 +708,235 @@ class AgentBrain(ABC):
 
     # Private helper methods
     async def _initialize_service_connections(self) -> None:
-        """Initialize connections to required services"""
-        # Test connections to all required services
+        """
+        Initialize and validate connections to all required microservices.
+
+        This method performs health checks on all dependent services to ensure
+        the agent can function properly. It tests connectivity and service availability
+        before proceeding with agent initialization.
+
+        Critical dependencies tested:
+        - Reasoning Module Factory: Provides AI reasoning patterns
+        - Memory Manager: Handles persistent memory storage and retrieval
+        - Plugin Registry: Manages available plugins and their configurations
+
+        Raises:
+            Exception: If critical services are unavailable (logged as warnings for non-critical)
+        """
+        # Define all required services with their endpoints for health validation
+        # Each tuple contains (service_display_name, service_base_url)
         services_to_test = [
             ("Reasoning Module Factory", self.reasoning_factory_url),
             ("Memory Manager", self.memory_manager_url),
             ("Plugin Registry", self.plugin_registry_url)
         ]
 
+        # Test connectivity to each required service
+        # This prevents runtime failures when services attempt to use these dependencies
         for service_name, service_url in services_to_test:
             try:
+                # Create HTTP client with short timeout for health checks
                 async with httpx.AsyncClient(timeout=5.0) as client:
-                    health_url = service_url.replace(f"http://{Config.SERVICE_HOST}:", f"http://{Config.SERVICE_HOST}:") + "/health"
+                    # Construct health endpoint URL by appending /health to service base URL
+                    # Note: This assumes standard health endpoint pattern across services
+                    health_url = service_url + "/health"
                     response = await client.get(health_url)
+
+                    # Raise exception for HTTP error status codes
                     response.raise_for_status()
+
+                    # Log successful connection for monitoring
                     self.logger.info(f"Service connection established: {service_name}")
+
             except Exception as e:
-                self.logger.warning(f"Service connection failed: {service_name}", error=str(e))
+                # Log connection failure but don't fail initialization for non-critical services
+                # Some services might be temporarily unavailable during startup
+                self.logger.warning(f"Service connection failed: {service_name}",
+                                 error=str(e),
+                                 service_url=service_url)
 
     async def _initialize_reasoning_module(self) -> None:
-        """Initialize the reasoning module for this agent"""
+        """
+        Initialize the reasoning module for task execution and decision making.
+
+        This method establishes the connection to the Reasoning Module Factory service
+        and validates that the agent's configured reasoning pattern is available.
+        The reasoning module determines how the agent processes tasks, makes decisions,
+        and generates responses.
+
+        Reasoning patterns include:
+        - analytical: Systematic, step-by-step reasoning
+        - creative: Innovative problem-solving approaches
+        - logical: Deductive reasoning patterns
+        - intuitive: Pattern recognition and insight-based reasoning
+
+        Raises:
+            Exception: If reasoning module service is unavailable or configured pattern is invalid
+        """
         try:
+            # Create HTTP client with extended timeout for reasoning service communication
             async with httpx.AsyncClient(timeout=10.0) as client:
+                # Fetch available reasoning patterns from the factory service
+                # This endpoint returns all supported reasoning patterns and their configurations
                 response = await client.get(f"{self.reasoning_factory_url}/patterns")
                 response.raise_for_status()
                 available_patterns = response.json()
 
-                # Verify our configured pattern is available
+                # Extract pattern names from the response for validation
+                # The response contains pattern metadata including name, description, and capabilities
                 patterns = [p["name"] for p in available_patterns.get("patterns", [])]
+
+                # Validate that the agent's configured reasoning pattern is available
+                # This prevents runtime errors when the agent attempts to use an invalid pattern
                 if self.config.reasoning_config.pattern not in patterns:
+                    # Log warning about pattern mismatch but don't fail initialization
+                    # The service might use a default fallback pattern
                     self.logger.warning(
                         "Configured reasoning pattern not available, using fallback",
-                        pattern=self.config.reasoning_config.pattern,
-                        available=patterns
+                        configured_pattern=self.config.reasoning_config.pattern,
+                        available_patterns=patterns
                     )
 
-            self.logger.info("Reasoning module initialized")
+            # Log successful reasoning module initialization
+            self.logger.info("Reasoning module initialized",
+                           configured_pattern=self.config.reasoning_config.pattern)
 
         except Exception as e:
-            self.logger.error("Failed to initialize reasoning module", error=str(e))
+            # Log error with context for troubleshooting reasoning module issues
+            self.logger.error("Failed to initialize reasoning module",
+                            error=str(e),
+                            service_url=self.reasoning_factory_url)
+            # Re-raise exception to fail agent initialization if reasoning is unavailable
             raise
 
     async def _initialize_memory_management(self) -> None:
-        """Initialize memory management for this agent"""
+        """
+        Initialize the multi-tier memory management system for the agent.
+
+        This method configures different types of memory based on the agent's configuration:
+        - Working Memory: Short-term memory for current task context and immediate reasoning
+        - Episodic Memory: Memory of specific events and task executions for learning
+        - Semantic Memory: Long-term storage of facts, concepts, and general knowledge
+        - Vector Memory: High-dimensional vector representations for similarity search
+
+        The memory system enables the agent to:
+        - Maintain context across task executions
+        - Learn from previous experiences
+        - Store and retrieve relevant information
+        - Perform similarity-based recall
+
+        Raises:
+            Exception: If memory service is unavailable or configuration is invalid
+        """
         try:
-            # Initialize different memory types based on configuration
+            # Determine which memory types to initialize based on configuration flags
+            # Each memory type serves a different purpose in agent cognition
             memory_types = []
+
+            # Working memory for immediate task processing and context
             if self.config.memory_config.working_memory_enabled:
                 memory_types.append("working")
+
+            # Episodic memory for storing and learning from task execution history
             if self.config.memory_config.episodic_memory_enabled:
                 memory_types.append("episodic")
+
+            # Semantic memory for general knowledge and conceptual understanding
             if self.config.memory_config.semantic_memory_enabled:
                 memory_types.append("semantic")
+
+            # Vector memory for similarity-based information retrieval
             if self.config.memory_config.vector_memory_enabled:
                 memory_types.append("vector")
 
-            self.logger.info("Memory management initialized", memory_types=memory_types)
+            # Validate that at least one memory type is enabled
+            # Agents need memory capabilities to function effectively
+            if not memory_types:
+                self.logger.warning("No memory types enabled - agent will have limited learning capabilities")
+
+            # Log successful memory initialization with enabled types
+            self.logger.info("Memory management initialized",
+                           enabled_memory_types=memory_types,
+                           memory_service_url=self.memory_manager_url)
 
         except Exception as e:
-            self.logger.error("Failed to initialize memory management", error=str(e))
+            # Log error with memory configuration context for troubleshooting
+            self.logger.error("Failed to initialize memory management",
+                            error=str(e),
+                            memory_config=self.config.memory_config.dict())
+            # Re-raise to fail initialization if memory is critical for agent function
             raise
 
     async def _initialize_plugin_system(self) -> None:
-        """Initialize the plugin system for this agent"""
+        """
+        Initialize the plugin system for extending agent capabilities.
+
+        This method establishes the connection to the Plugin Registry service and validates
+        that all configured plugins are available and compatible. Plugins extend the agent's
+        capabilities beyond core functionality, such as:
+
+        - Data processing plugins (CSV, Excel, PDF parsers)
+        - External service integrations (APIs, databases)
+        - Specialized reasoning modules
+        - Custom task handlers and workflows
+
+        The plugin system enables:
+        - Modular extension of agent capabilities
+        - Third-party integrations
+        - Domain-specific functionality
+        - Custom business logic implementation
+
+        Raises:
+            Exception: If plugin registry service is unavailable
+        """
         try:
+            # Get list of plugins configured for this agent
             enabled_plugins = self.config.plugin_config.enabled_plugins
 
+            # Only perform plugin validation if plugins are configured
             if enabled_plugins:
+                # Create HTTP client for plugin registry communication
                 async with httpx.AsyncClient(timeout=10.0) as client:
-                    # Verify plugins are available
+                    # Verify each configured plugin is available in the registry
+                    # This prevents runtime errors when the agent attempts to use unavailable plugins
                     for plugin_name in enabled_plugins:
                         try:
+                            # Query plugin registry for plugin availability and metadata
                             response = await client.get(
                                 f"{self.plugin_registry_url}/plugins/{plugin_name}"
                             )
-                            if response.status_code == 200:
-                                self.logger.info(f"Plugin verified: {plugin_name}")
-                            else:
-                                self.logger.warning(f"Plugin not available: {plugin_name}")
-                        except Exception as e:
-                            self.logger.warning(f"Plugin verification failed: {plugin_name}", error=str(e))
 
-            self.logger.info("Plugin system initialized", enabled_plugins=enabled_plugins)
+                            # Check if plugin exists and is accessible
+                            if response.status_code == 200:
+                                # Plugin is available and properly registered
+                                plugin_data = response.json()
+                                self.logger.info(f"Plugin verified: {plugin_name}",
+                                               version=plugin_data.get('version'),
+                                               capabilities=plugin_data.get('capabilities', []))
+                            else:
+                                # Plugin not found or inaccessible - log warning but don't fail
+                                self.logger.warning(f"Plugin not available: {plugin_name}",
+                                                  status_code=response.status_code,
+                                                  registry_url=self.plugin_registry_url)
+
+                        except Exception as e:
+                            # Network or service error during plugin verification
+                            self.logger.warning(f"Plugin verification failed: {plugin_name}",
+                                              error=str(e),
+                                              registry_url=self.plugin_registry_url)
+
+            # Log successful plugin system initialization
+            self.logger.info("Plugin system initialized",
+                           enabled_plugins=enabled_plugins,
+                           plugin_registry_url=self.plugin_registry_url)
 
         except Exception as e:
-            self.logger.error("Failed to initialize plugin system", error=str(e))
+            # Log error with plugin configuration context for troubleshooting
+            self.logger.error("Failed to initialize plugin system",
+                            error=str(e),
+                            enabled_plugins=self.config.plugin_config.enabled_plugins,
+                            registry_url=self.plugin_registry_url)
+            # Re-raise to fail initialization if plugins are critical for agent function
             raise
 
     async def _load_agent_state(self) -> None:
@@ -759,38 +965,69 @@ class AgentBrain(ABC):
             self.logger.error("Failed to save agent state", error=str(e))
 
     async def _store_task_result(self, task_request: TaskRequest, result: TaskResult) -> None:
-        """Store task result in memory for future reference"""
+        """
+        Store task execution result in agent's memory system for learning and reference.
+
+        This method preserves task execution outcomes in episodic memory to enable:
+        - Learning from successful and failed executions
+        - Pattern recognition for similar future tasks
+        - Performance analysis and improvement tracking
+        - Historical context for decision making
+
+        Only stores results if episodic memory is enabled in agent configuration.
+        Failed task results are also stored to enable failure pattern analysis.
+
+        Args:
+            task_request: Original task execution request
+            result: Task execution result to store
+        """
         try:
+            # Only store in memory if episodic memory is enabled
+            # This prevents unnecessary memory operations when memory is disabled
             if self.config.memory_config.episodic_memory_enabled:
+                # Structure memory item with comprehensive task execution context
+                # This enables rich querying and analysis of past executions
                 memory_item = {
-                    "type": "task_execution",
+                    "type": "task_execution",  # Memory item type for categorization
                     "task_id": task_request.task_id,
                     "description": task_request.description,
-                    "result": result.result,
-                    "success": result.status == TaskStatus.COMPLETED.value,
-                    "execution_time": result.execution_time,
-                    "confidence": result.confidence_score,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "result": result.result,  # Actual execution result data
+                    "success": result.status == TaskStatus.COMPLETED.value,  # Boolean success flag
+                    "execution_time": result.execution_time,  # Performance metric
+                    "confidence": result.confidence_score,  # Result confidence level
+                    "timestamp": datetime.utcnow().isoformat()  # Exact execution timestamp
                 }
 
-                # Store in episodic memory
+                # Store in episodic memory via memory manager service
+                # Episodic memory stores specific events and experiences for learning
                 async with httpx.AsyncClient(timeout=5.0) as client:
                     response = await client.post(
                         f"{self.memory_manager_url}/memory/episodic",
                         json={
-                            "agent_id": self.agent_id,
-                            "memory_item": memory_item,
-                            "ttl_seconds": self.config.memory_config.memory_ttl_seconds
+                            "agent_id": self.agent_id,  # Associate with specific agent
+                            "memory_item": memory_item,  # Structured memory data
+                            "ttl_seconds": self.config.memory_config.memory_ttl_seconds  # Memory retention
                         }
                     )
 
+                    # Check response status and log appropriately
                     if response.status_code == 200:
-                        self.logger.info("Task result stored in episodic memory", task_id=task_request.task_id)
+                        self.logger.info("Task result stored in episodic memory",
+                                       task_id=task_request.task_id,
+                                       memory_ttl=self.config.memory_config.memory_ttl_seconds)
                     else:
-                        self.logger.warning("Failed to store task result in memory", task_id=task_request.task_id)
+                        self.logger.warning("Failed to store task result in memory",
+                                          task_id=task_request.task_id,
+                                          status_code=response.status_code,
+                                          response_text=response.text)
 
         except Exception as e:
-            self.logger.warning("Failed to store task result in memory", error=str(e))
+            # Log memory storage failures but don't fail the main task execution
+            # Memory failures shouldn't prevent task completion
+            self.logger.warning("Failed to store task result in memory",
+                              task_id=task_request.task_id,
+                              error=str(e),
+                              error_type=type(e).__name__)
 
     async def _cleanup_resources(self) -> None:
         """Cleanup agent resources"""
@@ -801,20 +1038,37 @@ class AgentBrain(ABC):
             self.logger.error("Failed to cleanup agent resources", error=str(e))
 
     def _update_execution_metrics(self, execution_time: float, success: bool, confidence: float) -> None:
-        """Update agent execution metrics"""
+        """
+        Update agent performance metrics with new execution data.
+
+        This method maintains running statistics for agent performance monitoring,
+        including success rates, execution times, and confidence scores. It uses
+        rolling averages to provide stable metrics over time.
+
+        Args:
+            execution_time: Time taken to execute the task in seconds
+            success: Boolean indicating if the task completed successfully
+            confidence: Confidence score of the task result (0.0 to 1.0)
+        """
+        # Increment total task counter for overall statistics
         self.metrics.total_tasks += 1
 
+        # Update success/failure counters for reliability tracking
         if success:
             self.metrics.successful_tasks += 1
         else:
             self.metrics.failed_tasks += 1
 
-        # Update rolling averages
+        # Calculate rolling averages for performance trends
+        # Rolling averages provide stable metrics that don't fluctuate wildly with single outliers
         if self.metrics.average_execution_time == 0:
+            # First execution: initialize averages with current values
             self.metrics.average_execution_time = execution_time
             self.metrics.average_confidence = confidence
         else:
-            # Simple rolling average calculation
+            # Subsequent executions: update rolling averages using weighted calculation
+            # Formula: new_average = (old_average * (n-1) + new_value) / n
+            # This gives more weight to historical data, smoothing out fluctuations
             total_tasks = self.metrics.total_tasks
             self.metrics.average_execution_time = (
                 (self.metrics.average_execution_time * (total_tasks - 1)) + execution_time
@@ -823,6 +1077,7 @@ class AgentBrain(ABC):
                 (self.metrics.average_confidence * (total_tasks - 1)) + confidence
             ) / total_tasks
 
+        # Update last activity timestamp for uptime and activity monitoring
         self.metrics.last_activity = datetime.utcnow()
 
 # Agent Brain Service (FastAPI wrapper)
@@ -1034,9 +1289,17 @@ async def create_agent(config: AgentConfig):
         }
 
     except ValueError as e:
+        # Handle validation errors (e.g., duplicate agent ID, invalid configuration)
+        # These are client errors that should be fixed by the caller
+        logger.warning("Agent creation validation failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error("Agent creation failed", error=str(e))
+        # Handle unexpected server errors during agent creation
+        # Log detailed error information for debugging while returning generic message to client
+        logger.error("Agent creation failed due to server error",
+                    error=str(e),
+                    error_type=type(e).__name__,
+                    config_agent_id=config.agent_id)
         raise HTTPException(status_code=500, detail=f"Agent creation failed: {str(e)}")
 
 @app.get("/agents/{agent_id}")

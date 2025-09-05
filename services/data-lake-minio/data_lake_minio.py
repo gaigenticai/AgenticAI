@@ -766,7 +766,11 @@ def setup_rabbitmq():
     try:
         credentials = pika.PlainCredentials(
             os.getenv("RABBITMQ_USER", "agentic_user"),
-            os.getenv("RABBITMQ_PASSWORD", "agentic123")
+            rabbitmq_password = os.getenv("RABBITMQ_PASSWORD", "")
+            if not rabbitmq_password:
+                logger.error("RABBITMQ_PASSWORD not configured for Data Lake Service")
+                raise RuntimeError("RABBITMQ_PASSWORD not configured for Data Lake Service")
+            os.getenv("RABBITMQ_PASSWORD", rabbitmq_password)
         )
         parameters = pika.ConnectionParameters(
             host=os.getenv("RABBITMQ_HOST", "rabbitmq"),
@@ -1034,7 +1038,7 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
         }
 
         database_connection = psycopg2.connect(**db_config)
@@ -1048,7 +1052,10 @@ async def startup_event():
         minio_config = {
             "endpoint": os.getenv("MINIO_ENDPOINT", "http://minio_bronze:9000"),
             "access_key": os.getenv("MINIO_ACCESS_KEY", "agentic_user"),
-            "secret_key": os.getenv("MINIO_SECRET_KEY", "agentic123"),
+            "secret_key": os.getenv("MINIO_SECRET_KEY", ""),
+            if not os.getenv("MINIO_SECRET_KEY"):
+                logger.error("MINIO_SECRET_KEY not configured for Data Lake Service")
+                raise RuntimeError("MINIO_SECRET_KEY not configured for Data Lake Service")
             "secure": False
         }
 

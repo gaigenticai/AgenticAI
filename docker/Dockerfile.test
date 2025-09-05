@@ -1,0 +1,67 @@
+# Base Test Dockerfile for Agentic Platform Services
+# This Dockerfile provides a standardized testing environment for all services
+
+FROM python:3.11-slim
+
+# Install system dependencies required for testing
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    wget \
+    git \
+    postgresql-client \
+    redis-tools \
+    rabbitmq-server \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CLI for container testing (optional)
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update \
+    && apt-get install -y docker-ce-cli \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt /app/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install testing dependencies
+RUN pip install --no-cache-dir \
+    pytest \
+    pytest-asyncio \
+    pytest-cov \
+    pytest-xdist \
+    pytest-html \
+    pytest-json \
+    requests \
+    httpx \
+    psycopg2-binary \
+    redis \
+    pika \
+    docker
+
+# Copy service source code
+COPY . /app/
+
+# Copy test files
+COPY tests/ /app/tests/ 2>/dev/null || mkdir -p /app/tests
+
+# Create test results directory
+RUN mkdir -p /app/test-results
+
+# Set environment variables for testing
+ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Default health check (services should override)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import sys; print('Service test container ready')" || exit 1
+
+# Default test command
+CMD ["python", "-m", "pytest", "/app/tests/", "-v", "--tb=short", "--json-report", "--json-report-file=/app/test-results/results.json"]

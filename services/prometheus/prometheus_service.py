@@ -111,7 +111,7 @@ class PrometheusService:
             # RabbitMQ client
             rabbitmq_host = os.getenv('RABBITMQ_HOST', 'rabbitmq')
             rabbitmq_user = os.getenv('RABBITMQ_USER', 'agentic_user')
-            rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', 'agentic123')
+            rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', '')
 
             credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
             parameters = pika.ConnectionParameters(

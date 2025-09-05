@@ -72,7 +72,11 @@ API_REQUEST_ERRORS = Counter('api_request_errors_total', 'Total API request erro
 ACTIVE_API_JOBS = Gauge('active_api_jobs', 'Number of active API processing jobs', registry=API_REGISTRY)
 
 # Database connection
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://agentic_user:agentic123@postgresql_ingestion:5432/agentic_ingestion")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
+if not DATABASE_URL:
+    logger.error("DATABASE_URL is not configured for API Ingestion Service; set DATABASE_URL in environment")
+    raise RuntimeError("DATABASE_URL not configured for API Ingestion Service")
+
 engine = create_engine(DATABASE_URL)
 
 # Message queue connection
@@ -628,7 +632,7 @@ def setup_rabbitmq():
     try:
         credentials = pika.PlainCredentials(
             os.getenv("RABBITMQ_USER", "agentic_user"),
-            os.getenv("RABBITMQ_PASSWORD", "agentic123")
+            os.getenv("RABBITMQ_PASSWORD", "")
         )
         parameters = pika.ConnectionParameters(
             host=os.getenv("RABBITMQ_HOST", "rabbitmq"),

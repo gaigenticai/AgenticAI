@@ -105,7 +105,7 @@ class GrafanaService:
             grafana_port = os.getenv('GRAFANA_PORT', '3000')
             self.grafana_url = f'http://{grafana_host}:{grafana_port}'
             self.grafana_username = os.getenv('GRAFANA_USER', 'admin')
-            self.grafana_password = os.getenv('GRAFANA_PASSWORD', 'admin123')
+            self.grafana_password = os.getenv('GRAFANA_PASSWORD', '')
 
             # Wait for Grafana to be ready
             self.wait_for_grafana()
@@ -119,7 +119,10 @@ class GrafanaService:
             # RabbitMQ client
             rabbitmq_host = os.getenv('RABBITMQ_HOST', 'rabbitmq')
             rabbitmq_user = os.getenv('RABBITMQ_USER', 'agentic_user')
-            rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', 'agentic123')
+            rabbitmq_password = os.getenv('RABBITMQ_PASSWORD', '')
+            if not rabbitmq_password:
+                logger.error('RABBITMQ_PASSWORD not configured for Grafana Service')
+                raise RuntimeError('RABBITMQ_PASSWORD not configured for Grafana Service')
 
             credentials = pika.PlainCredentials(rabbitmq_user, rabbitmq_password)
             parameters = pika.ConnectionParameters(

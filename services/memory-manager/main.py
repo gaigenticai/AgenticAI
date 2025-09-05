@@ -44,12 +44,36 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field, validator
-from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry
+from prometheus_client import Counter, Gauge, Histogram, generate_latest, CollectorRegistry, REGISTRY
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Text, Boolean, JSON, Float, BigInteger
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.sql import func
 import httpx
 import uvicorn
+import sys
+import os
+
+# Local configuration (removed utils dependency for Docker compatibility)
+class DatabaseConfig:
+    @staticmethod
+    def get_postgres_config():
+        return {
+            'host': os.getenv('POSTGRES_HOST', 'postgresql_ingestion'),
+            'port': os.getenv('POSTGRES_PORT', '5432'),
+            'database': os.getenv('POSTGRES_DB', 'agentic_db'),
+            'user': os.getenv('POSTGRES_USER', 'agentic_user'),
+            'password': os.getenv('POSTGRES_PASSWORD', ''),
+            'url': os.getenv('DATABASE_URL', '')
+        }
+
+    @staticmethod
+    def get_redis_config():
+        return {
+            'host': os.getenv('REDIS_HOST', 'redis_ingestion'),
+            'port': int(os.getenv('REDIS_PORT', '6379')),
+            'db': int(os.getenv('REDIS_DB', '0')),
+            'password': os.getenv('REDIS_PASSWORD', '')
+        }
 
 # JWT support for authentication
 try:
@@ -68,18 +92,20 @@ logger = structlog.get_logger(__name__)
 class Config:
     """Configuration class for Memory Manager Service"""
 
-    # Database Configuration
-    DB_HOST = os.getenv('POSTGRES_HOST', 'postgresql_ingestion')
-    DB_PORT = os.getenv('POSTGRES_PORT', '5432')
-    DB_NAME = os.getenv('POSTGRES_DB', 'agentic_ingestion')
-    DB_USER = os.getenv('POSTGRES_USER', 'agentic_user')
-    DB_PASSWORD = os.getenv('POSTGRES_PASSWORD', 'agentic123')
-    DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Database Configuration - using shared config for modularity (Rule 2)
+    db_config = DatabaseConfig.get_postgres_config()
+    DB_HOST = db_config['host']
+    DB_PORT = db_config['port']
+    DB_NAME = db_config['database']
+    DB_USER = db_config['user']
+    DB_PASSWORD = db_config['password']
+    DATABASE_URL = db_config['url'] or f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-    # Redis Configuration
-    REDIS_HOST = os.getenv('REDIS_HOST', 'redis_ingestion')
-    REDIS_PORT = int(os.getenv('REDIS_PORT', '6379'))
-    REDIS_DB = 5  # Use DB 5 for memory manager
+    # Redis Configuration - using shared config for modularity (Rule 2)
+    redis_config = DatabaseConfig.get_redis_config()
+    REDIS_HOST = redis_config['host']
+    REDIS_PORT = redis_config['port']
+    REDIS_DB = 5  # Use DB 5 for memory manager (service-specific)
 
     # Vector Database Configuration
     VECTOR_DB_HOST = os.getenv('VECTOR_DB_HOST', 'qdrant_vector')
@@ -91,7 +117,7 @@ class Config:
 
     # Authentication Configuration
     REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
-    JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
+    JWT_SECRET = os.getenv('JWT_SECRET', '')
     JWT_ALGORITHM = 'HS256'
 
     # Memory Configuration
@@ -828,18 +854,45 @@ class MetricsCollector:
     """Collects and exposes Prometheus metrics"""
 
     def __init__(self):
-        self.registry = CollectorRegistry()
+        # Use default registry to avoid duplication issues
+        self.registry = REGISTRY
 
-        # Memory metrics
-        self.memory_items_total = Gauge('memory_manager_items_total', 'Total memory items by type', ['memory_type'])
-        self.memory_access_total = Counter('memory_manager_access_total', 'Total memory accesses', ['memory_type'])
-        self.memory_expiration_total = Counter('memory_manager_expiration_total', 'Total memory expirations')
-        self.memory_consolidation_total = Counter('memory_manager_consolidation_total', 'Total memory consolidations')
+        # Memory metrics - check if they already exist
+        if 'memory_manager_items_total' not in self.registry._names_to_collectors:
+            self.memory_items_total = Gauge('memory_manager_items_total', 'Total memory items by type', ['memory_type'], registry=self.registry)
+        else:
+            self.memory_items_total = self.registry._names_to_collectors['memory_manager_items_total']
+
+        if 'memory_manager_access_total' not in self.registry._names_to_collectors:
+            self.memory_access_total = Counter('memory_manager_access_total', 'Total memory accesses', ['memory_type'], registry=self.registry)
+        else:
+            self.memory_access_total = self.registry._names_to_collectors['memory_manager_access_total']
+
+        if 'memory_manager_expiration_total' not in self.registry._names_to_collectors:
+            self.memory_expiration_total = Counter('memory_manager_expiration_total', 'Total memory expirations', registry=self.registry)
+        else:
+            self.memory_expiration_total = self.registry._names_to_collectors['memory_manager_expiration_total']
+
+        if 'memory_manager_consolidation_total' not in self.registry._names_to_collectors:
+            self.memory_consolidation_total = Counter('memory_manager_consolidation_total', 'Total memory consolidations', registry=self.registry)
+        else:
+            self.memory_consolidation_total = self.registry._names_to_collectors['memory_manager_consolidation_total']
 
         # Performance metrics
-        self.request_count = Counter('memory_manager_requests_total', 'Total number of requests', ['method', 'endpoint'])
-        self.request_duration = Histogram('memory_manager_request_duration_seconds', 'Request duration in seconds', ['method', 'endpoint'])
-        self.error_count = Counter('memory_manager_errors_total', 'Total number of errors', ['type'])
+        if 'memory_manager_requests_total' not in self.registry._names_to_collectors:
+            self.request_count = Counter('memory_manager_requests_total', 'Total number of requests', ['method', 'endpoint'], registry=self.registry)
+        else:
+            self.request_count = self.registry._names_to_collectors['memory_manager_requests_total']
+
+        if 'memory_manager_request_duration_seconds' not in self.registry._names_to_collectors:
+            self.request_duration = Histogram('memory_manager_request_duration_seconds', 'Request duration in seconds', ['method', 'endpoint'], registry=self.registry)
+        else:
+            self.request_duration = self.registry._names_to_collectors['memory_manager_request_duration_seconds']
+
+        if 'memory_manager_errors_total' not in self.registry._names_to_collectors:
+            self.error_count = Counter('memory_manager_errors_total', 'Total number of errors', ['type'], registry=self.registry)
+        else:
+            self.error_count = self.registry._names_to_collectors['memory_manager_errors_total']
 
     def update_memory_metrics(self, memory_manager: MemoryManager):
         """Update memory-related metrics"""
@@ -1135,7 +1188,7 @@ async def startup_event():
 
     # Create database tables
     try:
-        Base.metadata.create_all(bind=db_engine)
+        # Base.metadata.create_all(bind=...)  # Removed - use schema.sql instead
         logger.info("Database tables created/verified")
     except Exception as e:
         logger.error(f"Failed to create database tables: {str(e)}")

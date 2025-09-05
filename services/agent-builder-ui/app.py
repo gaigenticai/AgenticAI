@@ -60,7 +60,7 @@ class Config:
 
     # Authentication Configuration
     REQUIRE_AUTH = os.getenv('REQUIRE_AUTH', 'false').lower() == 'true'
-    JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-jwt-key-change-in-production')
+    JWT_SECRET = os.getenv('JWT_SECRET', '')
 
     # UI Configuration
     MAX_CANVAS_WIDTH = int(os.getenv('MAX_CANVAS_WIDTH', '2000'))

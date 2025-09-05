@@ -1,0 +1,132 @@
+# Security Scan GitHub Actions Workflow
+# This workflow performs automated security scanning on every push and pull request
+
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run daily security scan at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests pyyaml
+
+    - name: Run Security Scanner
+      run: |
+        python scripts/security_scanner.py --report security_report.json
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security_report.json
+
+    - name: Check for critical findings
+      run: |
+        if [ -f security_report.json ]; then
+          CRITICAL=$(jq '.summary.severity_breakdown.CRITICAL' security_report.json)
+          HIGH=$(jq '.summary.severity_breakdown.HIGH' security_report.json)
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 1 ]; then
+            echo "❌ Critical or multiple high-severity security findings detected"
+            echo "Please review the security report and fix the issues"
+            exit 1
+          else
+            echo "✅ Security scan passed"
+          fi
+        else
+          echo "⚠️ Security report not found"
+          exit 1
+        fi
+
+    - name: Comment PR with findings
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          if (fs.existsSync('security_report.json')) {
+            const report = JSON.parse(fs.readFileSync('security_report.json', 'utf8'));
+            const summary = report.summary;
+
+            let comment = '## 🔒 Security Scan Results\n\n';
+            comment += `**Files Scanned:** ${summary.files_scanned}\n`;
+            comment += `**Total Findings:** ${summary.total_findings}\n\n`;
+
+            const severity = summary.severity_breakdown;
+            comment += '### Severity Breakdown\n';
+            comment += `🔴 Critical: ${severity.CRITICAL}\n`;
+            comment += `🟠 High: ${severity.HIGH}\n`;
+            comment += `🟡 Medium: ${severity.MEDIUM}\n`;
+            comment += `🔵 Low: ${severity.LOW}\n\n`;
+
+            if (report.findings && report.findings.length > 0) {
+              comment += '### Key Findings\n';
+              const topFindings = report.findings.slice(0, 5);
+              topFindings.forEach(finding => {
+                comment += `- **${finding.severity}**: ${finding.description}\n`;
+                comment += `  - File: \`${finding.file_path}:${finding.line_number}\`\n`;
+                if (finding.recommendation) {
+                  comment += `  - 💡 ${finding.recommendation}\n`;
+                }
+              });
+
+              if (report.findings.length > 5) {
+                comment += `\n*... and ${report.findings.length - 5} more findings*\n`;
+              }
+            }
+
+            // Post comment on PR
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'

@@ -872,7 +872,10 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
+            if not os.getenv("POSTGRES_PASSWORD"):
+                logger.error("POSTGRES_PASSWORD not configured for Audit Compliance Service")
+                raise RuntimeError("POSTGRES_PASSWORD not configured for Audit Compliance Service")
         }
 
         database_connection = psycopg2.connect(**db_config)

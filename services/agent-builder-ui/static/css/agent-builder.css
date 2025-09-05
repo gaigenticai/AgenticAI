@@ -1,20 +1,379 @@
 /* Agent Builder UI Styles */
 
-/* Component Styles */
+/* ===== PROFESSIONAL COMPONENT STYLES ===== */
 .component {
     position: absolute;
     background: white;
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    min-width: 200px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+    min-width: 220px;
     cursor: move;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.component::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 10px 10px 0 0;
 }
 
 .component:hover {
     border-color: #6366f1;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.component.selected {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.component.dragging {
+    opacity: 0.8;
+    transform: rotate(2deg) scale(1.02);
+    z-index: 1000;
+}
+
+/* ===== CANVAS ENHANCEMENTS ===== */
+#canvas-container {
+    background: linear-gradient(45deg, #f8fafc 25%, transparent 25%),
+                linear-gradient(-45deg, #f8fafc 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f8fafc 75%),
+                linear-gradient(-45deg, transparent 75%, #f8fafc 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+#canvas-svg {
+    background: transparent;
+}
+
+/* ===== PROFESSIONAL TOOLBAR ===== */
+.toolbar-professional {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    backdrop-filter: blur(10px);
+}
+
+.toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.toolbar-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+    transform: translateY(-1px);
+}
+
+.toolbar-btn.active {
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 2px 4px 0 rgba(99, 102, 241, 0.2);
+}
+
+.toolbar-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.toolbar-btn:hover::before {
+    opacity: 1;
+}
+
+/* ===== CONNECTION WIRES ===== */
+.connection-wire {
+    stroke: #6366f1;
+    stroke-width: 2;
+    fill: none;
+    marker-end: url(#arrowhead);
+}
+
+.connection-wire:hover {
+    stroke: #8b5cf6;
+    stroke-width: 3;
+}
+
+.connection-wire.selected {
+    stroke: #ef4444;
+    stroke-width: 3;
+}
+
+/* ===== PORTS AND CONNECTIONS ===== */
+.component-port {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: absolute;
+}
+
+.component-port:hover {
+    background: #6366f1;
+    transform: scale(1.2);
+}
+
+.component-port.connected {
+    background: #10b981;
+}
+
+.component-port.input {
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.component-port.output {
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* ===== LOADING AND FEEDBACK ===== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #6366f1;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ===== TOAST NOTIFICATIONS ===== */
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 10000;
+    animation: slideInRight 0.3s ease-out;
+}
+
+.toast.success { background: #10b981; }
+.toast.error { background: #ef4444; }
+.toast.warning { background: #f59e0b; }
+.toast.info { background: #3b82f6; }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* ===== MODALS ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .component {
+        min-width: 180px;
+        font-size: 0.875rem;
+    }
+
+    #component-palette {
+        width: 100%;
+        height: 200px;
+        position: relative;
+    }
+
+    .toolbar-professional {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.75rem;
+    }
+
+    .toolbar-btn {
+        padding: 0.5rem;
+        min-width: 40px;
+        min-height: 40px;
+    }
+
+    /* Mobile canvas adjustments */
+    #canvas-container {
+        height: calc(100vh - 300px);
+    }
+
+    /* Mobile component palette as overlay */
+    .mobile-palette-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        z-index: 100;
+    }
+
+    /* Mobile header adjustments */
+    header {
+        padding: 0.75rem 1rem;
+    }
+
+    header h1 {
+        font-size: 1.25rem;
+    }
+
+    header p {
+        font-size: 0.75rem;
+    }
+
+    /* Mobile toolbar adjustments */
+    .flex.items-center.space-x-3 {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .btn-professional {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .component {
+        min-width: 160px;
+        padding: 8px;
+    }
+
+    .component-title {
+        font-size: 12px;
+    }
+
+    .component-icon {
+        font-size: 14px;
+    }
+
+    /* Stack toolbar buttons vertically on very small screens */
+    .flex.items-center.space-x-3 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-professional {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Adjust canvas for very small screens */
+    #canvas-container {
+        height: calc(100vh - 250px);
+    }
+}
+
+/* ===== TABLET OPTIMIZATIONS ===== */
+@media (min-width: 769px) and (max-width: 1024px) {
+    #component-palette {
+        width: 320px;
+    }
+
+    .component {
+        min-width: 190px;
+    }
+
+    .toolbar-professional {
+        padding: 1rem 1.5rem;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+.component:focus,
+.toolbar-btn:focus {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 .component.selected {

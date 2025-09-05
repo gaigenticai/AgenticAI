@@ -339,7 +339,7 @@ class JWTManager:
     """JWT token management"""
 
     def __init__(self):
-        self.secret_key = os.getenv("JWT_SECRET", "your-super-secret-jwt-key-change-in-production")
+        self.secret_key = os.getenv("JWT_SECRET", "")
         self.algorithm = "HS256"
         self.access_token_expire_minutes = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
         self.refresh_token_expire_days = int(os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
@@ -747,7 +747,10 @@ async def startup_event():
             "port": int(os.getenv("POSTGRES_PORT", 5432)),
             "database": os.getenv("POSTGRES_DB", "agentic_ingestion"),
             "user": os.getenv("POSTGRES_USER", "agentic_user"),
-            "password": os.getenv("POSTGRES_PASSWORD", "agentic123")
+            "password": os.getenv("POSTGRES_PASSWORD", "")
+            if not os.getenv("POSTGRES_PASSWORD"):
+                logger.error("POSTGRES_PASSWORD not configured for OAuth2/OIDC Service")
+                raise RuntimeError("POSTGRES_PASSWORD not configured for OAuth2/OIDC Service")
         }
 
         database_connection = psycopg2.connect(**db_config)
